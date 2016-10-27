@@ -83,6 +83,7 @@ typedef enum riscv_itype_funct3 {
 
 // 3-bit function codes for integer R-type instruction
 typedef enum riscv_rtype_funct3 {
+    // Basic integer operations
     FUNCT3_ADD_SUB      = 0x0,
     FUNCT3_SLL          = 0x1,
     FUNCT3_SLT          = 0x2,
@@ -91,7 +92,35 @@ typedef enum riscv_rtype_funct3 {
     FUNCT3_SRL_SRA      = 0x5,
     FUNCT3_OR           = 0x6,
     FUNCT3_AND          = 0x7,
+
+    // Multiply and divide operations
+    FUNCT3_MUL          = 0x0,
+    FUNCT3_MULH         = 0x1,
+    FUNCT3_MULHSU       = 0x2,
+    FUNCT3_MULHU        = 0x3,
+    FUNCT3_DIV          = 0x4,
+    FUNCT3_DIVU         = 0x5,
+    FUNCT3_REM          = 0x6,
+    FUNCT3_REMU         = 0x7,
 } riscv_rtype_funct3_t;
+
+// 7-bit function codes for integer I-type instructions
+typedef enum riscv_itype_funct7 {
+    FUNCT7_SRLI         = 0x00,
+    FUNCT7_SRAI         = 0x20,
+} riscv_itype_funct7_t;
+
+// 7-bit function codes for integer R-type instructions
+typedef enum riscv_rtype_funct7 {
+    // Function codes for basic integer instructions
+    FUNCT7_ADD          = 0x00,
+    FUNCT7_SUB          = 0x20,
+    FUNCT7_SRL          = 0x00,
+    FUNCT7_SRA          = 0x20,
+
+    // Function code that indicates this is a multiply or divide instruction
+    FUNCT7_MULDIV       = 0x01,
+} riscv_rtype_funct7_t;
 
 // 12-bit function codes for special system instructions (R-type)
 typedef enum rsicv_sys_funct12 {
