@@ -180,9 +180,11 @@ void mem_init()
 uint32_t mem_read32(uint32_t addr)
 {
     // Try to find the specified address
+    // TODO: Set run-bit to 0
     uint8_t *mem_addr = find_address(addr);
     if (mem_addr == NULL) {
-        fprintf(stderr, "Invalid memory address exception for 0x%08x\n", addr);
+        fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
+                "simulation.\n", addr);
         return 0;
     }
 
@@ -206,10 +208,12 @@ uint32_t mem_read32(uint32_t addr)
  **/
 void mem_write32(uint32_t addr, uint32_t value)
 {
+    // TODO: Set run bit to 0
     // Try to find the specified address
     uint8_t *mem_addr = find_address(addr);
     if (mem_addr == NULL) {
-        fprintf(stderr, "Invalid memory address exception for 0x%08x\n", addr);
+        fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
+                "simulation.\n", addr);
         return;
     }
 
