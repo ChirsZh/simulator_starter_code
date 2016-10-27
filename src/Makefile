@@ -1,4 +1,4 @@
-sim: shell.c sim.c
+sim: shell.c sim.c memory.c
 	gcc -g -Wall $^ -o $@
 
 clean:

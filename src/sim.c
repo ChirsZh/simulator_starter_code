@@ -1,35 +1,24 @@
-/***************************************************************/
-/*                                                             */
-/*   MIPS-32 Instruction Level Simulator                       */
-/*                                                             */
-/*   ECE 447                                                   */
-/*   Carnegie Mellon University                                */
-/*                                                             */
-/***************************************************************/
-
-/* Lab 1.a Spring 2016
- * Complete the execute() function below by adding cases
- * for the missing opcodes and subocodes (see mips.h). 
+/**
+ * sim.c
  *
- * **NOTE*** You are only allowed to make modifications in the 
- * three specifically designated regions.
- */
+ * RISC-V 32-bit Instruction Level Simulator.
+ *
+ * ECE 18-447
+ * Carnegie Mellon University
+ *
+ * This is core part of the simulator, and is responsible for simulating the
+ * current instruction, and updating the CPU state appropiately.
+ *
+ * This is where you should add code and make modifications to implement the
+ * rest of the instructions. You can also of course add additional files to
+ * implement the simulator. Be sure to update the Makefile if you do.
+ **/
 
-#include <stdio.h>
-#include "shell.h"
-#include "mips.h"
+#include <stdio.h>          // Printf and related functions
 
-uint32_t dcd_op;     /* decoded opcode */
-uint32_t dcd_rs;     /* decoded rs operand */
-uint32_t dcd_rt;     /* decoded rt operand */
-uint32_t dcd_rd;     /* decoded rd operand */
-uint32_t dcd_shamt;  /* decoded shift amount */
-uint32_t dcd_funct;  /* decoded function */
-uint32_t dcd_imm;    /* decoded immediate value */
-uint32_t dcd_target; /* decoded target address */
-int      dcd_se_imm; /* decoded sign-extended immediate value */
-uint32_t inst;       /* machine instruction */
-
+#include "shell.h"          // Defintions for the simulator
+#include "memory.h"         // Interface to the processor memory
+#include "riscv_isa.h"      // Definition of RISC-V opcodes
 
 uint32_t sign_extend_b2w(uint8_t c)
 {
@@ -52,75 +41,115 @@ uint32_t sign_extend_h2w(uint16_t c)
 /*** you may add your own auxiliary functions above this line ***/
 /****************************************************************/
 
+/**
+ * process_instruction
+ *
+ * This is the core part of the simulator. This simulates one instruction, the
+ * one currently pointed to by the PC, and updates the next PC state
+ * appropiately.
+ **/
 void process_instruction()
 {
-  /*  function: process_instruction
-   *  
-   *    Process one instruction at a time  
-   */
+    // Fetch the 4-bytes for the current instruction
+    uint32_t instr = mem_read32(CURRENT_STATE.PC);
 
-  /* fetch the 4 bytes of the current instruction */
-  inst = mem_read_32(CURRENT_STATE.PC);
+    // Decode the opcode and registers from the instruction
+    riscv_op_t opcode = instr & 0x7F;
+    uint32_t rs1 = (instr >> 15) & 0x1F;
+    uint32_t rs2 = (instr >> 20) & 0x1F;
+    uint32_t rd = (instr >> 7) & 0x1F;
 
-  /* decode an instruction into fields */
-  dcd_op     = (inst >> 26) & 0x3F;
-  dcd_rs     = (inst >> 21) & 0x1F;
-  dcd_rt     = (inst >> 16) & 0x1F;
-  dcd_rd     = (inst >> 11) & 0x1F;
-  dcd_shamt  = (inst >> 6) & 0x1F;
-  dcd_funct  = (inst >> 0) & 0x3F;
-  dcd_imm    = (inst >> 0) & 0xFFFF;
-  dcd_se_imm = sign_extend_h2w(dcd_imm);
-  dcd_target = (inst >> 0) & ((1UL << 26) - 1);
+    // Decode the fields of the I-type instruction, sign extending it
+    riscv_itype_funct3_t itype_funct3 = (instr >> 12) & 0x7;
+    int32_t itype_imm = ((int32_t)instr) >> 12;
 
-  /* update architectural state according to instruction */
-  switch (dcd_op) {
-  case OP_SPECIAL: 
-    { 
-      switch (dcd_funct) {
-      case SUBOP_ADD: 
-      case SUBOP_ADDU: 
-	if (dcd_rd!=0)
-	  NEXT_STATE.REGS[dcd_rd] = CURRENT_STATE.REGS[dcd_rs] + CURRENT_STATE.REGS[dcd_rt];
-	NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-	break;
-      case SUBOP_SYSCALL:
-	if (CURRENT_STATE.REGS[2] == 10)
-	  RUN_BIT = 0;
-	NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-	break;
-/*************************************************************/
-/*** specify the remaining dcd_funct cases below this line ***/
-	
-	
-	
-	
-	
-/*** specify the remaining dcd_funct cases above this line ***/
-/*************************************************************/
-      default:
-	printf("Encountered unimplemented subopcode (0x%x). Ending simulation...\n\n", dcd_funct);
-	RUN_BIT = 0;
-      } /* switch (dcd_funct) */
-    } /* case OP_SPECIAL */
-    break;
-  case OP_ADDI:
-  case OP_ADDIU:
-    if (dcd_rt!=0)
-      NEXT_STATE.REGS[dcd_rt] = CURRENT_STATE.REGS[dcd_rs] + dcd_se_imm;
-    NEXT_STATE.PC = CURRENT_STATE.PC + 4;
-    break;
-/**********************************************************/
-/*** specify the remaining dcd_op cases below this line ***/
+    // Decode the instruction as an I-type instruction
+    riscv_rtype_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
+    riscv_rtype_funct7_t rtype_funct7 = (instr >> 25) & 0x7F;
 
+    // Decode the 12-bit function code for system instructions
+    riscv_sys_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
 
+    switch (opcode)
+    {
+        // General R-Type arithmetic operation
+        case OP_OP:
+            switch (rtype_funct3)
+            {
+                // 3-bit function code for either add or substract
+                case FUNCT3_ADD_SUB:
+                    switch (rtype_funct7)
+                    {
+                        // 7-bit function code for ADD
+                        case FUNCT7_ADD:
+                            if (rd != 0) {
+                                NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs1]
+                                                      + CURRENT_STATE.REGS[rs2];
+                            }
+                            NEXT_STATE.PC = CURRENT_STATE.PC +
+                                             sizeof(uint32_t);
+                            break;
 
+                        default:
+                            fprintf(stderr, "Encountered unknown/unimplemented "
+                                    "7-bit rtype function code 0x%02x. Ending "
+                                    "Simulation.\n", rtype_funct7);
+                            RUN_BIT = 0;
+                            break;
+                    }
+                    break;
 
+                default:
+                    fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
+                            "rtype function code 0x%01x. Ending Simulation.\n",
+                            rtype_funct3);
+                    RUN_BIT = 0;
+                    break;
+            }
+            break;
 
-/*** specify the remaining dcd_op cases above this line ***/
-/*********************************************************/
-  default:
-    printf("Encountered unimplemented opcode (0x%x). Ending simulation...\n\n", dcd_op);
-    RUN_BIT = 0;
-  } /* switch (dcd_op) */
+        // General I-type arithmetic operation
+        case OP_IMM:
+            switch (itype_funct3)
+            {
+                // 3-bit function code for ADDI
+                case FUNCT3_ADDI:
+                    if (rd != 0) {
+                        NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs1] +
+                                              itype_imm;
+                    }
+                    break;
+
+                default:
+                    fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
+                            "itype function code 0x%01x. Ending Simulation.\n",
+                            rtype_funct3);
+            }
+
+        // General system operation
+        case OP_SYSTEM:
+            switch (sys_funct12)
+            {
+                // 12-bit function code for ECALL
+                case FUNCT12_ECALL:
+                    // TODO: Figure out what the appropiate action here is
+                    break;
+
+                default:
+                    fprintf(stderr, "Encountered unknown/unimplemented 12-bit "
+                            "system function code 0x%03x. Ending simulation.\n",
+                            sys_funct12);
+                    RUN_BIT = 0;
+                    break;
+            }
+            break;
+
+        default:
+            fprintf(stderr, "Encountered unknown/unimplemented opcode 0x%02x. "
+                    "Ending Simulation.\n", opcode);
+            RUN_BIT = 0;
+            break;
+    }
+
+    return;
 }

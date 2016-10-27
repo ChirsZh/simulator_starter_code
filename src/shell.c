@@ -19,6 +19,7 @@
 #include <stdint.h>
 
 #include "shell.h"
+#include "memory.h"
 
 /***************************************************************/
 /* Main memory.                                                */
@@ -61,62 +62,12 @@ int INSTRUCTION_COUNT;
 
 /***************************************************************/
 /*                                                             */
-/* Procedure: mem_read_32                                      */
-/*                                                             */
-/* Purpose: Read a 32-bit word from memory                     */
-/*                                                             */
-/***************************************************************/
-uint32_t mem_read_32(uint32_t address)
-{
-    int i;
-    for (i = 0; i < MEM_NREGIONS; i++) {
-        if (address >= MEM_REGIONS[i].start &&
-                address < (MEM_REGIONS[i].start + MEM_REGIONS[i].size)) {
-            uint32_t offset = address - MEM_REGIONS[i].start;
-
-            return
-                (MEM_REGIONS[i].mem[offset+3] << 24) |
-                (MEM_REGIONS[i].mem[offset+2] << 16) |
-                (MEM_REGIONS[i].mem[offset+1] <<  8) |
-                (MEM_REGIONS[i].mem[offset+0] <<  0);
-        }
-    }
-
-    return 0;
-}
-
-/***************************************************************/
-/*                                                             */
-/* Procedure: mem_write_32                                     */
-/*                                                             */
-/* Purpose: Write a 32-bit word to memory                      */
-/*                                                             */
-/***************************************************************/
-void mem_write_32(uint32_t address, uint32_t value)
-{
-    int i;
-    for (i = 0; i < MEM_NREGIONS; i++) {
-        if (address >= MEM_REGIONS[i].start &&
-                address < (MEM_REGIONS[i].start + MEM_REGIONS[i].size)) {
-            uint32_t offset = address - MEM_REGIONS[i].start;
-
-            MEM_REGIONS[i].mem[offset+3] = (value >> 24) & 0xFF;
-            MEM_REGIONS[i].mem[offset+2] = (value >> 16) & 0xFF;
-            MEM_REGIONS[i].mem[offset+1] = (value >>  8) & 0xFF;
-            MEM_REGIONS[i].mem[offset+0] = (value >>  0) & 0xFF;
-            return;
-        }
-    }
-}
-
-/***************************************************************/
-/*                                                             */
 /* Procedure : help                                            */
 /*                                                             */
 /* Purpose   : Print out a list of commands                    */
 /*                                                             */
 /***************************************************************/
-void help() {                                                    
+void help() {
   printf("----------------MIPS ISIM Help-----------------------\n");
   printf("go               -  run program to completion         \n");
   printf("run n            -  execute program for n instructions\n");
@@ -136,7 +87,7 @@ void help() {
 /* Purpose   : Execute a cycle                                 */
 /*                                                             */
 /***************************************************************/
-void cycle() {                                                
+void cycle() {
 
   process_instruction();
   CURRENT_STATE = NEXT_STATE;
@@ -150,7 +101,7 @@ void cycle() {
 /* Purpose   : Simulate MIPS for n cycles                      */
 /*                                                             */
 /***************************************************************/
-void run(int num_cycles) {                                      
+void run(int num_cycles) {
   int i;
 
   if (RUN_BIT == FALSE) {
@@ -175,7 +126,7 @@ void run(int num_cycles) {
 /* Purpose   : Simulate MIPS until HALTed                      */
 /*                                                             */
 /***************************************************************/
-void go() {                                                     
+void go() {
   if (RUN_BIT == FALSE) {
     printf("Can't simulate, Simulator is halted\n\n");
     return;
@@ -187,7 +138,7 @@ void go() {
   printf("Simulator halted\n\n");
 }
 
-/***************************************************************/ 
+/***************************************************************/
 /*                                                             */
 /* Procedure : mdump                                           */
 /*                                                             */
@@ -195,20 +146,20 @@ void go() {
 /*             output file.                                    */
 /*                                                             */
 /***************************************************************/
-void mdump(FILE * dumpsim_file, int start, int stop) {          
+void mdump(FILE * dumpsim_file, int start, int stop) {
   int address;
 
   printf("\nMemory content [0x%08x..0x%08x] :\n", start, stop);
   printf("-------------------------------------\n");
   for (address = start; address <= stop; address += 4)
-    printf("  0x%08x (%d) : 0x%08x\n", address, address, mem_read_32(address));
+    printf("  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(address));
   printf("\n");
 
   /* dump the memory contents into the dumpsim file */
   fprintf(dumpsim_file, "\nMemory content [0x%08x..0x%08x] :\n", start, stop);
   fprintf(dumpsim_file, "-------------------------------------\n");
   for (address = start; address <= stop; address += 4)
-    fprintf(dumpsim_file, "  0x%08x (%d) : 0x%08x\n", address, address, mem_read_32(address));
+    fprintf(dumpsim_file, "  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(address));
   fprintf(dumpsim_file, "\n");
 }
 
@@ -216,12 +167,12 @@ void mdump(FILE * dumpsim_file, int start, int stop) {
 /*                                                             */
 /* Procedure : rdump                                           */
 /*                                                             */
-/* Purpose   : Dump current register and bus values to the     */   
+/* Purpose   : Dump current register and bus values to the     */
 /*             output file.                                    */
 /*                                                             */
 /***************************************************************/
-void rdump(FILE * dumpsim_file) {                               
-  int k; 
+void rdump(FILE * dumpsim_file) {
+  int k;
 
   printf("\nCurrent register/bus values :\n");
   printf("-------------------------------------\n");
@@ -251,10 +202,10 @@ void rdump(FILE * dumpsim_file) {
 /*                                                             */
 /* Procedure : get_command                                     */
 /*                                                             */
-/* Purpose   : Read a command from standard input.             */  
+/* Purpose   : Read a command from standard input.             */
 /*                                                             */
 /***************************************************************/
-void get_command(FILE * dumpsim_file) {                         
+void get_command(FILE * dumpsim_file) {
   char buffer[20];
   int start, stop, cycles;
   int register_no, register_value;
@@ -307,15 +258,15 @@ void get_command(FILE * dumpsim_file) {
    CURRENT_STATE.REGS[register_no] = register_value;
    NEXT_STATE.REGS[register_no] = register_value;
    break;
-  
+
   case 'H':
   case 'h':
    if (scanf("%i", &hi_reg_value) != 1)
       break;
-   CURRENT_STATE.HI = hi_reg_value; 
-   NEXT_STATE.HI = hi_reg_value; 
+   CURRENT_STATE.HI = hi_reg_value;
+   NEXT_STATE.HI = hi_reg_value;
    break;
-  
+
   case 'L':
   case 'l':
    if (scanf("%i", &lo_reg_value) != 1)
@@ -337,7 +288,7 @@ void get_command(FILE * dumpsim_file) {
 /* Purpose   : Allocate and zero memoryy                       */
 /*                                                             */
 /***************************************************************/
-void init_memory() {                                           
+void init_memory() {
     int i;
     for (i = 0; i < MEM_NREGIONS; i++) {
         MEM_REGIONS[i].mem = malloc(MEM_REGIONS[i].size);
@@ -352,7 +303,7 @@ void init_memory() {
 /* Purpose   : Load program and service routines into mem.    */
 /*                                                            */
 /**************************************************************/
-void load_program(char *program_filename) {                   
+void load_program(char *program_filename) {
   FILE * prog;
   int ii, word;
 
@@ -367,7 +318,7 @@ void load_program(char *program_filename) {
 
   ii = 0;
   while (fscanf(prog, "%x\n", &word) != EOF) {
-    mem_write_32(MEM_TEXT_START + ii, word);
+    mem_write32(MEM_TEXT_START + ii, word);
     ii += 4;
   }
 
@@ -380,11 +331,11 @@ void load_program(char *program_filename) {
 /*                                                          */
 /* Procedure : initialize                                   */
 /*                                                          */
-/* Purpose   : Load machine language program                */ 
+/* Purpose   : Load machine language program                */
 /*             and set up initial state of the machine.     */
 /*                                                          */
 /************************************************************/
-void initialize(char *program_filename, int num_prog_files) { 
+void initialize(char *program_filename, int num_prog_files) {
   int i;
 
   init_memory();
@@ -393,7 +344,7 @@ void initialize(char *program_filename, int num_prog_files) {
     while(*program_filename++ != '\0');
   }
   NEXT_STATE = CURRENT_STATE;
-    
+
   RUN_BIT = TRUE;
 }
 
@@ -402,7 +353,7 @@ void initialize(char *program_filename, int num_prog_files) {
 /* Procedure : main                                            */
 /*                                                             */
 /***************************************************************/
-int main(int argc, char *argv[]) {                              
+int main(int argc, char *argv[]) {
   FILE * dumpsim_file;
 
   /* Error Checking */
@@ -423,5 +374,5 @@ int main(int argc, char *argv[]) {
 
   while (1)
     get_command(dumpsim_file);
-    
+
 }

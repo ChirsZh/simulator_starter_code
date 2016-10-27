@@ -4,6 +4,9 @@
  * This contains the definitions for the RISC-V opcodes and function codes for
  * the instructions that must be implemented by the simulator.
  *
+ * Note that the names of the enumerations are based on the names given in the
+ * RISC-V 2.1 ISA manual.
+ *
  * Authors:
  *  - 2016: Brandon Perez
  **/
@@ -119,12 +122,12 @@ typedef enum riscv_rtype_funct7 {
     FUNCT7_SRA          = 0x20,
 
     // Function code that indicates this is a multiply or divide instruction
-    FUNCT7_MULDIV       = 0x01,
+    FUNCT7_MUL_DIV      = 0x01,
 } riscv_rtype_funct7_t;
 
 // 12-bit function codes for special system instructions (R-type)
 typedef enum rsicv_sys_funct12 {
-    FUNCT3_ECALL        = 0x000,
+    FUNCT12_ECALL        = 0x000,
 } riscv_sys_funct12_t;
 
 #endif /* RISCV_ISA_H_ */
