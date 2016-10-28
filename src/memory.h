@@ -14,6 +14,11 @@
  *  - 2016: Brandon Perez
  **/
 
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *                 You should only add files or change sim.c!                 *
+ *----------------------------------------------------------------------------*/
+
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
