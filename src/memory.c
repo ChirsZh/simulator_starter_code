@@ -28,6 +28,7 @@
 /*----------------------------------------------------------------------------
  * Internal Definitions
  *----------------------------------------------------------------------------*/
+
 // The addresses and sizes of the user's stack, data, and text segments
 #define USER_TEXT_START     0x00400000
 #define USER_TEXT_SIZE      (1 * 1024 * 1024)
@@ -44,13 +45,6 @@
 
 // The value memory is initalized to, for making detecting unitialized values
 #define MEMORY_INIT_VALUE   0xCD
-
-// The representation of a region/segment in memory
-typedef struct mem_region {
-    uint32_t base_addr;     // Base address of the memory region
-    uint32_t size;          // Size of the memory region in bytes
-    uint8_t *mem;           // Actual memory buffer for the region
-} mem_region_t;
 
 // Allocate memmory for the user text memory region
 static uint8_t user_text_buffer[USER_TEXT_SIZE] = {MEMORY_INIT_VALUE};

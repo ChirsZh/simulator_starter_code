@@ -12,53 +12,18 @@
  *                 You should only add files or change sim.c!                 *
  *----------------------------------------------------------------------------*/
 
-#include <assert.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <stdint.h>
+#include <stdio.h>          // Printf and related functions
+#include <stdint.h>         // Fixed-size integral types
 
-#include "shell.h"
-#include "memory.h"
+#include <assert.h>         // Assert macro
+#include <string.h>         // String manipulation functions
 
-/***************************************************************/
-/* Main memory.                                                */
-/***************************************************************/
+#include "shell.h"          // Interface to the core simulator
+#include "memory.h"         // Interface to the processor memory
 
-#define MEM_DATA_START  0x10000000
-#define MEM_DATA_SIZE   0x00100000
-#define MEM_TEXT_START  0x00400000
-#define MEM_TEXT_SIZE   0x00100000
-#define MEM_STACK_START 0x7ff00000
-#define MEM_STACK_SIZE  0x00100000
-#define MEM_KDATA_START 0x90000000
-#define MEM_KDATA_SIZE  0x00100000
-#define MEM_KTEXT_START 0x80000000
-#define MEM_KTEXT_SIZE  0x00100000
-
-typedef struct {
-    uint32_t start, size;
-    uint8_t *mem;
-} mem_region_t;
-
-/* memory will be dynamically allocated at initialization */
-mem_region_t MEM_REGIONS[] = {
-    { MEM_TEXT_START, MEM_TEXT_SIZE, NULL },
-    { MEM_DATA_START, MEM_DATA_SIZE, NULL },
-    { MEM_STACK_START, MEM_STACK_SIZE, NULL },
-    { MEM_KDATA_START, MEM_KDATA_SIZE, NULL },
-    { MEM_KTEXT_START, MEM_KTEXT_SIZE, NULL }
-};
-
-#define MEM_NREGIONS (sizeof(MEM_REGIONS)/sizeof(mem_region_t))
-
-/***************************************************************/
-/* CPU State info.                                             */
-/***************************************************************/
-
-CPU_State CURRENT_STATE, NEXT_STATE;
-int RUN_BIT;	/* run bit */
-int INSTRUCTION_COUNT;
+// FIXME: Temporary
+#define USER_TEXT_START     0x00400000
 
 /***************************************************************/
 /*                                                             */
@@ -87,11 +52,9 @@ void help() {
 /* Purpose   : Execute a cycle                                 */
 /*                                                             */
 /***************************************************************/
-void cycle() {
-
-  process_instruction();
-  CURRENT_STATE = NEXT_STATE;
-  INSTRUCTION_COUNT++;
+void cycle(cpu_state_t *cpu_state) {
+  process_instruction(cpu_state);
+  cpu_state->instr_count += 1;
 }
 
 /***************************************************************/
@@ -101,21 +64,21 @@ void cycle() {
 /* Purpose   : Simulate MIPS for n cycles                      */
 /*                                                             */
 /***************************************************************/
-void run(int num_cycles) {
+void run(cpu_state_t *cpu_state, int num_cycles) {
   int i;
 
-  if (RUN_BIT == FALSE) {
+  if (!cpu_state->running) {
     printf("Can't simulate, Simulator is halted\n\n");
     return;
   }
 
   printf("Simulating for %d cycles...\n\n", num_cycles);
   for (i = 0; i < num_cycles; i++) {
-    if (RUN_BIT == FALSE) {
+    if (!cpu_state->running) {
 	    printf("Simulator halted\n\n");
 	    break;
     }
-    cycle();
+    cycle(cpu_state);
   }
 }
 
@@ -126,15 +89,15 @@ void run(int num_cycles) {
 /* Purpose   : Simulate MIPS until HALTed                      */
 /*                                                             */
 /***************************************************************/
-void go() {
-  if (RUN_BIT == FALSE) {
+void go(cpu_state_t *cpu_state) {
+  if (!cpu_state->running) {
     printf("Can't simulate, Simulator is halted\n\n");
     return;
   }
 
   printf("Simulating...\n\n");
-  while (RUN_BIT)
-    cycle();
+  while (cpu_state->running)
+    cycle(cpu_state);
   printf("Simulator halted\n\n");
 }
 
@@ -146,7 +109,7 @@ void go() {
 /*             output file.                                    */
 /*                                                             */
 /***************************************************************/
-void mdump(FILE * dumpsim_file, int start, int stop) {
+void mdump(FILE* dumpsim_file, int start, int stop) {
   int address;
 
   printf("\nMemory content [0x%08x..0x%08x] :\n", start, stop);
@@ -171,30 +134,26 @@ void mdump(FILE * dumpsim_file, int start, int stop) {
 /*             output file.                                    */
 /*                                                             */
 /***************************************************************/
-void rdump(FILE * dumpsim_file) {
+void rdump(const cpu_state_t *cpu_state, FILE * dumpsim_file) {
   int k;
 
   printf("\nCurrent register/bus values :\n");
   printf("-------------------------------------\n");
-  printf("Instruction Count : %u\n", INSTRUCTION_COUNT);
-  printf("PC                : 0x%08x\n", CURRENT_STATE.PC);
+  printf("Instruction Count : %u\n", cpu_state->instr_count);
+  printf("PC                : 0x%08x\n", cpu_state->pc);
   printf("Registers:\n");
-  for (k = 0; k < MIPS_REGS; k++)
-    printf("R%d: 0x%08x\n", k, CURRENT_STATE.REGS[k]);
-  printf("HI: 0x%08x\n", CURRENT_STATE.HI);
-  printf("LO: 0x%08x\n", CURRENT_STATE.LO);
+  for (k = 0; k < RISCV_NUM_REGS; k++)
+    printf("R%d: 0x%08x\n", k, cpu_state->regs[k]);
   printf("\n");
 
   /* dump the state information into the dumpsim file */
   fprintf(dumpsim_file, "\nCurrent register/bus values :\n");
   fprintf(dumpsim_file, "-------------------------------------\n");
-  fprintf(dumpsim_file, "Instruction Count : %u\n", INSTRUCTION_COUNT);
-  fprintf(dumpsim_file, "PC                : 0x%08x\n", CURRENT_STATE.PC);
+  fprintf(dumpsim_file, "Instruction Count : %u\n", cpu_state->instr_count);
+  fprintf(dumpsim_file, "PC                : 0x%08x\n", cpu_state->pc);
   fprintf(dumpsim_file, "Registers:\n");
-  for (k = 0; k < MIPS_REGS; k++)
-    fprintf(dumpsim_file, "R%d: 0x%08x\n", k, CURRENT_STATE.REGS[k]);
-  fprintf(dumpsim_file, "HI: 0x%08x\n", CURRENT_STATE.HI);
-  fprintf(dumpsim_file, "LO: 0x%08x\n", CURRENT_STATE.LO);
+  for (k = 0; k < RISCV_NUM_REGS; k++)
+    fprintf(dumpsim_file, "R%d: 0x%08x\n", k, cpu_state->regs[k]);
   fprintf(dumpsim_file, "\n");
 }
 
@@ -205,13 +164,12 @@ void rdump(FILE * dumpsim_file) {
 /* Purpose   : Read a command from standard input.             */
 /*                                                             */
 /***************************************************************/
-void get_command(FILE * dumpsim_file) {
+void get_command(cpu_state_t *cpu_state, FILE* dumpsim_file) {
   char buffer[20];
   int start, stop, cycles;
   int register_no, register_value;
-  int hi_reg_value, lo_reg_value;
 
-  printf("MIPS-SIM> ");
+  printf("RISCV-SIM> ");
 
   if (scanf("%s", buffer) == EOF)
       exit(0);
@@ -221,7 +179,7 @@ void get_command(FILE * dumpsim_file) {
   switch(buffer[0]) {
   case 'G':
   case 'g':
-    go();
+    go(cpu_state);
     break;
 
   case 'M':
@@ -244,10 +202,10 @@ void get_command(FILE * dumpsim_file) {
   case 'R':
   case 'r':
     if (buffer[1] == 'd' || buffer[1] == 'D')
-	    rdump(dumpsim_file);
+	    rdump(cpu_state, dumpsim_file);
     else {
 	    if (scanf("%d", &cycles) != 1) break;
-	    run(cycles);
+	    run(cpu_state, cycles);
     }
     break;
 
@@ -255,45 +213,13 @@ void get_command(FILE * dumpsim_file) {
   case 'i':
    if (scanf("%i %i", &register_no, &register_value) != 2)
       break;
-   CURRENT_STATE.REGS[register_no] = register_value;
-   NEXT_STATE.REGS[register_no] = register_value;
-   break;
-
-  case 'H':
-  case 'h':
-   if (scanf("%i", &hi_reg_value) != 1)
-      break;
-   CURRENT_STATE.HI = hi_reg_value;
-   NEXT_STATE.HI = hi_reg_value;
-   break;
-
-  case 'L':
-  case 'l':
-   if (scanf("%i", &lo_reg_value) != 1)
-      break;
-   CURRENT_STATE.LO = lo_reg_value;
-   NEXT_STATE.LO = lo_reg_value;
+   cpu_state->regs[register_no] = register_value;
    break;
 
   default:
     printf("Invalid Command\n");
     break;
   }
-}
-
-/***************************************************************/
-/*                                                             */
-/* Procedure : init_memory                                     */
-/*                                                             */
-/* Purpose   : Allocate and zero memoryy                       */
-/*                                                             */
-/***************************************************************/
-void init_memory() {
-    int i;
-    for (i = 0; i < MEM_NREGIONS; i++) {
-        MEM_REGIONS[i].mem = malloc(MEM_REGIONS[i].size);
-        memset(MEM_REGIONS[i].mem, 0, MEM_REGIONS[i].size);
-    }
 }
 
 /**************************************************************/
@@ -303,7 +229,7 @@ void init_memory() {
 /* Purpose   : Load program and service routines into mem.    */
 /*                                                            */
 /**************************************************************/
-void load_program(char *program_filename) {
+void load_program(cpu_state_t *cpu_state, char *program_filename) {
   FILE * prog;
   int ii, word;
 
@@ -318,11 +244,11 @@ void load_program(char *program_filename) {
 
   ii = 0;
   while (fscanf(prog, "%x\n", &word) != EOF) {
-    mem_write32(MEM_TEXT_START + ii, word);
+    mem_write32(USER_TEXT_START + ii, word);
     ii += 4;
   }
 
-  CURRENT_STATE.PC = MEM_TEXT_START;
+  cpu_state->pc = USER_TEXT_START;
 
   printf("Read %d words from program into memory.\n\n", ii/4);
 }
@@ -335,17 +261,17 @@ void load_program(char *program_filename) {
 /*             and set up initial state of the machine.     */
 /*                                                          */
 /************************************************************/
-void initialize(char *program_filename, int num_prog_files) {
+void initialize(cpu_state_t *cpu_state, char *program_filename,
+        int num_prog_files) {
   int i;
 
-  init_memory();
+  mem_init();
   for ( i = 0; i < num_prog_files; i++ ) {
-    load_program(program_filename);
+    load_program(cpu_state, program_filename);
     while(*program_filename++ != '\0');
   }
-  NEXT_STATE = CURRENT_STATE;
 
-  RUN_BIT = TRUE;
+  cpu_state->running = true;
 }
 
 /***************************************************************/
@@ -354,6 +280,7 @@ void initialize(char *program_filename, int num_prog_files) {
 /*                                                             */
 /***************************************************************/
 int main(int argc, char *argv[]) {
+  cpu_state_t cpu_state;
   FILE * dumpsim_file;
 
   /* Error Checking */
@@ -365,7 +292,7 @@ int main(int argc, char *argv[]) {
 
   printf("MIPS Simulator\n\n");
 
-  initialize(argv[1], argc - 1);
+  initialize(&cpu_state, argv[1], argc - 1);
 
   if ( (dumpsim_file = fopen( "dumpsim", "w" )) == NULL ) {
     printf("Error: Can't open dumpsim file\n");
@@ -373,6 +300,6 @@ int main(int argc, char *argv[]) {
   }
 
   while (1)
-    get_command(dumpsim_file);
+    get_command(&cpu_state, dumpsim_file);
 
 }

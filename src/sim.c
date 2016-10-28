@@ -48,10 +48,10 @@ uint32_t sign_extend_h2w(uint16_t c)
  * one currently pointed to by the PC, and updates the next PC state
  * appropiately.
  **/
-void process_instruction()
+void process_instruction(cpu_state_t *cpu_state)
 {
     // Fetch the 4-bytes for the current instruction
-    uint32_t instr = mem_read32(CURRENT_STATE.PC);
+    uint32_t instr = mem_read32(cpu_state->pc);
 
     // Decode the opcode and registers from the instruction
     riscv_op_t opcode = instr & 0x7F;
@@ -83,18 +83,17 @@ void process_instruction()
                         // 7-bit function code for ADD
                         case FUNCT7_ADD:
                             if (rd != 0) {
-                                NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs1]
-                                                      + CURRENT_STATE.REGS[rs2];
+                                cpu_state->regs[rd] = cpu_state->regs[rs1]
+                                                      + cpu_state->regs[rs2];
                             }
-                            NEXT_STATE.PC = CURRENT_STATE.PC +
-                                             sizeof(uint32_t);
+                            cpu_state->pc = cpu_state->pc + sizeof(uint32_t);
                             break;
 
                         default:
                             fprintf(stderr, "Encountered unknown/unimplemented "
                                     "7-bit rtype function code 0x%02x. Ending "
                                     "Simulation.\n", rtype_funct7);
-                            RUN_BIT = 0;
+                            cpu_state->running = false;
                             break;
                     }
                     break;
@@ -103,7 +102,7 @@ void process_instruction()
                     fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
                             "rtype function code 0x%01x. Ending Simulation.\n",
                             rtype_funct3);
-                    RUN_BIT = 0;
+                    cpu_state->running = false;
                     break;
             }
             break;
@@ -115,7 +114,7 @@ void process_instruction()
                 // 3-bit function code for ADDI
                 case FUNCT3_ADDI:
                     if (rd != 0) {
-                        NEXT_STATE.REGS[rd] = CURRENT_STATE.REGS[rs1] +
+                        cpu_state->regs[rd] = cpu_state->regs[rs1] +
                                               itype_imm;
                     }
                     break;
@@ -139,7 +138,7 @@ void process_instruction()
                     fprintf(stderr, "Encountered unknown/unimplemented 12-bit "
                             "system function code 0x%03x. Ending simulation.\n",
                             sys_funct12);
-                    RUN_BIT = 0;
+                    cpu_state->running = false;
                     break;
             }
             break;
@@ -147,7 +146,7 @@ void process_instruction()
         default:
             fprintf(stderr, "Encountered unknown/unimplemented opcode 0x%02x. "
                     "Ending Simulation.\n", opcode);
-            RUN_BIT = 0;
+            cpu_state->running = false;
             break;
     }
 
