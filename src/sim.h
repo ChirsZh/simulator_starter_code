@@ -9,10 +9,6 @@
  * This file contains the interface to the core part of the simulator. The core
  * simulator handles carrying out the actions required by instructions.
  *
- * This file contains the interface to the memory backend for the simulator. The
- * backend handles abstracting the processor memory from the core simulator
- * functions.
- *
  * Authors:
  *  - 2016: Brandon Perez
  **/

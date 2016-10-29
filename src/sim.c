@@ -16,7 +16,7 @@
 
 #include <stdio.h>          // Printf and related functions
 
-#include "shell.h"          // Defintions for the simulator
+#include "sim.h"          // Defintions for the simulator
 #include "memory.h"         // Interface to the processor memory
 #include "riscv_isa.h"      // Definition of RISC-V opcodes
 

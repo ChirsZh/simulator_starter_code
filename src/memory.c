@@ -23,7 +23,7 @@
 
 #include <assert.h>         // Assert macro
 
-#include "shell.h"          // Interface to the core simulator
+#include "sim.h"          // Interface to the core simulator
 #include "memory.h"         // This file's interface
 
 /*----------------------------------------------------------------------------

@@ -19,7 +19,7 @@
 #include <assert.h>         // Assert macro
 #include <string.h>         // String manipulation functions
 
-#include "shell.h"          // Interface to the core simulator
+#include "sim.h"          // Interface to the core simulator
 #include "memory.h"         // Interface to the processor memory
 
 // FIXME: Temporary
