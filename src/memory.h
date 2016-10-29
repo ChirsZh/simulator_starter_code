@@ -34,6 +34,10 @@ typedef struct mem_region {
     uint8_t *mem;           // Actual memory buffer for the region
 } mem_region_t;
 
+/*----------------------------------------------------------------------------
+ * Core Simulator Interface
+ *----------------------------------------------------------------------------*/
+
 /**
  * mem_write32
  *
@@ -54,13 +58,22 @@ uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
  **/
 void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
 
+/*----------------------------------------------------------------------------
+ * Shell Interface
+ *----------------------------------------------------------------------------*/
+
 /**
  * mem_init
  *
- * Initializes the memory subsystem part of the CPU state. This only needs to be
- * called by the shell at startup time. The core simulator does not need this
- * function.
+ * Initializes the memory subsystem part of the CPU state.
  **/
 void mem_init(struct cpu_state *cpu_state);
+
+/**
+ * mem_destroy
+ *
+ * Cleans up the data allocated by the memory part of the CPU state.
+ **/
+void mem_destroy(struct cpu_state *cpu_state);
 
 #endif /* MEMORY_H_ */

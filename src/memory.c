@@ -123,58 +123,8 @@ static uint32_t set_byte(uint8_t value, int byte)
 }
 
 /*----------------------------------------------------------------------------
- * Interface Functions
+ * Core Simulator Interface Functions
  *----------------------------------------------------------------------------*/
-
-/**
- * mem_init
- *
- * Initializes the memory subsystem part of the CPU state. This only needs to be
- * called by the shell at startup time. The core simulator does not need this
- * function.
- **/
-// TODO: Error handling
-void mem_init(cpu_state_t *cpu_state)
-{
-    // Allocate the memory region metadata for the processor
-    cpu_state->num_mem_regions = NUM_MEM_REGIONS;
-    size_t region_size = sizeof(cpu_state->mem_regions[0]);
-    cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
-
-    // Initialize the memory regions
-    for (int i = 0; i < cpu_state->num_mem_regions; i++)
-    {
-        mem_region_t *mem_region = &cpu_state->mem_regions[i];
-        mem_region->base_addr = MEM_REGION_STARTS[i];
-        mem_region->size = MEM_REGION_SIZES[i];
-
-        mem_region->mem = calloc(mem_region->size, sizeof(mem_region->mem[0]));
-    }
-
-    return;
-}
-
-/**
- * mem_destroy
- *
- * Cleans up the data allocated by the memory part of the CPU state. This
- * function only needs to be called by the shell.
- **/
-void mem_destroy(cpu_state_t *cpu_state)
-{
-    // Free each of the memory regions, if it has an allocated memory region
-    for (int i = 0; i < cpu_state->num_mem_regions; i++)
-    {
-        mem_region_t *mem_region = &cpu_state->mem_regions[i];
-        if (mem_region->mem != NULL) {
-            free(mem_region->mem);
-        }
-    }
-
-    // Free the memory region metadata structures
-    free(cpu_state->mem_regions);
-    return;
-}
 
 /**
  * mem_write32
@@ -233,3 +183,55 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 
     return;
 }
+
+/*----------------------------------------------------------------------------
+ * Shell Interface Functions
+ *----------------------------------------------------------------------------*/
+
+/**
+ * mem_init
+ *
+ * Initializes the memory subsystem part of the CPU state.
+ **/
+// TODO: Error handling
+void mem_init(cpu_state_t *cpu_state)
+{
+    // Allocate the memory region metadata for the processor
+    cpu_state->num_mem_regions = NUM_MEM_REGIONS;
+    size_t region_size = sizeof(cpu_state->mem_regions[0]);
+    cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
+
+    // Initialize the memory regions
+    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    {
+        mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        mem_region->base_addr = MEM_REGION_STARTS[i];
+        mem_region->size = MEM_REGION_SIZES[i];
+
+        mem_region->mem = calloc(mem_region->size, sizeof(mem_region->mem[0]));
+    }
+
+    return;
+}
+
+/**
+ * mem_destroy
+ *
+ * Cleans up the data allocated by the memory part of the CPU state.
+ **/
+void mem_destroy(cpu_state_t *cpu_state)
+{
+    // Free each of the memory regions, if it has an allocated memory region
+    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    {
+        mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        if (mem_region->mem != NULL) {
+            free(mem_region->mem);
+        }
+    }
+
+    // Free the memory region metadata structures
+    free(cpu_state->mem_regions);
+    return;
+}
+
