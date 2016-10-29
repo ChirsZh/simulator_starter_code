@@ -25,19 +25,19 @@
 #ifndef SIM_H_
 #define SIM_H_
 
-#include <stdbool.h>                // Boolean type and definitions
-#include <stdint.h>                 // Fixed-size integral types
+#include <stdbool.h>                    // Boolean type and definitions
+#include <stdint.h>                     // Fixed-size integral types
 
-#include "riscv_isa.h"              // RISC-V ISA, the number of registers
-#include "memory.h"                 // Interface to the processor memory
+#include "riscv_isa.h"                  // RISC-V ISA, the number of registers
+#include "memory.h"                     // Interface to the processor memory
 
 typedef struct cpu_state {
-    bool running;                   // Indicates if the CPU is running
-    int instr_count;                // Number of simulated instructions
-    uint32_t pc;                    // Current program counter
-    int num_mem_regions;            // Number of memory regions
-    mem_region_t **mem_regions;     // Processor memory regions
-    uint32_t regs[RISCV_NUM_REGS];  // CPU register file
+    bool running;                       // Indicates if the CPU is running
+    int instr_count;                    // Number of simulated instructions
+    uint32_t pc;                        // Current program counter
+    int num_mem_regions;                // Number of memory regions
+    const mem_region_t **mem_regions;   // Processor memory regions
+    uint32_t regs[RISCV_NUM_REGS];      // CPU register file
 } cpu_state_t;
 
 /**

@@ -88,15 +88,14 @@ static const mem_region_t kernel_data = {
 };
 
 // Create a list of all the memory regions for the processor
-const mem_region_t *mem_regions[] = {
+static const mem_region_t *mem_regions[] = {
     &user_text,
     &user_data,
     &user_stack,
     &kernel_text,
     &kernel_data,
 };
-const int num_mem_regions = sizeof(mem_regions) / sizeof(mem_regions[0]);
-
+static const int num_mem_regions = sizeof(mem_regions) / sizeof(mem_regions[0]);
 
 /*----------------------------------------------------------------------------
  * Helper Functions
