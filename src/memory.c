@@ -18,17 +18,21 @@
  *                 You should only add files or change sim.c!                 *
  *----------------------------------------------------------------------------*/
 
+#include <stdlib.h>         // Malloc and related functions
 #include <stdio.h>          // Printf and related functions
 #include <stdint.h>         // Fixed-size integral types
 
 #include <assert.h>         // Assert macro
 
-#include "sim.h"          // Interface to the core simulator
+#include "sim.h"            // Interface to the core simulator
 #include "memory.h"         // This file's interface
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
  *----------------------------------------------------------------------------*/
+
+// Macro to get the length of a statically allocated array
+#define array_len(x) (sizeof(x) / sizeof(x[0]))
 
 // The addresses and sizes of the user's stack, data, and text segments
 #define USER_TEXT_START     0x00400000
@@ -44,58 +48,26 @@
 #define KERNEL_TEXT_START   0x80000000
 #define KERNEL_TEXT_SIZE    (1 * 1024 * 1024)
 
-// The value memory is initalized to, for making detecting unitialized values
-#define MEMORY_INIT_VALUE   0xCD
-
-// Allocate memmory for the user text memory region
-static uint8_t user_text_buffer[USER_TEXT_SIZE] = {MEMORY_INIT_VALUE};
-static const mem_region_t user_text = {
-    .base_addr = USER_TEXT_START,
-    .size = sizeof(user_text_buffer),
-    .mem = user_text_buffer,
+// The starting addresses of each memory segment in the processor
+static uint32_t MEM_REGION_STARTS[] = {
+    USER_TEXT_START,
+    USER_DATA_START,
+    USER_STACK_START,
+    KERNEL_TEXT_START,
+    KERNEL_DATA_START,
 };
 
-// Allocate memory for the user data memory region
-static uint8_t user_data_buffer[USER_DATA_SIZE] = {MEMORY_INIT_VALUE};
-static const mem_region_t user_data = {
-    .base_addr = USER_DATA_START,
-    .size = sizeof(user_data_buffer),
-    .mem = user_data_buffer,
+// The sizes of each memory segment in the processor
+static const uint32_t MEM_REGION_SIZES[] = {
+    USER_TEXT_SIZE,
+    USER_DATA_SIZE,
+    USER_STACK_SIZE,
+    KERNEL_TEXT_SIZE,
+    KERNEL_DATA_SIZE,
 };
 
-// Allocate memory for the user stack memory region
-static uint8_t user_stack_buffer[USER_STACK_SIZE] = {MEMORY_INIT_VALUE};
-static const mem_region_t user_stack = {
-    .base_addr = USER_STACK_START,
-    .size = sizeof(user_stack_buffer),
-    .mem = user_stack_buffer,
-};
-
-// Allocate memory for the kernel text memory region
-static uint8_t kernel_text_buffer[KERNEL_TEXT_SIZE] = {MEMORY_INIT_VALUE};
-static const mem_region_t kernel_text = {
-    .base_addr = KERNEL_TEXT_START,
-    .size = sizeof(kernel_text_buffer),
-    .mem = kernel_text_buffer,
-};
-
-// Allocate memory for the kernel data memory region
-static uint8_t kernel_data_buffer[KERNEL_DATA_SIZE] = {MEMORY_INIT_VALUE};
-static const mem_region_t kernel_data = {
-    .base_addr = KERNEL_DATA_START,
-    .size = sizeof(kernel_data_buffer),
-    .mem = kernel_data_buffer,
-};
-
-// Create a list of all the memory regions for the processor
-static const mem_region_t *mem_regions[] = {
-    &user_text,
-    &user_data,
-    &user_stack,
-    &kernel_text,
-    &kernel_data,
-};
-static const int num_mem_regions = sizeof(mem_regions) / sizeof(mem_regions[0]);
+// The number of memory segments in the processor
+static const int NUM_MEM_REGIONS = array_len(MEM_REGION_STARTS);
 
 /*----------------------------------------------------------------------------
  * Helper Functions
@@ -112,7 +84,7 @@ static uint8_t *find_address(const cpu_state_t *cpu_state, uint32_t addr)
     // Iterate over the memory regions, checking if the address lies in them
     for (int i = 0; i < cpu_state->num_mem_regions; i++)
     {
-        const mem_region_t *mem_region = cpu_state->mem_regions[i];
+        const mem_region_t *mem_region = &cpu_state->mem_regions[i];
         uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
 
         if (mem_region->base_addr <= addr && addr < region_end_addr) {
@@ -161,11 +133,46 @@ static uint32_t set_byte(uint8_t value, int byte)
  * called by the shell at startup time. The core simulator does not need this
  * function.
  **/
+// TODO: Error handling
 void mem_init(cpu_state_t *cpu_state)
 {
-    cpu_state->mem_regions = mem_regions;
-    cpu_state->num_mem_regions = num_mem_regions;
+    // Allocate the memory region metadata for the processor
+    cpu_state->num_mem_regions = NUM_MEM_REGIONS;
+    size_t region_size = sizeof(cpu_state->mem_regions[0]);
+    cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
 
+    // Initialize the memory regions
+    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    {
+        mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        mem_region->base_addr = MEM_REGION_STARTS[i];
+        mem_region->size = MEM_REGION_SIZES[i];
+
+        mem_region->mem = calloc(mem_region->size, sizeof(mem_region->mem[0]));
+    }
+
+    return;
+}
+
+/**
+ * mem_destroy
+ *
+ * Cleans up the data allocated by the memory part of the CPU state. This
+ * function only needs to be called by the shell.
+ **/
+void mem_destroy(cpu_state_t *cpu_state)
+{
+    // Free each of the memory regions, if it has an allocated memory region
+    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    {
+        mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        if (mem_region->mem != NULL) {
+            free(mem_region->mem);
+        }
+    }
+
+    // Free the memory region metadata structures
+    free(cpu_state->mem_regions);
     return;
 }
 

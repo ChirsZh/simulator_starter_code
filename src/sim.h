@@ -32,7 +32,7 @@ typedef struct cpu_state {
     int instr_count;                    // Number of simulated instructions
     uint32_t pc;                        // Current program counter
     int num_mem_regions;                // Number of memory regions
-    const mem_region_t **mem_regions;   // Processor memory regions
+    mem_region_t *mem_regions;          // Processor memory regions
     uint32_t regs[RISCV_NUM_REGS];      // CPU register file
 } cpu_state_t;
 
