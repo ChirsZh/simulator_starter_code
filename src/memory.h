@@ -24,6 +24,9 @@
 
 #include <stdint.h>         // Fixed-size integral types
 
+// Forward declaration of the CPU state struct
+struct cpu_state;
+
 // The representation of a region/segment in memory
 typedef struct mem_region {
     uint32_t base_addr;     // Base address of the memory region
@@ -39,7 +42,7 @@ typedef struct mem_region {
  * address is unaligned or invalid, this function will stop the simulator on an
  * exception.
  **/
-uint32_t mem_read32(uint32_t addr);
+uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
 
 /**
  * mem_write32
@@ -49,7 +52,7 @@ uint32_t mem_read32(uint32_t addr);
  * address is unaligned or invalid, this function will stop the simulator on an
  * exception.
  **/
-void mem_write32(uint32_t addr, uint32_t value);
+void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
 
 /**
  * mem_init
@@ -58,6 +61,6 @@ void mem_write32(uint32_t addr, uint32_t value);
  * called by the shell at startup time. The core simulator does not need this
  * function.
  **/
-void mem_init();
+void mem_init(struct cpu_state *cpu_state);
 
 #endif /* MEMORY_H_ */

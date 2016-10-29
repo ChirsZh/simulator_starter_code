@@ -51,7 +51,7 @@ uint32_t sign_extend_h2w(uint16_t c)
 void process_instruction(cpu_state_t *cpu_state)
 {
     // Fetch the 4-bytes for the current instruction
-    uint32_t instr = mem_read32(cpu_state->pc);
+    uint32_t instr = mem_read32(cpu_state, cpu_state->pc);
 
     // Decode the opcode and registers from the instruction
     riscv_op_t opcode = instr & 0x7F;

@@ -109,20 +109,21 @@ void go(cpu_state_t *cpu_state) {
 /*             output file.                                    */
 /*                                                             */
 /***************************************************************/
-void mdump(FILE* dumpsim_file, int start, int stop) {
+void mdump(cpu_state_t *cpu_state, FILE* dumpsim_file, int start,
+        int stop) {
   int address;
 
   printf("\nMemory content [0x%08x..0x%08x] :\n", start, stop);
   printf("-------------------------------------\n");
   for (address = start; address <= stop; address += 4)
-    printf("  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(address));
+    printf("  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(cpu_state, address));
   printf("\n");
 
   /* dump the memory contents into the dumpsim file */
   fprintf(dumpsim_file, "\nMemory content [0x%08x..0x%08x] :\n", start, stop);
   fprintf(dumpsim_file, "-------------------------------------\n");
   for (address = start; address <= stop; address += 4)
-    fprintf(dumpsim_file, "  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(address));
+    fprintf(dumpsim_file, "  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(cpu_state, address));
   fprintf(dumpsim_file, "\n");
 }
 
@@ -187,7 +188,7 @@ void get_command(cpu_state_t *cpu_state, FILE* dumpsim_file) {
     if (scanf("%i %i", &start, &stop) != 2)
         break;
 
-    mdump(dumpsim_file, start, stop);
+    mdump(cpu_state, dumpsim_file, start, stop);
     break;
 
   case '?':
@@ -244,7 +245,7 @@ void load_program(cpu_state_t *cpu_state, char *program_filename) {
 
   ii = 0;
   while (fscanf(prog, "%x\n", &word) != EOF) {
-    mem_write32(USER_TEXT_START + ii, word);
+    mem_write32(cpu_state, USER_TEXT_START + ii, word);
     ii += 4;
   }
 
@@ -265,7 +266,7 @@ void initialize(cpu_state_t *cpu_state, char *program_filename,
         int num_prog_files) {
   int i;
 
-  mem_init();
+  mem_init(cpu_state);
   for ( i = 0; i < num_prog_files; i++ ) {
     load_program(cpu_state, program_filename);
     while(*program_filename++ != '\0');

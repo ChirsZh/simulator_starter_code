@@ -23,7 +23,8 @@
 
 #include <assert.h>         // Assert macro
 
-#include "memory.h"         // Interface to the processor's memory
+#include "shell.h"          // Interface to the core simulator
+#include "memory.h"         // This file's interface
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -107,12 +108,12 @@ const int num_mem_regions = sizeof(mem_regions) / sizeof(mem_regions[0]);
  * Find the address on the host machine that corresponds to the address in the
  * simulator. If no such address exists, return NULL.
  **/
-static uint8_t *find_address(uint32_t addr)
+static uint8_t *find_address(const cpu_state_t *cpu_state, uint32_t addr)
 {
     // Iterate over the memory regions, checking if the address lies in them
-    for (int i = 0; i < num_mem_regions; i++)
+    for (int i = 0; i < cpu_state->num_mem_regions; i++)
     {
-        const mem_region_t *mem_region = mem_regions[i];
+        const mem_region_t *mem_region = cpu_state->mem_regions[i];
         uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
 
         if (mem_region->base_addr <= addr && addr < region_end_addr) {
@@ -161,8 +162,11 @@ static uint32_t set_byte(uint8_t value, int byte)
  * called by the shell at startup time. The core simulator does not need this
  * function.
  **/
-void mem_init()
+void mem_init(cpu_state_t *cpu_state)
 {
+    cpu_state->mem_regions = mem_regions;
+    cpu_state->num_mem_regions = num_mem_regions;
+
     return;
 }
 
@@ -174,14 +178,14 @@ void mem_init()
  * address is unaligned or invalid, this function will stop the simulator on an
  * exception.
  **/
-uint32_t mem_read32(uint32_t addr)
+uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 {
     // Try to find the specified address
-    // TODO: Set run-bit to 0
-    uint8_t *mem_addr = find_address(addr);
+    uint8_t *mem_addr = find_address(cpu_state, addr);
     if (mem_addr == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
                 "simulation.\n", addr);
+        cpu_state->running = false;
         return 0;
     }
 
@@ -203,14 +207,15 @@ uint32_t mem_read32(uint32_t addr)
  * address is unaligned or invalid, this function will stop the simulator on an
  * exception.
  **/
-void mem_write32(uint32_t addr, uint32_t value)
+void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 {
     // TODO: Set run bit to 0
     // Try to find the specified address
-    uint8_t *mem_addr = find_address(addr);
+    uint8_t *mem_addr = find_address(cpu_state, addr);
     if (mem_addr == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
                 "simulation.\n", addr);
+        cpu_state->running = false;
         return;
     }
 
