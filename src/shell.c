@@ -13,14 +13,17 @@
  *----------------------------------------------------------------------------*/
 
 #include <stdlib.h>
-#include <stdio.h>          // Printf and related functions
+#include <stdio.h>          // Printf, fgets, and related functions
 #include <stdint.h>         // Fixed-size integral types
 
 #include <assert.h>         // Assert macro
-#include <string.h>         // String manipulation functions
+#include <string.h>         // String manipulation functions and memset
 
-#include "sim.h"          // Interface to the core simulator
+#include "sim.h"            // Interface to the core simulator
 #include "memory.h"         // Interface to the processor memory
+
+// The maximum line length the user can type in
+#define MAX_LINE_LEN        100
 
 // FIXME: Temporary
 #define USER_TEXT_START     0x00400000
@@ -254,53 +257,126 @@ void load_program(cpu_state_t *cpu_state, char *program_filename) {
   printf("Read %d words from program into memory.\n\n", ii/4);
 }
 
-/************************************************************/
-/*                                                          */
-/* Procedure : initialize                                   */
-/*                                                          */
-/* Purpose   : Load machine language program                */
-/*             and set up initial state of the machine.     */
-/*                                                          */
-/************************************************************/
-void initialize(cpu_state_t *cpu_state, char *program_filename,
-        int num_prog_files) {
-  int i;
+/*----------------------------------------------------------------------------
+ * Simulator REPL
+ *----------------------------------------------------------------------------*/
 
-  mem_init(cpu_state);
-  for ( i = 0; i < num_prog_files; i++ ) {
-    load_program(cpu_state, program_filename);
-    while(*program_filename++ != '\0');
-  }
-
-  cpu_state->running = true;
+/**
+ * process_long_command
+ *
+ * Attempts to parse and process the command as one of its string variants.
+ * If the command matches one of the simulator's commands, it is executed.
+ * Returns true if the string matched a command. Sets the quit boolean pointer
+ * if a quit command was specified.
+ **/
+static bool process_long_command(cpu_state_t *cpu_state, const char *command,
+    bool *quit)
+{
+    return false;
 }
 
-/***************************************************************/
-/*                                                             */
-/* Procedure : main                                            */
-/*                                                             */
-/***************************************************************/
-int main(int argc, char *argv[]) {
-  cpu_state_t cpu_state;
-  FILE * dumpsim_file;
+/**
+ * process_short_command
+ *
+ * Attempts to parse and process the command as one of its single character
+ * variants. If the command matches one of the simulator's commands, it is
+ * executed. Returns true if the string matched a command. Sets the quit boolean
+ * pointer if a quit command was specified.
+ **/
+static bool process_short_command(cpu_state_t *cpu_state, const char *command,
+        bool *quit)
+{
+    return false;
+}
 
-  /* Error Checking */
-  if (argc < 2) {
-    printf("Error: usage: %s <program_file_1> <program_file_2> ...\n",
-           argv[0]);
-    exit(1);
-  }
+/**
+ * process_command
+ *
+ * Attempts to parse and process the command specified by the user as either the
+ * long form of the command, a string), or the short form, a single character.
+ **/
+static bool process_command(cpu_state_t *cpu_state, const char *command)
+{
+    bool quit = false;
+    if (process_long_command(cpu_state, command, &quit)) {
+        return quit;
+    } else if (process_short_command(cpu_state, command, &quit)) {
+        return quit;
+    } else {
+        fprintf(stderr, "Invalid command '%s' specified.\n", command);
+        return false;
+    }
+}
 
-  printf("MIPS Simulator\n\n");
+/**
+ * simulator_repl
+ *
+ * The read-eval-print loop (REPL) for the simulator. Continuously waits for
+ * user input, and performs the specified command, until the user specifies quit
+ * or sends an EOF character.
+ **/
+static void simulator_repl(cpu_state_t *cpu_state)
+{
+    // Continuously process user commands until a quit or EOF
+    while (true)
+    {
+        // Print the command prompt for the user
+        fprintf(stdout, "RISC-V Sim> ");
+        fflush(stdout);
 
-  initialize(&cpu_state, argv[1], argc - 1);
+        // Read the next line from the user, terminating on an EOF character
+        char line[MAX_LINE_LEN + 1];
+        char *status = fgets(line, sizeof(line), stdin);
+        if (status == NULL) {
+            break;
+        }
 
-  if ( (dumpsim_file = fopen( "dumpsim", "w" )) == NULL ) {
-    printf("Error: Can't open dumpsim file\n");
-    exit(-1);
-  }
+        // Strip the newline character from the input
+        int newline_index = strcspn(line, "\r\n");
+        line[newline_index] = '\0';
 
-  while (1)
-    get_command(&cpu_state, dumpsim_file);
+        // Process the user's command, stop if the user requested quit
+        bool quit = process_command(cpu_state, line);
+        if (quit) {
+            break;
+        }
+    }
 
+    return;
+}
+
+/**
+ * init_cpu_state
+ *
+ * Initializes the CPU state, and loads the specified program into the
+ * processor's memory.
+ **/
+static void init_cpu_state(cpu_state_t *cpu_state, char *program_name)
+{
+    // Clear out the CPU state, and Initialize the CPU state fields
+    cpu_state->instr_count = 0;
+    memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
+
+    // Initialize the processor memory, and mark the CPU as running
+    mem_init(cpu_state);
+    cpu_state->running = true;
+}
+
+/**
+ * main
+ *
+ * The main method for the simulator. This parses the command line arguments,
+ * initializes the CPU and starts up the REPL for the simulator.
+ **/
+int main(int argc, char *argv[])
+{
+    // Parse the program filename from the command line, and initialize the CPU
+    cpu_state_t cpu_state;
+    //char *program_name = parse_arguments(argc, argv);
+    char *program_name = NULL;
+    init_cpu_state(&cpu_state, program_name);
+
+    // The REPL loop for the simulator, wait for and read user commands
+    simulator_repl(&cpu_state);
+    return 0;
 }
