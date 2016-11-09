@@ -22,8 +22,12 @@
 #include "sim.h"            // Interface to the core simulator
 #include "memory.h"         // Interface to the processor memory
 
-// The maximum line length the user can type in
-#define MAX_LINE_LEN        100
+// The maximum line length the user can type in for a command
+#define COMMAND_MAX_LEN     100
+
+/* The maximum number of arguments that can be parsed from user input. This more
+ * than the max possible, so too many arguments can be detected. */
+#define COMMAND_MAX_ARGS    4
 
 // FIXME: Temporary
 #define USER_TEXT_START     0x00400000
@@ -270,30 +274,33 @@ void load_program(cpu_state_t *cpu_state, char *program_filename) {
  * if a quit command was specified.
  **/
 static bool process_long_command(cpu_state_t *cpu_state, const char *command,
-    bool *quit)
+    const char *args[], int num_args, bool *quit)
 {
     // Assume the command is not quit
     *quit = false;
 
     // Run the appropiate command based on what the user specified
     if (strcmp(command, "step") == 0) {
-        process_command_step(cpu_state, command);
+        command_step(cpu_state, args, num_args);
     } else if (strcmp(command, "go") == 0) {
-        process_command_go(cpu_state);
+        command_go(cpu_state, args, num_args);
     } else if (strcmp(command, "reg") == 0) {
-        process_command_reg(cpu_state, command);
+        command_reg(cpu_state, args, num_args);
     } else if (strcmp(command, "memory") == 0) {
-        process_command_memory(cpu_state, command);
+        command_memory(cpu_state, args, num_args);
     } else if (strcmp(command, "rdump") == 0) {
-        process_command_rdump(cpu_state, command);
+        command_rdump(cpu_state, args, num_args);
     } else if (strcmp(command, "mdump") == 0) {
-        process_command_dump(cpu_state, command);
+        process_command_dump(cpu_state, args, num_args);
     } else if (strcmp(command, "restart") == 0) {
-        process_command_restart(cpu_state, command);
+        command_restart(cpu_state, args, num_args);
     } else if (strcmp(command, "load") == 0) {
-        process_command_load(cpu_state, command);
+        command_load(cpu_state, args, num_args);
     } else if (strcmp(command, "quit") == 0) {
-        process_command_quit(cpu_state, command);
+        *quit = true;
+        command_quit(cpu_state, args, num_args);
+    } else if (strcmp(command, "help") == 0) {
+        command_help(cpu_state, args, num_args);
     } else {
         return false;
     }
@@ -308,9 +315,12 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
  * variants. If the command matches one of the simulator's commands, it is
  * executed. Returns true if the string matched a command. Sets the quit boolean
  * pointer if a quit command was specified.
+ *
+ * As this relies on aliases, this function should be called after
+ * process_long_command, or it may parse commands incorrectly.
  **/
 static bool process_short_command(cpu_state_t *cpu_state, const char *command,
-        bool *quit)
+        const char *args[], int num_args, bool *quit)
 {
     // Assume the command is not quit
     *quit = false;
@@ -318,28 +328,29 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
     // Based on the first character, run the appropiate command
     switch (command[0]) {
         case 's':
-            command_step(cpu_state, command);
+            command_step(cpu_state, args, num_args);
             return true;
 
         case 'g':
-            command_go(cpu_state);
+            command_go(cpu_state, args, num_args);
             return true;
 
         case 'r':
-            command_reg(cpu_state, command);
+            command_reg(cpu_state, args, num_args);
             return true;
 
         case 'm':
-            command_memory(cpu_state, command);
+            command_memory(cpu_state, args, num_args);
             return true;
 
         case 'q':
-            command_quit(cpu_state, command, quit);
+            command_quit(cpu_state, args, num_args);
+            *quit = true;
             return true;
 
         case '?':
         case 'h':
-            command_help(cpu_state, command);
+            command_help(cpu_state, args, num_args);
             return true;
     }
 
@@ -347,17 +358,69 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
 }
 
 /**
+ * Splits the user input command string into a command and argument list.
+ *
+ * The command returned is a typical null-terminated string, while the argument
+ * list is terminated by a NULL pointer. The length of the argument list is
+ * returned returned.
+ **/
+static int split_command(char *command_string, char **command,
+        const char *args[COMMAND_MAX_ARGS+1])
+{
+    /* First, parse the command out of the string. If the string is empty, then
+     * there aren't any arguments to parse. */
+    char *string_tail;
+    *command = strtok_r(command_string, " ", &string_tail);
+    if (*command == NULL) {
+        return 0;
+    }
+
+    // Tokenize each word in the string, and add it to the argument array
+    int num_args = 0;
+    char *word;
+    while (num_args < COMMAND_MAX_ARGS)
+    {
+        // Parse and tokenize the next word from the string
+        word = strtok_r(NULL, " ", &string_tail);
+        if (word == NULL) {
+            break;
+        }
+
+        // We were able to parse another word, so add it to the array
+        args[num_args] = word;
+        num_args += 1;
+    }
+
+    // Terminate the array with a NULL pointer, return number of arguments
+    args[num_args] = NULL;
+    return num_args;
+}
+
+/**
  * process_command
  *
  * Attempts to parse and process the command specified by the user as either the
  * long form of the command, a string), or the short form, a single character.
+ * Returns true if the quit command was specified.
  **/
-static bool process_command(cpu_state_t *cpu_state, const char *command)
+static bool process_command(cpu_state_t *cpu_state, char *command_string)
 {
-    bool quit = false;
-    if (process_long_command(cpu_state, command, &quit)) {
+    // Seperate the command string into the command and a list of arguments
+    char *command;
+    const char *args[COMMAND_MAX_ARGS+1];
+    int num_args = split_command(command_string, &command, args);
+
+    // The user entered an empty line, so there's no command to process
+    if (command == NULL) {
+        return true;
+    }
+
+    // Otherwise, identify the command based on its short alias or long form
+    bool quit;
+    if (process_long_command(cpu_state, command, args, num_args, &quit)) {
         return quit;
-    } else if (process_short_command(cpu_state, command, &quit)) {
+    } else if (process_short_command(cpu_state, command, args, num_args,
+                &quit)) {
         return quit;
     } else {
         fprintf(stderr, "Invalid command '%s' specified.\n", command);
@@ -382,7 +445,7 @@ static void simulator_repl(cpu_state_t *cpu_state)
         fflush(stdout);
 
         // Read the next line from the user, terminating on an EOF character
-        char line[MAX_LINE_LEN + 1];
+        char line[COMMAND_MAX_LEN+1];
         char *status = fgets(line, sizeof(line), stdin);
         if (status == NULL) {
             break;
