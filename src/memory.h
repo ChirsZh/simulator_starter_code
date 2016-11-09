@@ -39,7 +39,7 @@ typedef struct mem_region {
 } mem_region_t;
 
 /*----------------------------------------------------------------------------
- * Interface to the Core Simulator and Commands
+ * Interface to the Core Simulator
  *----------------------------------------------------------------------------*/
 
 /**

@@ -23,6 +23,7 @@
 #include <stdint.h>         // Fixed-size integral types
 
 #include <assert.h>         // Assert macro
+#include <errno.h>          // Error codes and perror
 
 #include "sim.h"            // Interface to the core simulator
 #include "memory.h"         // This file's interface
@@ -191,24 +192,34 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 /**
  * mem_init
  *
- * Initializes the memory subsystem part of the CPU state.
+ * Initializes the memory subsystem part of the CPU state. This allocates all of
+ * the memory regions for the CPU, and intializes them to zero.
  **/
-// TODO: Error handling
 void mem_init(cpu_state_t *cpu_state)
 {
     // Allocate the memory region metadata for the processor
     cpu_state->num_mem_regions = NUM_MEM_REGIONS;
     size_t region_size = sizeof(cpu_state->mem_regions[0]);
     cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
+    if (cpu_state->mem_regions == NULL) {
+        perror("Error: Unable to allocate memory regions structure.");
+        exit(-errno);
+    }
 
     // Initialize the memory regions
     for (int i = 0; i < cpu_state->num_mem_regions; i++)
     {
+        // Setup the metadata for the memory region
         mem_region_t *mem_region = &cpu_state->mem_regions[i];
         mem_region->base_addr = MEM_REGION_STARTS[i];
         mem_region->size = MEM_REGION_SIZES[i];
 
         mem_region->mem = calloc(mem_region->size, sizeof(mem_region->mem[0]));
+        if (mem_region->mem == NULL) {
+            perror("Error: Unable to allocate memory regions for the program.");
+            mem_destroy(cpu_state);
+            exit(ENOMEM);
+        }
     }
 
     return;
