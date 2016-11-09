@@ -272,7 +272,33 @@ void load_program(cpu_state_t *cpu_state, char *program_filename) {
 static bool process_long_command(cpu_state_t *cpu_state, const char *command,
     bool *quit)
 {
-    return false;
+    // Assume the command is not quit
+    *quit = false;
+
+    // Run the appropiate command based on what the user specified
+    if (strcmp(command, "step") == 0) {
+        process_command_step(cpu_state, command);
+    } else if (strcmp(command, "go") == 0) {
+        process_command_go(cpu_state);
+    } else if (strcmp(command, "reg") == 0) {
+        process_command_reg(cpu_state, command);
+    } else if (strcmp(command, "memory") == 0) {
+        process_command_memory(cpu_state, command);
+    } else if (strcmp(command, "rdump") == 0) {
+        process_command_rdump(cpu_state, command);
+    } else if (strcmp(command, "mdump") == 0) {
+        process_command_dump(cpu_state, command);
+    } else if (strcmp(command, "restart") == 0) {
+        process_command_restart(cpu_state, command);
+    } else if (strcmp(command, "load") == 0) {
+        process_command_load(cpu_state, command);
+    } else if (strcmp(command, "quit") == 0) {
+        process_command_quit(cpu_state, command);
+    } else {
+        return false;
+    }
+
+    return true;
 }
 
 /**
@@ -286,6 +312,37 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
 static bool process_short_command(cpu_state_t *cpu_state, const char *command,
         bool *quit)
 {
+    // Assume the command is not quit
+    *quit = false;
+
+    // Based on the first character, run the appropiate command
+    switch (command[0]) {
+        case 's':
+            command_step(cpu_state, command);
+            return true;
+
+        case 'g':
+            command_go(cpu_state);
+            return true;
+
+        case 'r':
+            command_reg(cpu_state, command);
+            return true;
+
+        case 'm':
+            command_memory(cpu_state, command);
+            return true;
+
+        case 'q':
+            command_quit(cpu_state, command, quit);
+            return true;
+
+        case '?':
+        case 'h':
+            command_help(cpu_state, command);
+            return true;
+    }
+
     return false;
 }
 
