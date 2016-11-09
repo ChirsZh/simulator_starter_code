@@ -24,6 +24,10 @@
 
 #include <stdint.h>         // Fixed-size integral types
 
+/*----------------------------------------------------------------------------
+ * Definitions
+ *----------------------------------------------------------------------------*/
+
 // Forward declaration of the CPU state struct
 struct cpu_state;
 
@@ -35,7 +39,7 @@ typedef struct mem_region {
 } mem_region_t;
 
 /*----------------------------------------------------------------------------
- * Core Simulator Interface
+ * Interface to the Core Simulator and Commands
  *----------------------------------------------------------------------------*/
 
 /**
@@ -59,7 +63,7 @@ uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
 void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
 
 /*----------------------------------------------------------------------------
- * Shell Interface
+ * Interface to the Shell
  *----------------------------------------------------------------------------*/
 
 /**
