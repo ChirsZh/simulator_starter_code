@@ -69,14 +69,18 @@ void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
 /**
  * mem_init
  *
- * Initializes the memory subsystem part of the CPU state.
+ * Initializes the memory subsystem part of the CPU state. This loads the memory
+ * regions from the specified program into the CPU memory, and initializes them
+ * to the values specified in the respective hex files. Program name should be
+ * the path to the assembly file without the extension.
  **/
-void mem_init(struct cpu_state *cpu_state);
+void mem_init(struct cpu_state *cpu_state, const char *program_path);
 
 /**
  * mem_destroy
  *
- * Cleans up the data allocated by the memory part of the CPU state.
+ * Cleans up the data allocated by the memory part of the CPU state. This frees
+ * the allocated memory for the processor's memory regions.
  **/
 void mem_destroy(struct cpu_state *cpu_state);
 
