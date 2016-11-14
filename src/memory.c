@@ -344,14 +344,14 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
 
 
 /**
- * mem_init
+ * mem_load_program
  *
  * Initializes the memory subsystem part of the CPU state. This loads the memory
  * regions from the specified program into the CPU memory, and initializes them
  * to the values specified in the respective hex files. Program name should be
  * the path to the assembly file without the extension.
  **/
-void mem_init(cpu_state_t *cpu_state, const char *program_path)
+int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
     // Allocate the memory region metadata for the processor
     cpu_state->num_mem_regions = NUM_MEM_REGIONS;
@@ -375,20 +375,23 @@ void mem_init(cpu_state_t *cpu_state, const char *program_path)
         size_t max_size = MEM_REGION_MAX_SIZES[i];
         int rc = load_mem_region(mem_region, program_path, extension, max_size);
         if (rc < 0) {
-            mem_destroy(cpu_state);
+            mem_unload_program(cpu_state);
+            return rc;
         }
     }
 
-    return;
+    // Set the PC to the start of the text section
+    cpu_state->pc = USER_TEXT_START;
+    return 0;
 }
 
 /**
- * mem_destroy
+ * mem_unload_program
  *
- * Cleans up the data allocated by the memory part of the CPU state. This frees
- * the allocated memory for the processor's memory regions.
+ * Unloads a program previously loaded by mem_load_program. This cleans up and
+ * frees the allocated memory for the processor's memory region.
  **/
-void mem_destroy(cpu_state_t *cpu_state)
+void mem_unload_program(cpu_state_t *cpu_state)
 {
     // Free each of the memory regions, if it has an allocated memory region
     for (int i = 0; i < cpu_state->num_mem_regions; i++)

@@ -18,9 +18,15 @@
 
 #include <assert.h>         // Assert macro
 #include <string.h>         // String manipulation functions and memset
+#include <errno.h>          // Error codes and perror
 
 #include "sim.h"            // Interface to the core simulator
 #include "memory.h"         // Interface to the processor memory
+
+
+/* The maximum number of command line arguments that can be specified, including
+ * the program name. */
+const int MAX_CMDLINE_ARGS  = 2;
 
 // The maximum line length the user can type in for a command
 #define COMMAND_MAX_LEN     100
@@ -28,9 +34,6 @@
 /* The maximum number of arguments that can be parsed from user input. This more
  * than the max possible, so too many arguments can be detected. */
 #define COMMAND_MAX_ARGS    4
-
-// FIXME: Temporary
-#define USER_TEXT_START     0x00400000
 
 /***************************************************************/
 /*                                                             */
@@ -165,100 +168,44 @@ void rdump(const cpu_state_t *cpu_state, FILE * dumpsim_file) {
   fprintf(dumpsim_file, "\n");
 }
 
-/***************************************************************/
-/*                                                             */
-/* Procedure : get_command                                     */
-/*                                                             */
-/* Purpose   : Read a command from standard input.             */
-/*                                                             */
-/***************************************************************/
-void get_command(cpu_state_t *cpu_state, FILE* dumpsim_file) {
-  char buffer[20];
-  int start, stop, cycles;
-  int register_no, register_value;
+/*----------------------------------------------------------------------------
+ * Command Line Parsing
+ *----------------------------------------------------------------------------*/
 
-  printf("RISCV-SIM> ");
-
-  if (scanf("%s", buffer) == EOF)
-      exit(0);
-
-  printf("\n");
-
-  switch(buffer[0]) {
-  case 'G':
-  case 'g':
-    go(cpu_state);
-    break;
-
-  case 'M':
-  case 'm':
-    if (scanf("%i %i", &start, &stop) != 2)
-        break;
-
-    mdump(cpu_state, dumpsim_file, start, stop);
-    break;
-
-  case '?':
-    help();
-    break;
-
-  case 'Q':
-  case 'q':
-    printf("Bye.\n");
-    exit(0);
-
-  case 'R':
-  case 'r':
-    if (buffer[1] == 'd' || buffer[1] == 'D')
-	    rdump(cpu_state, dumpsim_file);
-    else {
-	    if (scanf("%d", &cycles) != 1) break;
-	    run(cpu_state, cycles);
-    }
-    break;
-
-  case 'I':
-  case 'i':
-   if (scanf("%i %i", &register_no, &register_value) != 2)
-      break;
-   cpu_state->regs[register_no] = register_value;
-   break;
-
-  default:
-    printf("Invalid Command\n");
-    break;
-  }
+/**
+ * print_usage
+ *
+ * Prints the usage message for the program.
+ **/
+static void print_usage()
+{
+    fprintf(stdout, "Usage: riscv-sim [program]\n");
+    return;
 }
 
-/**************************************************************/
-/*                                                            */
-/* Procedure : load_program                                   */
-/*                                                            */
-/* Purpose   : Load program and service routines into mem.    */
-/*                                                            */
-/**************************************************************/
-void load_program(cpu_state_t *cpu_state, char *program_filename) {
-  FILE * prog;
-  int ii, word;
+/**
+ * parse_arguments
+ *
+ * Parses the command-line arguments to the program, which only consist of an
+ * optional path to the program to run.
+ **/
+static int parse_arguments(int argc, char *argv[], char **program_path)
+{
+    // Check that the proper number of command line arguments was specified
+    if (argc > MAX_CMDLINE_ARGS) {
+        fprintf(stderr, "Error: Too many command line arguments specified.\n");
+        print_usage();
+        return -EINVAL;
+    }
 
-  /* Open program file. */
-  prog = fopen(program_filename, "r");
-  if (prog == NULL) {
-    printf("Error: Can't open program file %s\n", program_filename);
-    exit(-1);
-  }
+    // If it was specified, parse the program path from the command line
+    if (argc > 1) {
+        *program_path = argv[1];
+    } else {
+        *program_path = NULL;
+    }
 
-  /* Read in the program. */
-
-  ii = 0;
-  while (fscanf(prog, "%x\n", &word) != EOF) {
-    mem_write32(cpu_state, USER_TEXT_START + ii, word);
-    ii += 4;
-  }
-
-  cpu_state->pc = USER_TEXT_START;
-
-  printf("Read %d words from program into memory.\n\n", ii/4);
+    return 0;
 }
 
 /*----------------------------------------------------------------------------
@@ -471,15 +418,16 @@ static void simulator_repl(cpu_state_t *cpu_state)
  * Initializes the CPU state, and loads the specified program into the
  * processor's memory.
  **/
-static void init_cpu_state(cpu_state_t *cpu_state, char *program_name)
+static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 {
     // Clear out the CPU state, and Initialize the CPU state fields
     cpu_state->instr_count = 0;
     memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
 
-    // Initialize the processor memory, and mark the CPU as running
-    mem_init(cpu_state);
-    cpu_state->running = true;
+    // Initialize the processor memory, and mark the CPU as running on success
+    int rc = mem_load_program(cpu_state, program_path);
+    cpu_state->running = rc == 0;
+    return rc;
 }
 
 /**
@@ -490,11 +438,19 @@ static void init_cpu_state(cpu_state_t *cpu_state, char *program_name)
  **/
 int main(int argc, char *argv[])
 {
-    // Parse the program filename from the command line, and initialize the CPU
+    // Parse the program filename from the command line
+    char *program_path;
+    int rc = parse_arguments(argc, argv, &program_path);
+    if (rc < 0) {
+        return -rc;
+    }
+
+    // Initialize the CPU state, loading the program if specified
     cpu_state_t cpu_state;
-    //char *program_name = parse_arguments(argc, argv);
-    char *program_name = NULL;
-    init_cpu_state(&cpu_state, program_name);
+    rc = init_cpu_state(&cpu_state, program_path);
+    if (rc < 0) {
+        return -rc;
+    }
 
     // The REPL loop for the simulator, wait for and read user commands
     simulator_repl(&cpu_state);
