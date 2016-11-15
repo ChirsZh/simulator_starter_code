@@ -20,9 +20,9 @@
 #include <string.h>         // String manipulation functions and memset
 #include <errno.h>          // Error codes and perror
 
-#include "sim.h"            // Interface to the core simulator
+#include "sim.h"            // Interface to the core simulator, cpu_state_t
 #include "memory.h"         // Interface to the processor memory
-
+#include "commands.h"       // Interface to the shell commands
 
 /* The maximum number of command line arguments that can be specified, including
  * the program name. */
@@ -238,7 +238,7 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
     } else if (strcmp(command, "rdump") == 0) {
         command_rdump(cpu_state, args, num_args);
     } else if (strcmp(command, "mdump") == 0) {
-        process_command_dump(cpu_state, args, num_args);
+        command_mdump(cpu_state, args, num_args);
     } else if (strcmp(command, "restart") == 0) {
         command_restart(cpu_state, args, num_args);
     } else if (strcmp(command, "load") == 0) {
