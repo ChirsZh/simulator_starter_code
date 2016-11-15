@@ -314,9 +314,12 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
     // Try to open the file
     FILE *hex_file = fopen(hex_path, "r");
     if (hex_file == NULL) {
-        fprintf(stderr, "Error: %s: Unable to open file: %m\n", hex_path);
+        int rc = -errno;
+        fprintf(stderr, "Error: %s: Unable to open file", hex_path);
+        errno = rc;
+        perror("");
         free(hex_path);
-        return -errno;
+        return rc;
     }
 
     /* Determine the size of the memory region in the file in bytes, accounting
