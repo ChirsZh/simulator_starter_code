@@ -12,11 +12,58 @@
  * @bug No known bugs.
  **/
 
+#include <stdlib.h>         // Malloc and related functions
+#include <stdio.h>          // Printf and related functions
+#include <stdint.h>         // Fixed-size integral types
+
+#include <errno.h>          // Error codes and perror
+#include <limits.h>         // Limits for integer types
+
+#include "sim.h"            // Interface
 #include "commands.h"       // This file's interface
+
+/*----------------------------------------------------------------------------
+ * Parsing Helper Functions
+ *----------------------------------------------------------------------------*/
+
+static int parse_int(const char *arg_str, int *val)
+{
+    // Attempt to parse the string as a signed long
+    errno = 0;
+    long parsed_val = strtol(arg_str, NULL, 10);
+    if (errno != 0) {
+        return -errno;
+    } else if (parsed_val < INT_MIN || parsed_val > INT_MAX) {
+        return -ERANGE;
+    }
+
+    // If we could parse the value, then cast it to an integer
+    *val = (int)parsed_val;
+    return 0;
+}
+
 
 /*----------------------------------------------------------------------------
  * Step and Go Commands
  *----------------------------------------------------------------------------*/
+
+// The maximum number of arguments that can be specified to the step command
+#define STEP_MAX_NUM_ARGS   1
+
+// The expected number of arguments for the go command
+#define GO_NUM_ARGS         0
+
+/**
+ * run_simulator
+ *
+ * Run the simulator for a single cycle, incrementing the instruction count.
+ **/
+static void run_simulator(cpu_state_t *cpu_state)
+{
+    process_instruction(cpu_state);
+    cpu_state->instr_count += 1;
+    return;
+}
 
 /**
  * command_step
@@ -27,10 +74,32 @@
  **/
 void command_step(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
-    (void)args;
-    (void)num_args;
+    // Check that the appropiate number of arguments was specified
+    if (num_args > STEP_MAX_NUM_ARGS) {
+        fprintf(stderr, "Error: Too many arguments specified to 'step' "
+                "command.\n");
+        return;
+    }
+
+    // If a number of cycles was specified, then attempt to parse it
+    int num_cycles = 1;
+    if (num_args != 0 && parse_int(args[0], &num_cycles) < 0) {
+        fprintf(stderr, "Error: Unable to parse '%s' as an int.\n", args[0]);
+        return;
+    }
+
+    // If the processor is halted, then we don't do anything.
+    if (cpu_state->halted) {
+        fprintf(stdout, "Processor is halted, cannot run the simulator.\n");
+        return;
+    }
+
+    /* Run the simulator for the specified number of cycles, or until the
+     * processor is halted. */
+    for (int i = 0; i < num_cycles && !cpu_state->halted; i++)
+    {
+        run_simulator(cpu_state);
+    }
 
     return;
 }
@@ -42,10 +111,27 @@ void command_step(cpu_state_t *cpu_state, const char *args[], int num_args)
  **/
 void command_go(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
+    // Silence unused variable warnings from the compiler
     (void)args;
-    (void)num_args;
+
+    // Check that the appropiate number of arguments was specified
+    if (num_args != GO_NUM_ARGS) {
+        fprintf(stderr, "Error: Improper number of arguments specified to "
+                "'go' command.\n");
+        return;
+    }
+
+    // If the processor is halted, then we don't do anything.
+    if (cpu_state->halted) {
+        fprintf(stdout, "Processor is halted, cannot run the simulator.\n");
+        return;
+    }
+
+    // Run the simulator until the processor is halted
+    while (!cpu_state->halted)
+    {
+        run_simulator(cpu_state);
+    }
 
     return;
 }

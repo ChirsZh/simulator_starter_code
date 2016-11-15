@@ -204,7 +204,6 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
  **/
 void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 {
-    // TODO: Set run bit to 0
     // Try to find the specified address
     uint8_t *mem_addr = find_address(cpu_state, addr);
     if (mem_addr == NULL) {

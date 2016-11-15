@@ -57,62 +57,6 @@ void help() {
 
 /***************************************************************/
 /*                                                             */
-/* Procedure : cycle                                           */
-/*                                                             */
-/* Purpose   : Execute a cycle                                 */
-/*                                                             */
-/***************************************************************/
-void cycle(cpu_state_t *cpu_state) {
-  process_instruction(cpu_state);
-  cpu_state->instr_count += 1;
-}
-
-/***************************************************************/
-/*                                                             */
-/* Procedure : run n                                           */
-/*                                                             */
-/* Purpose   : Simulate MIPS for n cycles                      */
-/*                                                             */
-/***************************************************************/
-void run(cpu_state_t *cpu_state, int num_cycles) {
-  int i;
-
-  if (cpu_state->halted) {
-    printf("Can't simulate, Simulator is halted\n\n");
-    return;
-  }
-
-  printf("Simulating for %d cycles...\n\n", num_cycles);
-  for (i = 0; i < num_cycles; i++) {
-    if (cpu_state->halted) {
-	    printf("Simulator halted\n\n");
-	    break;
-    }
-    cycle(cpu_state);
-  }
-}
-
-/***************************************************************/
-/*                                                             */
-/* Procedure : go                                              */
-/*                                                             */
-/* Purpose   : Simulate MIPS until HALTed                      */
-/*                                                             */
-/***************************************************************/
-void go(cpu_state_t *cpu_state) {
-  if (cpu_state->halted) {
-    printf("Can't simulate, Simulator is halted\n\n");
-    return;
-  }
-
-  printf("Simulating...\n\n");
-  while (!cpu_state->halted)
-    cycle(cpu_state);
-  printf("Simulator halted\n\n");
-}
-
-/***************************************************************/
-/*                                                             */
 /* Procedure : mdump                                           */
 /*                                                             */
 /* Purpose   : Dump a word-aligned region of memory to the     */
