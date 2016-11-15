@@ -77,14 +77,14 @@ void cycle(cpu_state_t *cpu_state) {
 void run(cpu_state_t *cpu_state, int num_cycles) {
   int i;
 
-  if (!cpu_state->running) {
+  if (cpu_state->halted) {
     printf("Can't simulate, Simulator is halted\n\n");
     return;
   }
 
   printf("Simulating for %d cycles...\n\n", num_cycles);
   for (i = 0; i < num_cycles; i++) {
-    if (!cpu_state->running) {
+    if (cpu_state->halted) {
 	    printf("Simulator halted\n\n");
 	    break;
     }
@@ -100,13 +100,13 @@ void run(cpu_state_t *cpu_state, int num_cycles) {
 /*                                                             */
 /***************************************************************/
 void go(cpu_state_t *cpu_state) {
-  if (!cpu_state->running) {
+  if (cpu_state->halted) {
     printf("Can't simulate, Simulator is halted\n\n");
     return;
   }
 
   printf("Simulating...\n\n");
-  while (cpu_state->running)
+  while (!cpu_state->halted)
     cycle(cpu_state);
   printf("Simulator halted\n\n");
 }
@@ -426,7 +426,7 @@ static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 
     // Initialize the processor memory, and mark the CPU as running on success
     int rc = mem_load_program(cpu_state, program_path);
-    cpu_state->running = rc == 0;
+    cpu_state->halted = (rc != 0);
     return rc;
 }
 

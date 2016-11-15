@@ -93,7 +93,7 @@ void process_instruction(cpu_state_t *cpu_state)
                             fprintf(stderr, "Encountered unknown/unimplemented "
                                     "7-bit rtype function code 0x%02x. Ending "
                                     "Simulation.\n", rtype_funct7);
-                            cpu_state->running = false;
+                            cpu_state->halted = true;
                             break;
                     }
                     break;
@@ -102,7 +102,7 @@ void process_instruction(cpu_state_t *cpu_state)
                     fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
                             "rtype function code 0x%01x. Ending Simulation.\n",
                             rtype_funct3);
-                    cpu_state->running = false;
+                    cpu_state->halted = true;
                     break;
             }
             break;
@@ -123,6 +123,7 @@ void process_instruction(cpu_state_t *cpu_state)
                     fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
                             "itype function code 0x%01x. Ending Simulation.\n",
                             rtype_funct3);
+                    cpu_state->halted = true;
             }
 
         // General system operation
@@ -138,7 +139,7 @@ void process_instruction(cpu_state_t *cpu_state)
                     fprintf(stderr, "Encountered unknown/unimplemented 12-bit "
                             "system function code 0x%03x. Ending simulation.\n",
                             sys_funct12);
-                    cpu_state->running = false;
+                    cpu_state->halted = false;
                     break;
             }
             break;
@@ -146,7 +147,7 @@ void process_instruction(cpu_state_t *cpu_state)
         default:
             fprintf(stderr, "Encountered unknown/unimplemented opcode 0x%02x. "
                     "Ending Simulation.\n", opcode);
-            cpu_state->running = false;
+            cpu_state->halted = false;
             break;
     }
 

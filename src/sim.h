@@ -28,7 +28,7 @@
 #include "memory.h"                     // Interface to the processor memory
 
 typedef struct cpu_state {
-    bool running;                       // Indicates if the CPU is running
+    bool halted;                        // Indicates if the CPU is halted
     int instr_count;                    // Number of simulated instructions
     uint32_t pc;                        // Current program counter
     int num_mem_regions;                // Number of memory regions
