@@ -314,7 +314,7 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
                 &quit)) {
         return quit;
     } else {
-        fprintf(stderr, "Invalid command '%s' specified.\n", command);
+        fprintf(stderr, "Error: Invalid command '%s' specified.\n", command);
         return false;
     }
 }
@@ -368,10 +368,15 @@ static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
     cpu_state->instr_count = 0;
     memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
 
-    // Initialize the processor memory, and mark the CPU as running on success
-    int rc = mem_load_program(cpu_state, program_path);
-    cpu_state->halted = (rc != 0);
-    return rc;
+    // If a program was specified, then load it into the processor memory
+    if (program_path == NULL) {
+        cpu_state->halted = true;
+        return 0;
+    } else {
+        int rc = mem_load_program(cpu_state, program_path);
+        cpu_state->halted = (rc != 0);
+        return rc;
+    }
 }
 
 /**

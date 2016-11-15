@@ -355,6 +355,8 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
+    assert(program_path != NULL);
+
     // Allocate the memory region metadata for the processor
     cpu_state->num_mem_regions = NUM_MEM_REGIONS;
     size_t region_size = sizeof(cpu_state->mem_regions[0]);
