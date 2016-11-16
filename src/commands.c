@@ -26,11 +26,17 @@
  * Parsing Helper Functions
  *----------------------------------------------------------------------------*/
 
-static int parse_int(const char *arg_str, int *val)
+/**
+ * parse_int
+ *
+ * Attempts to parse the given string as a decimal integer. If successful, the
+ * value pointer is updated with the integer value of the string.
+ **/
+static int parse_int(const char *string, int *val)
 {
     // Attempt to parse the string as a signed long
     errno = 0;
-    long parsed_val = strtol(arg_str, NULL, 10);
+    long parsed_val = strtol(string, NULL, 10);
     if (errno != 0) {
         return -errno;
     } else if (parsed_val < INT_MIN || parsed_val > INT_MAX) {
@@ -41,7 +47,6 @@ static int parse_int(const char *arg_str, int *val)
     *val = (int)parsed_val;
     return 0;
 }
-
 
 /*----------------------------------------------------------------------------
  * Step and Go Commands

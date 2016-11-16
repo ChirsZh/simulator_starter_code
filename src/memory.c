@@ -223,6 +223,27 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
  *----------------------------------------------------------------------------*/
 
 /**
+ * parse_uint32
+ *
+ * Attempts to parse the given string as a 32-bit hexadecimal unsigned integer.
+ * If successful, the value pointer is updated with the string's value.
+ **/
+static int parse_uint32(const char *string, uint32_t *val)
+{
+    // Attempt to parse the string as an unsigned long long
+    errno = 0;
+    unsigned long long parsed_val = strtoull(string, NULL, 16);
+    if (errno != 0) {
+        return -errno;
+    } else if (parsed_val > (unsigned long long)UINT32_MAX) {
+        return -ERANGE;
+    }
+
+    *val = (uint32_t)parsed_val;
+    return 0;
+}
+
+/**
  * load_file
  *
  * Loads the given hex file into the specified memory region, allocating the
@@ -251,23 +272,19 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
     while (len >= 0)
     {
         // Strip the newline and parse the line as a 32-bit hexadecimal integer
-        errno = 0;
         line[len] = '\0';
-        unsigned long long value = strtoull(line, NULL, 16);
-        if (errno != 0) {
-            len = -errno;
-            fprintf(stderr, "Error: %s: Line %d: Unable to parse '%s' as an "
-                    "32-bit hexadecimal integer.\n", hex_path, line_num, line);
-            break;
-        } else if (value > (unsigned long long)UINT32_MAX) {
-            len = -ERANGE;
-            fprintf(stderr, "Error: %s: Line %d: Integer '%s' is too large to "
-                    "fit in a 32-bit value.\n", hex_path, line_num, line);
+        uint32_t value;
+        int rc = parse_uint32(line, &value);
+        if (rc < 0) {
+            len = rc;
+            fprintf(stderr, "Error: %s: Line %d: Unable to parse '%s' as a "
+                    "32-bit unsigned hexadecimal integer.\n", hex_path,
+                    line_num, line);
             break;
         }
 
         // Write the value to memory, and increment the offset into memory
-        write_little_endian(&mem_region->mem[offset], (uint32_t)value);
+        write_little_endian(&mem_region->mem[offset], value);
         offset += sizeof(uint32_t);
 
         // Get the next line of the file
