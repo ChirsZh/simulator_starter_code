@@ -24,9 +24,12 @@
 #include "memory.h"         // Interface to the processor memory
 #include "commands.h"       // Interface to the shell commands
 
-/* The maximum number of command line arguments that can be specified, including
- * the program name. */
-const int MAX_CMDLINE_ARGS  = 2;
+/*----------------------------------------------------------------------------
+ * Internal Definitions
+ *----------------------------------------------------------------------------*/
+
+// The expected number of command line arguments, including the program name
+const int NUM_CMDLINE_ARGS  = 2;
 
 // The maximum line length the user can type in for a command
 #define COMMAND_MAX_LEN     100
@@ -123,7 +126,7 @@ void rdump(const cpu_state_t *cpu_state, FILE * dumpsim_file) {
  **/
 static void print_usage()
 {
-    fprintf(stdout, "Usage: riscv-sim [program]\n");
+    fprintf(stdout, "Usage: riscv-sim <program>\n");
     return;
 }
 
@@ -136,19 +139,14 @@ static void print_usage()
 static int parse_arguments(int argc, char *argv[], char **program_path)
 {
     // Check that the proper number of command line arguments was specified
-    if (argc > MAX_CMDLINE_ARGS) {
-        fprintf(stderr, "Error: Too many command line arguments specified.\n");
+    if (argc != NUM_CMDLINE_ARGS) {
+        fprintf(stderr, "Error: Improper number of command line arguments.\n");
         print_usage();
         return -EINVAL;
     }
 
-    // If it was specified, parse the program path from the command line
-    if (argc > 1) {
-        *program_path = argv[1];
-    } else {
-        *program_path = NULL;
-    }
-
+    // Get the program path from the command line arguments
+    *program_path = argv[1];
     return 0;
 }
 
@@ -364,19 +362,14 @@ static void simulator_repl(cpu_state_t *cpu_state)
  **/
 static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 {
-    // Clear out the CPU state, and Initialize the CPU state fields
+    // Clear out the CPU state, and initialize the CPU state fields
     cpu_state->instr_count = 0;
     memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
 
     // If a program was specified, then load it into the processor memory
-    if (program_path == NULL) {
-        cpu_state->halted = true;
-        return 0;
-    } else {
-        int rc = mem_load_program(cpu_state, program_path);
-        cpu_state->halted = (rc != 0);
-        return rc;
-    }
+    int rc = mem_load_program(cpu_state, program_path);
+    cpu_state->halted = (rc != 0);
+    return rc;
 }
 
 /**
