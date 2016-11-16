@@ -219,7 +219,7 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 }
 
 /*----------------------------------------------------------------------------
- * Shell Interface Functions
+ * Memory Shell Interface
  *----------------------------------------------------------------------------*/
 
 /**
@@ -340,9 +340,8 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
     size_t len = strlen(program_path) + strlen(extension);
     char *hex_path = malloc(len * sizeof(*hex_path));
     if (hex_path == NULL) {
-        errno = ENOMEM;
-        perror("Error: Unable to allocate the hex file path string");
-        exit(errno);
+        fprintf(stderr, "Unable to allocate the hex file path string.\n");
+        exit(ENOMEM);
     }
 
     // Combine the program path and extension to get the hex file's path
@@ -353,9 +352,8 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
     FILE *hex_file = fopen(hex_path, "r");
     if (hex_file == NULL) {
         int rc = -errno;
-        fprintf(stderr, "Error: %s: Unable to open file", hex_path);
-        errno = rc;
-        perror("");
+        fprintf(stderr, "Error: %s: Unable to open file: %s.\n", hex_path,
+                strerror(errno));
         free(hex_path);
         return rc;
     }
