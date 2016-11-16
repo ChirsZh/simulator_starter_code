@@ -67,6 +67,14 @@ void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
  *----------------------------------------------------------------------------*/
 
 /**
+ * mem_init
+ *
+ * Allocates the memory subsystem structure of the CPU state, and adds default
+ * values to it. Exits the program on failure.
+ **/
+void mem_init(struct cpu_state *cpu_state);
+
+/**
  * mem_load_program
  *
  * Initializes the memory subsystem part of the CPU state. This loads the memory

@@ -223,6 +223,28 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
  *----------------------------------------------------------------------------*/
 
 /**
+ * mem_init
+ *
+ * Allocates the memory subsystem structure of the CPU state, and adds default
+ * values to it.
+ **/
+void mem_init(cpu_state_t *cpu_state)
+{
+    // Set the number of memory regions, and the size of each structure
+    cpu_state->num_mem_regions = NUM_MEM_REGIONS;
+    size_t region_size = sizeof(cpu_state->mem_regions[0]);
+
+    // Allocate the memory region metadata for the processor
+    cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
+    if (cpu_state->mem_regions == NULL) {
+        fprintf(stderr, "Error: Unable to allocate a memory regions struct.\n");
+        exit(ENOMEM);
+    }
+
+    return;
+}
+
+/**
  * parse_uint32
  *
  * Attempts to parse the given string as a 32-bit hexadecimal unsigned integer.
@@ -361,7 +383,6 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
     return rc;
 }
 
-
 /**
  * mem_load_program
  *
@@ -373,16 +394,6 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
     assert(program_path != NULL);
-
-    // Allocate the memory region metadata for the processor
-    cpu_state->num_mem_regions = NUM_MEM_REGIONS;
-    size_t region_size = sizeof(cpu_state->mem_regions[0]);
-    cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
-    if (cpu_state->mem_regions == NULL) {
-        errno = ENOMEM;
-        perror("Error: Unable to allocate memory regions structure");
-        exit(errno);
-    }
 
     // Initialize each memory region, loading data from the associated hex file
     for (int i = 0; i < cpu_state->num_mem_regions; i++)
