@@ -126,7 +126,7 @@ void rdump(const cpu_state_t *cpu_state, FILE * dumpsim_file) {
  **/
 static void print_usage()
 {
-    fprintf(stdout, "Usage: riscv-sim <program>\n");
+    fprintf(stdout, "Usage: riscv-sim <program (executable)>\n");
     return;
 }
 
@@ -393,6 +393,8 @@ int main(int argc, char *argv[])
     cpu_state_t cpu_state;
     rc = init_cpu_state(&cpu_state, program_path);
     if (rc < 0) {
+        fprintf(stderr, "Failed to load the first program. Not starting the "
+                "simulator.\n");
         return -rc;
     }
 
