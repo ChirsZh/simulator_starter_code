@@ -28,6 +28,9 @@
  * Definitions
  *----------------------------------------------------------------------------*/
 
+// The number of memory segments in the processor
+#define NUM_MEM_REGIONS         5
+
 // Forward declaration of the CPU state struct
 struct cpu_state;
 
@@ -37,6 +40,12 @@ typedef struct mem_region {
     uint32_t size;          // Size of the memory region in bytes
     uint8_t *mem;           // Actual memory buffer for the region
 } mem_region_t;
+
+// The representation for all the memory in the processor
+typedef struct memory {
+    int num_mem_regions;                        // Number of memory regions
+    mem_region_t mem_regions[NUM_MEM_REGIONS];  // Memory regions in the CPU
+} memory_t;
 
 /*----------------------------------------------------------------------------
  * Interface to the Core Simulator
@@ -65,14 +74,6 @@ void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
 /*----------------------------------------------------------------------------
  * Interface to the Shell
  *----------------------------------------------------------------------------*/
-
-/**
- * mem_init
- *
- * Allocates the memory subsystem structure of the CPU state, and adds default
- * values to it. Exits the program on failure.
- **/
-void mem_init(struct cpu_state *cpu_state);
 
 /**
  * mem_load_program

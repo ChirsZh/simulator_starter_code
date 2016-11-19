@@ -49,7 +49,7 @@
 const size_t MEM_FILE_LINE_LEN = 8 + 1;
 
 // The starting addresses of each memory segment in the processor
-static uint32_t MEM_REGION_STARTS[] = {
+static uint32_t MEM_REGION_STARTS[NUM_MEM_REGIONS] = {
     USER_TEXT_START,
     USER_DATA_START,
     USER_STACK_START,
@@ -58,7 +58,7 @@ static uint32_t MEM_REGION_STARTS[] = {
 };
 
 // The sizes of each memory segment in the processor
-static const uint32_t MEM_REGION_MAX_SIZES[] = {
+static const uint32_t MEM_REGION_MAX_SIZES[NUM_MEM_REGIONS] = {
     USER_DATA_START - USER_TEXT_START,
     USER_STACK_START - USER_DATA_START,
     KERNEL_TEXT_START - USER_STACK_START,
@@ -67,16 +67,13 @@ static const uint32_t MEM_REGION_MAX_SIZES[] = {
 };
 
 // The file extensions for each memory region
-static const char *const MEM_FILE_EXTENSIONS[] = {
+static const char *const MEM_FILE_EXTENSIONS[NUM_MEM_REGIONS] = {
     ".text.hex",
     ".data.hex",
     ".stack.hex",
     ".ktext.hex",
     ".kdata.hex",
 };
-
-// The number of memory segments in the processor
-static const int NUM_MEM_REGIONS = array_len(MEM_REGION_STARTS);
 
 /*----------------------------------------------------------------------------
  * Shared Helper Functions
@@ -151,12 +148,12 @@ static uint32_t read_little_endian(const uint8_t *mem_addr)
  * Find the address on the host machine that corresponds to the address in the
  * simulator. If no such address exists, return NULL.
  **/
-static uint8_t *find_address(const cpu_state_t *cpu_state, uint32_t addr)
+static uint8_t *find_address(const memory_t *memory, uint32_t addr)
 {
     // Iterate over the memory regions, checking if the address lies in them
-    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    for (int i = 0; i < memory->num_mem_regions; i++)
     {
-        const mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        const mem_region_t *mem_region = &memory->mem_regions[i];
         uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
 
         if (mem_region->base_addr <= addr && addr < region_end_addr) {
@@ -183,7 +180,7 @@ static uint8_t *find_address(const cpu_state_t *cpu_state, uint32_t addr)
 uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 {
     // Try to find the specified address
-    uint8_t *mem_addr = find_address(cpu_state, addr);
+    uint8_t *mem_addr = find_address(&cpu_state->memory, addr);
     if (mem_addr == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
                 "simulation.\n", addr);
@@ -205,7 +202,7 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 {
     // Try to find the specified address
-    uint8_t *mem_addr = find_address(cpu_state, addr);
+    uint8_t *mem_addr = find_address(&cpu_state->memory, addr);
     if (mem_addr == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
                 "simulation.\n", addr);
@@ -221,28 +218,6 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 /*----------------------------------------------------------------------------
  * Memory Shell Interface
  *----------------------------------------------------------------------------*/
-
-/**
- * mem_init
- *
- * Allocates the memory subsystem structure of the CPU state, and adds default
- * values to it.
- **/
-void mem_init(cpu_state_t *cpu_state)
-{
-    // Set the number of memory regions, and the size of each structure
-    cpu_state->num_mem_regions = NUM_MEM_REGIONS;
-    size_t region_size = sizeof(cpu_state->mem_regions[0]);
-
-    // Allocate the memory region metadata for the processor
-    cpu_state->mem_regions = calloc(cpu_state->num_mem_regions, region_size);
-    if (cpu_state->mem_regions == NULL) {
-        fprintf(stderr, "Error: Unable to allocate a memory regions struct.\n");
-        exit(ENOMEM);
-    }
-
-    return;
-}
 
 /**
  * parse_uint32
@@ -391,13 +366,17 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
-    assert(program_path != NULL);
+    // Set the number of memory regions, and zero out the mem regions array
+    memory_t *memory = &cpu_state->memory;
+    memory->num_mem_regions = NUM_MEM_REGIONS;
+    memset(memory->mem_regions, 0, sizeof(memory->mem_regions));
 
     // Initialize each memory region, loading data from the associated hex file
-    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    int rc = 0;
+    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
     {
         // Setup the metadata for the memory region
-        mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
         mem_region->base_addr = MEM_REGION_STARTS[i];
 
         // Try to load the memory section from the associated hex file
@@ -406,13 +385,13 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
         int rc = load_mem_region(mem_region, program_path, extension, max_size);
         if (rc < 0) {
             mem_unload_program(cpu_state);
-            return rc;
+            break;
         }
     }
 
     // Set the PC to the start of the text section
     cpu_state->pc = USER_TEXT_START;
-    return 0;
+    return rc;
 }
 
 /**
@@ -421,18 +400,16 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
  * Unloads a program previously loaded by mem_load_program. This cleans up and
  * frees the allocated memory for the processor's memory region.
  **/
-void mem_unload_program(cpu_state_t *cpu_state)
+void mem_unload_program(struct cpu_state *cpu_state)
 {
     // Free each of the memory regions, if it has an allocated memory region
-    for (int i = 0; i < cpu_state->num_mem_regions; i++)
+    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
     {
-        mem_region_t *mem_region = &cpu_state->mem_regions[i];
+        mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
         if (mem_region->mem != NULL) {
             free(mem_region->mem);
         }
     }
 
-    // Free the memory region metadata structures
-    free(cpu_state->mem_regions);
     return;
 }

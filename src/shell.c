@@ -367,7 +367,6 @@ static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
     memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
 
     // Initialize the memory subsystem, and load the program into memory
-    mem_init(cpu_state);
     int rc = mem_load_program(cpu_state, program_path);
     cpu_state->halted = (rc != 0);
 
