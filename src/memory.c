@@ -18,16 +18,16 @@
  *                 You should only add files or change sim.c!                 *
  *----------------------------------------------------------------------------*/
 
-#include <stdlib.h>         // Malloc and related functions
-#include <stdio.h>          // Printf and related functions
-#include <stdint.h>         // Fixed-size integral types
+#include <stdlib.h>                 // Malloc and related functions
+#include <stdio.h>                  // Printf and related functions
+#include <stdint.h>                 // Fixed-size integral types
 
-#include <assert.h>         // Assert macro
-#include <errno.h>          // Error codes and perror
-#include <string.h>         // String manipulation functions and memset
+#include <assert.h>                 // Assert macro
+#include <errno.h>                  // Error codes and perror
+#include <string.h>                 // String manipulation functions and memset
 
-#include "sim.h"            // Interface to the core simulator
-#include "memory.h"         // This file's interface
+#include "sim.h"                    // Interface to the core simulator
+#include "memory.h"                 // This file's interface
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -37,42 +37,56 @@
 #define array_len(x) (sizeof(x) / sizeof(x[0]))
 
 // The starting addresses of the user's stack, data, and text segments
-#define USER_TEXT_START     0x00400000
-#define USER_DATA_START     0x10000000
-#define USER_STACK_START    0x7ff00000
+#define USER_TEXT_START             0x00400000
+#define USER_DATA_START             0x10000000
+#define USER_STACK_START            0x7ff00000
 
 // The starting addresses and sizes of the kernel's data, and text segments
-#define KERNEL_TEXT_START   0x80000000
-#define KERNEL_DATA_START   0x90000000
+#define KERNEL_TEXT_START           0x80000000
+#define KERNEL_DATA_START           0x90000000
 
 // The length of a line in a hex file, including the newline character
-const size_t MEM_FILE_LINE_LEN = 8 + 1;
+#define MEM_FILE_LINE_LEN           (8 + 1)
 
-// The starting addresses of each memory segment in the processor
-static uint32_t MEM_REGION_STARTS[NUM_MEM_REGIONS] = {
-    USER_TEXT_START,
-    USER_DATA_START,
-    USER_STACK_START,
-    KERNEL_TEXT_START,
-    KERNEL_DATA_START,
+// The user text memory region, containing the user program
+static const mem_region_t USER_TEXT_REGION = {
+    .base_addr = USER_TEXT_START,
+    .max_size = USER_DATA_START - USER_TEXT_START,
+    .hex_extension = ".text.hex",
 };
 
-// The sizes of each memory segment in the processor
-static const uint32_t MEM_REGION_MAX_SIZES[NUM_MEM_REGIONS] = {
-    USER_DATA_START - USER_TEXT_START,
-    USER_STACK_START - USER_DATA_START,
-    KERNEL_TEXT_START - USER_STACK_START,
-    KERNEL_DATA_START - KERNEL_TEXT_START,
-    UINT32_MAX - KERNEL_DATA_START,
+// The user data memory region, containing user global variables
+static const mem_region_t USER_DATA_REGION = {
+    .base_addr = USER_DATA_START,
+    .max_size = USER_STACK_START - USER_DATA_START,
+    .hex_extension = ".data.hex"
 };
 
-// The file extensions for each memory region
-static const char *const MEM_FILE_EXTENSIONS[NUM_MEM_REGIONS] = {
-    ".text.hex",
-    ".data.hex",
-    ".stack.hex",
-    ".ktext.hex",
-    ".kdata.hex",
+// The default parameters stack memory region, containing local values in the program
+static const mem_region_t STACK_REGION = {
+    .base_addr = USER_STACK_START,
+    .max_size = KERNEL_DATA_START - USER_STACK_START,
+    .hex_extension = NULL,
+};
+
+// The default parameters for the kernel text region
+static const mem_region_t KERNEL_TEXT_REGION = {
+    .base_addr = KERNEL_TEXT_START,
+    .max_size = KERNEL_DATA_START - KERNEL_TEXT_START,
+    .hex_extension = ".ktext.hex",
+};
+
+// The kernel data region, containing kernel global variables
+static const mem_region_t KERNEL_DATA_REGION = {
+    .base_addr = KERNEL_DATA_START,
+    .max_size = UINT32_MAX - KERNEL_DATA_START,
+    .hex_extension = ".kdata.hex",
+};
+
+// An array of all the memory regions, and the number of memory regions
+static const mem_region_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
+        &USER_TEXT_REGION, &USER_DATA_REGION, &STACK_REGION,
+        &KERNEL_TEXT_REGION, &KERNEL_DATA_REGION,
 };
 
 /*----------------------------------------------------------------------------
@@ -250,14 +264,6 @@ static int parse_uint32(const char *string, uint32_t *val)
 static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
         const char *hex_path)
 {
-    // Check that the size does not exceed the max, and allocate memory for it
-    mem_region->mem = malloc(mem_region->size * sizeof(mem_region->mem[0]));
-    if (mem_region->mem == NULL)  {
-        errno = ENOMEM;
-        perror("Error: Unable to allocate the processor memory regions");
-        return -errno;
-    }
-
     // Read the first line of the file, allowing it to allocate a line buffer
     char *line = NULL;
     size_t buf_size = 0;
@@ -302,34 +308,35 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
 }
 
 /**
- * load_program
+ * malloc_mem_region
  *
- * Loads the given memory region from its corresponding hex file. The hex file
- * is the concatenation of the specified program path and the extension. The
- * file cannot exceed the given maximum size for this memory region.
+ * Allocates the memory for the given region, which will have mem_region->size
+ * bytes in it. Exits on error
  **/
-static int load_mem_region(mem_region_t *mem_region, const char *program_path,
-        const char *extension, uint32_t max_size)
+static void malloc_mem_region(mem_region_t *mem_region)
 {
-    // Allocate a new string to hold the program path and extension
-    size_t len = strlen(program_path) + strlen(extension);
-    char *hex_path = malloc(len * sizeof(*hex_path));
-    if (hex_path == NULL) {
-        fprintf(stderr, "Unable to allocate the hex file path string.\n");
+    mem_region->mem = malloc(mem_region->size * sizeof(mem_region->mem[0]));
+    if (mem_region->mem == NULL) {
+        fprintf(stderr, "Error: Unable to allocate processor memory region.\n");
         exit(ENOMEM);
     }
+    return;
+}
 
-    // Combine the program path and extension to get the hex file's path
-    strcpy(hex_path, program_path);
-    strcat(hex_path, extension);
-
-    // Try to open the file
+/**
+ * load_mem_region
+ *
+ * Loads the memory region from its corresponding hex file. The size of this
+ * file cannot exceed the max_size for the memory region.
+ **/
+static int load_mem_region(mem_region_t *mem_region, char *hex_path)
+{
+    // Try to open the hex file
     FILE *hex_file = fopen(hex_path, "r");
     if (hex_file == NULL) {
         int rc = -errno;
         fprintf(stderr, "Error: %s: Unable to open file: %s.\n", hex_path,
                 strerror(errno));
-        free(hex_path);
         return rc;
     }
 
@@ -341,19 +348,44 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
     size_t num_lines = file_size / MEM_FILE_LINE_LEN;
     mem_region->size = num_lines * sizeof(uint32_t);
 
-    // If the memory region size does not exceed the max, load the file
-    int rc;
-    if (mem_region->size <= max_size) {
-        rc = load_hex_file(mem_region, hex_file, hex_path);
-    } else {
+    // Allocate memory for the region only if the size does not exceed the max
+    if (mem_region->size > mem_region->max_size) {
         fprintf(stderr, "Error: %s: File is too large for memory region.\n",
                 hex_path);
-        rc = -EFBIG;
+        return -EFBIG;
+    }
+    malloc_mem_region(mem_region);
+
+    // Try to parse and load the file into memory
+    int rc = load_hex_file(mem_region, hex_file, hex_path);
+    if (rc < 0) {
+        free(mem_region->mem);
+        mem_region->mem = NULL;
     }
 
-    // Free the buffer for the hex path
-    free(hex_path);
     return rc;
+}
+
+/**
+ * join_strings
+ *
+ * Joins the two given strings into a new string. The new string is allocated by
+ * malloc, and must be freed by the caller. Exits on error.
+ **/
+static char *join_strings(const char *string1, const char *string2)
+{
+    // Allocate a string that can hold the concatenation of the two strings
+    size_t len = strlen(string1) + strlen(string2);
+    char *string3 = malloc((len + 1) * sizeof(string3[0]));
+    if (string3 == NULL) {
+        fprintf(stderr, "Error: Unable to allocate buffer for new string.\n");
+        exit(ENOMEM);
+    }
+
+    // Combine the two strings into the allocated string
+    strcpy(string3, string1);
+    strcat(string3, string2);
+    return string3;
 }
 
 /**
@@ -362,34 +394,47 @@ static int load_mem_region(mem_region_t *mem_region, const char *program_path,
  * Initializes the memory subsystem part of the CPU state. This loads the memory
  * regions from the specified program into the CPU memory, and initializes them
  * to the values specified in the respective hex files. Program name should be
- * the path to the assembly file without the extension.
+ * the path to the executable file.
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
+    assert(array_len(cpu_state->memory.mem_regions) == array_len(MEM_REGIONS));
+
     // Set the number of memory regions, and zero out the mem regions array
     memory_t *memory = &cpu_state->memory;
-    memory->num_mem_regions = NUM_MEM_REGIONS;
+    memory->num_mem_regions = array_len(MEM_REGIONS);
     memset(memory->mem_regions, 0, sizeof(memory->mem_regions));
 
     // Initialize each memory region, loading data from the associated hex file
     int rc = 0;
-    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
+    for (int i = 0; i < memory->num_mem_regions; i++)
     {
-        // Setup the metadata for the memory region
-        mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
-        mem_region->base_addr = MEM_REGION_STARTS[i];
+        // Copy the default values for the memory region in
+        mem_region_t *mem_region = &memory->mem_regions[i];
+        memcpy(mem_region, MEM_REGIONS[i], sizeof(*MEM_REGIONS[i]));
 
-        // Try to load the memory section from the associated hex file
-        const char *extension = MEM_FILE_EXTENSIONS[i];
-        size_t max_size = MEM_REGION_MAX_SIZES[i];
-        int rc = load_mem_region(mem_region, program_path, extension, max_size);
+        /* If the memory region doesn't have a hex file, we only allocate it. In
+         * this case, the size of the memory region is max_size. */
+        if (mem_region->hex_extension == NULL) {
+            mem_region->size = mem_region->max_size;
+            malloc_mem_region(mem_region);
+            continue;
+        }
+
+        /* Otherwise, combine the program path and hex extension to get the path
+         * to the hex file, load it, then free the buffer. */
+        char *hex_path = join_strings(program_path, mem_region->hex_extension);
+        rc = load_mem_region(mem_region, hex_path);
+        free(hex_path);
+
+        // Free the other memory regions if we failed to load this one
         if (rc < 0) {
             mem_unload_program(cpu_state);
             break;
         }
     }
 
-    // Set the PC to the start of the text section
+    // Set the PC to the start of the user text section
     cpu_state->pc = USER_TEXT_START;
     return rc;
 }
@@ -403,9 +448,10 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 void mem_unload_program(struct cpu_state *cpu_state)
 {
     // Free each of the memory regions, if it has an allocated memory region
-    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
+    memory_t *memory = &cpu_state->memory;
+    for (int i = 0; i < memory->num_mem_regions; i++)
     {
-        mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
+        mem_region_t *mem_region = &memory->mem_regions[i];
         if (mem_region->mem != NULL) {
             free(mem_region->mem);
         }

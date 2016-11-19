@@ -22,7 +22,7 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
-#include <stdint.h>         // Fixed-size integral types
+#include <stdint.h>             // Fixed-size integral types
 
 /*----------------------------------------------------------------------------
  * Definitions
@@ -36,9 +36,11 @@ struct cpu_state;
 
 // The representation of a region/segment in memory
 typedef struct mem_region {
-    uint32_t base_addr;     // Base address of the memory region
-    uint32_t size;          // Size of the memory region in bytes
-    uint8_t *mem;           // Actual memory buffer for the region
+    uint32_t base_addr;         // Base address of the memory region
+    uint32_t max_size;          // Maximum permitted size for the memory region
+    uint32_t size;              // Size of the memory region in bytes
+    uint8_t *mem;               // Actual memory buffer for the region
+    const char *hex_extension;  // File extension for the hex file the region
 } mem_region_t;
 
 // The representation for all the memory in the processor
