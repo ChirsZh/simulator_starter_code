@@ -264,47 +264,43 @@ static int parse_uint32(const char *string, uint32_t *val)
 static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
         const char *hex_path)
 {
-    // Read the first line of the file, allowing it to allocate a line buffer
+    // Initialize the loop variables
     char *line = NULL;
     size_t buf_size = 0;
-    ssize_t len = getline(&line, &buf_size, hex_file);
+    size_t line_num = 0;
 
     // Read each line of the file, parse it as hex, and load it into memory
-    int line_num = 0;
-    size_t offset = 0;
-    while (len >= 0)
+    ssize_t rc = getline(&line, &buf_size, hex_file);
+    while (rc >= 0)
     {
-        // Strip the newline and parse the line as a 32-bit hexadecimal integer
-        line[len] = '\0';
+        // Strip the newline character from the file's line
+        size_t newline_index = strcspn(line, "\r\n");
+        line[newline_index] = '\0';
+
+        // Parse the line as a 32-bit unsigned hexadecimal integer
         uint32_t value;
-        int rc = parse_uint32(line, &value);
+        rc = parse_uint32(line, &value);
         if (rc < 0) {
-            len = rc;
-            fprintf(stderr, "Error: %s: Line %d: Unable to parse '%s' as a "
+            fprintf(stderr, "Error: %s: Line %zu: Unable to parse '%s' as a "
                     "32-bit unsigned hexadecimal integer.\n", hex_path,
                     line_num, line);
             break;
         }
 
         // Write the value to memory, and increment the offset into memory
+        size_t offset = line_num * sizeof(uint32_t);
         write_little_endian(&mem_region->mem[offset], value);
-        offset += sizeof(uint32_t);
 
         // Get the next line of the file
-        len = getline(&line, &buf_size, hex_file);
+        rc = getline(&line, &buf_size, hex_file);
         line_num += 1;
     }
 
-    // If we failed while parsing, then free the memory buffer
-    len = (feof(hex_file)) ? 0 : len;
-    if (len < 0) {
-        free(mem_region->mem);
-        mem_region->mem = NULL;
-    }
-
     // Free the line buffer allocated by getline
-    free(line);
-    return len;
+    if (line != NULL) {
+        free(line);
+    }
+    return (feof(hex_file)) ? 0 : rc;
 }
 
 /**
