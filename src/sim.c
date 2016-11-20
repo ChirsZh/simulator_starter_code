@@ -11,35 +11,15 @@
  *
  * This is where you should add code and make modifications to implement the
  * rest of the instructions. You can also of course add additional files to
- * implement the simulator. Be sure to update the Makefile if you do.
+ * implement the simulator. The Makefile will automatically find any files you
+ * under, provided they are under the src directory.
  **/
 
 #include <stdio.h>          // Printf and related functions
 
-#include "sim.h"          // Defintions for the simulator
 #include "memory.h"         // Interface to the processor memory
 #include "riscv_isa.h"      // Definition of RISC-V opcodes
-
-uint32_t sign_extend_b2w(uint8_t c)
-{
-  return (c & 0x80) ? (c | 0xffffff80) : c;
-}
-
-uint32_t sign_extend_h2w(uint16_t c)
-{
-  return (c & 0x8000) ? (c | 0xffff8000) : c;
-}
-
-/****************************************************************/
-/*** you may add your own auxiliary functions below this line ***/
-
-
-
-
-
-
-/*** you may add your own auxiliary functions above this line ***/
-/****************************************************************/
+#include "sim.h"            // Defintions for the simulator
 
 /**
  * process_instruction
@@ -117,6 +97,7 @@ void process_instruction(cpu_state_t *cpu_state)
                         cpu_state->regs[rd] = cpu_state->regs[rs1] +
                                               itype_imm;
                     }
+                    cpu_state->pc = cpu_state->pc + sizeof(uint32_t);
                     break;
 
                 default:
@@ -124,7 +105,9 @@ void process_instruction(cpu_state_t *cpu_state)
                             "itype function code 0x%01x. Ending Simulation.\n",
                             rtype_funct3);
                     cpu_state->halted = true;
+                    break;
             }
+            break;
 
         // General system operation
         case OP_SYSTEM:
@@ -139,7 +122,7 @@ void process_instruction(cpu_state_t *cpu_state)
                     fprintf(stderr, "Encountered unknown/unimplemented 12-bit "
                             "system function code 0x%03x. Ending simulation.\n",
                             sys_funct12);
-                    cpu_state->halted = false;
+                    cpu_state->halted = true;
                     break;
             }
             break;
@@ -147,7 +130,7 @@ void process_instruction(cpu_state_t *cpu_state)
         default:
             fprintf(stderr, "Encountered unknown/unimplemented opcode 0x%02x. "
                     "Ending Simulation.\n", opcode);
-            cpu_state->halted = false;
+            cpu_state->halted = true;
             break;
     }
 
