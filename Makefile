@@ -57,7 +57,7 @@ RISCV_OBJCOPY_FLAGS = -O binary
 # The compiler for hex files, which convert copied binary to ASCII hex files,
 # where there is one word per line.
 HEX_CC = hexdump
-HEX_CFLAGS = -e '4/1 "%02X" "\n"'
+HEX_CFLAGS = -e '1/4 "%08X" "\n"'
 
 # The runtime environment directory, which has the startup file for programs
 447_RUNTIME_DIR = 447runtime
