@@ -82,7 +82,7 @@ assemble: $(TEST_SECTIONS_HEX)
 
 # Extract the given section from the program ELF file, generating a binary
 $(TEST_EXECUTABLE).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE)
-	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j $* $^ $@
+	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
 # Compile the test program with the startup file to create an executable
 $(TEST_EXECUTABLE): $(TEST) $(RISCV_STARTUP_FILE)
