@@ -126,7 +126,8 @@ void rdump(const cpu_state_t *cpu_state, FILE * dumpsim_file) {
  **/
 static void print_usage()
 {
-    fprintf(stdout, "Usage: riscv-sim <program (executable)>\n");
+    fprintf(stdout, "Usage: riscv-sim <program>\n");
+    fprintf(stdout, "Example: riscv-sim inputs/addi.s\n");
     return;
 }
 
@@ -365,6 +366,12 @@ static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
     // Clear out the CPU state, and initialize the CPU state fields
     cpu_state->instr_count = 0;
     memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
+
+    // Strip the extension from the program path, if there is one
+    char *extension_start = strrchr(program_path, '.');
+    if (extension_start != NULL) {
+        extension_start[0] = '\0';
+    }
 
     // Initialize the memory subsystem, and load the program into memory
     int rc = mem_load_program(cpu_state, program_path);
