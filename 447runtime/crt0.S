@@ -1,5 +1,5 @@
 /**
- * crt0.s
+ * crt0.S
  *
  * The startup file for assembly test programs. This handles setting up the
  * environment, calling main, and then telling the simulator the program is
