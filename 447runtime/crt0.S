@@ -21,7 +21,7 @@
     .text
     .global _start
 _start:
-    lui sp, USER_STACK_START    // Initialize the stack pointer
+    lui sp, USER_STACK_START    // Initialize the stack pointer (x2)
 
     jal main                    // Call the user's main program
 
