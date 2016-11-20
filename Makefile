@@ -65,12 +65,14 @@ RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
 
 # The sections of the ELF executable that we parse out, and file extensions
 SECTIONS = text data ktext kdata
+ELF_EXTENSION = elf
 BINARY_EXTENSION = bin
 HEX_EXTENSION = hex
 
 # The name of the test, and the hex and ELF files generated for the given test
-TEST_EXECUTABLE = $(basename $(TEST))
-TEST_SECTIONS = $(addprefix $(TEST_EXECUTABLE).,$(SECTIONS))
+TEST_NAME = $(basename $(TEST))
+TEST_EXECUTABLE = $(addsuffix .$(ELF_EXTENSION), $(TEST_NAME))
+TEST_SECTIONS = $(addprefix $(TEST_NAME).,$(SECTIONS))
 TEST_SECTIONS_HEX = $(addsuffix .$(HEX_EXTENSION),$(TEST_SECTIONS))
 
 # Assemble the program specified by the user on the command line
@@ -81,16 +83,21 @@ assemble: $(TEST_SECTIONS_HEX)
 	$(HEX_CC) $(HEX_CFLAGS) $^ > $@
 
 # Extract the given section from the program ELF file, generating a binary
-$(TEST_EXECUTABLE).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE)
+$(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE)
 	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
-# Compile the test program with the startup file to create an executable
-$(TEST_EXECUTABLE): $(TEST) $(RISCV_STARTUP_FILE)
+# Compile the test program with a *.s extension to create an ELF file
+%.$(ELF_EXTENSION): %.s $(RISCV_STARTUP_FILE)
+	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
+
+# Compile the test program with a *.S extension to create an ELF file
+%.$(ELF_EXTENSION): %.S $(RISCV_STARTUP_FILE)
 	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
 
 # Clean up all the hex files in project directories
 assemble-veryclean:
-	rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)')
+	rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)' \
+			-o -name '*.$(ELF_EXTENSION)')
 
 ################################################################################
 # Compile the Simulator
