@@ -9,8 +9,8 @@
  *  - 2016: Brandon Perez
  **/
 
-// The start of the user stack segment, and its size in bytes
-#define USER_STACK_START    0x7ff00000
+// The top 20 bits of the start of the user's stack segment address
+#define USER_STACK_START    (0x7ff00000 >> (32 - 20))
 
 /**
  * _start
@@ -19,10 +19,9 @@
  * environment, invoking main, then ending the program
  **/
     .text
-    .align 4
     .global _start
 _start:
-    li sp, USER_STACK_START     // Initialize the stack pointer
+    lui sp, USER_STACK_START    // Initialize the stack pointer
 
     jal main                    // Call the user's main program
 
