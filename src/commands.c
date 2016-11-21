@@ -45,11 +45,14 @@ static int parse_int(const char *string, int *val)
     // TODO: Need to use endptr (second arg) to determine if conversion failed
     // Attempt to parse the string as a signed long
     errno = 0;
-    long parsed_val = strtol(string, NULL, 10);
+    char *end_str;
+    long parsed_val = strtol(string, &end_str, 10);
     if (errno != 0) {
         return -errno;
     } else if (parsed_val < INT_MIN || parsed_val > INT_MAX) {
         return -ERANGE;
+    } else if (*end_str != '\0') {
+        return -EINVAL;
     }
 
     // If we could parse the value, then cast it to an integer
