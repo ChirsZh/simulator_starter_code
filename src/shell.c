@@ -215,6 +215,11 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
     // Assume the command is not quit
     *quit = false;
 
+    // The command must be exactly one character long for short commands
+    if (strlen(command) != 1) {
+        return false;
+    }
+
     // Based on the first character, run the appropiate command
     switch (command[0]) {
         case 's':
@@ -327,6 +332,10 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
  **/
 static void simulator_repl(cpu_state_t *cpu_state)
 {
+    // Initialize the buffer and buffer size value for getline
+    char *line = NULL;
+    size_t buf_size = 0;
+
     // Continuously process user commands until a quit or EOF
     while (true)
     {
@@ -335,9 +344,8 @@ static void simulator_repl(cpu_state_t *cpu_state)
         fflush(stdout);
 
         // Read the next line from the user, terminating on an EOF character
-        char line[COMMAND_MAX_LEN+1];
-        char *status = fgets(line, sizeof(line), stdin);
-        if (status == NULL) {
+        int rc = getline(&line, &buf_size, stdin);
+        if (rc < 0) {
             break;
         }
 
