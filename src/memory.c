@@ -435,10 +435,11 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
         }
     }
 
-    /* Set the PC to the start of the user text section, and set the stack
-     * pointer (x2) to the end of the stack segment. */
+    /* Point the PC to the user text segment, the stack pointer (x2) to the
+     * stack segment, and the global pointer (x3) to the user data segment. */
     cpu_state->pc = USER_TEXT_START;
     cpu_state->regs[REG_SP] = STACK_END;
+    cpu_state->regs[REG_GP] = USER_DATA_START;
 
     return rc;
 }
