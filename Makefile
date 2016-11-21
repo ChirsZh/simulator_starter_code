@@ -46,9 +46,13 @@ veryclean: clean assemble-veryclean
 # Specifically, prevent the deletion of the binary files.
 .SECONDARY:
 
+# The name of the entrypoint for assembly tests, which matches the typical main
+RISCV_ENTRY_POINT = main
+
 # The compiler for assembly files, along with its flags
 RISCV_CC = riscv64-unknown-elf-gcc
 RISCV_CFLAGS = -static -nostdlib -nostartfiles
+RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
 
 # The objcopy utility for assembly files, along with its flags
 RISCV_OBJCOPY = riscv64-unknown-elf-objcopy
@@ -59,7 +63,7 @@ RISCV_OBJCOPY_FLAGS = -O binary
 HEX_CC = hexdump
 HEX_CFLAGS = -e '1/4 "%08X" "\n"'
 
-# The runtime environment directory, which has the startup file for programs
+# The runtime environment directory, which has the startup file for C programs
 447_RUNTIME_DIR = 447runtime
 RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
 
@@ -87,12 +91,12 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE)
 	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
 # Compile the assembly test program with a *.s extension to create an ELF file
-%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.s
-	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
+%.$(ELF_EXTENSION): %.s
+	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the assembly test program with a *.S extension to create an ELF file
-%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.S
-	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
+%.$(ELF_EXTENSION): %.S
+	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the C test program with the startup file to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c

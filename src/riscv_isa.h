@@ -28,6 +28,9 @@
 // The magic value the argument register must be to terminate the simulator
 #define ECALL_ARG_HALT      0xa
 
+// The register used as the stack pointer
+#define REG_SP              2
+
 // Opcodes for the RISC-V ISA, in the lowest 7 bits of the instruction
 typedef enum riscv_op {
     // Opcodes for U-type instructions (unsigned immediate)

@@ -28,6 +28,7 @@
 
 #include "sim.h"                    // Interface to the core simulator
 #include "memory.h"                 // This file's interface
+#include "riscv_isa.h"              // Definition of the stack pointer register
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -434,8 +435,11 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
         }
     }
 
-    // Set the PC to the start of the user text section
+    /* Set the PC to the start of the user text section, and set the stack
+     * pointer (x2) to the end of the stack segment. */
     cpu_state->pc = USER_TEXT_START;
+    cpu_state->regs[REG_SP] = STACK_END;
+
     return rc;
 }
 
