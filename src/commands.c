@@ -21,35 +21,35 @@
  *                 You should only add files or change sim.c!                 *
  *----------------------------------------------------------------------------*/
 
-#include <stdlib.h>         // Malloc and related functions
-#include <stdio.h>          // Printf and related functions
-#include <stdint.h>         // Fixed-size integral types
+#include <stdlib.h>             // Malloc and related functions
+#include <stdio.h>              // Printf and related functions
+#include <stdint.h>             // Fixed-size integral types
 
-#include <limits.h>         // Limits for integer types
-#include <assert.h>         // Assert macro
-#include <string.h>         // String manipulation functions and memset
-#include <errno.h>          // Error codes and perror
+#include <limits.h>             // Limits for integer types
+#include <assert.h>             // Assert macro
+#include <string.h>             // String manipulation functions and memset
+#include <errno.h>              // Error codes and perror
 
-#include "sim.h"            // Definition of cpu_state_t
-#include "commands.h"       // This file's interface
-#include "parse.h"          // Parsing utilities
+#include "sim.h"                // Definition of cpu_state_t
+#include "commands.h"           // This file's interface
+#include "parse.h"              // Parsing utilities
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
  *----------------------------------------------------------------------------*/
 
 // Macro to get the length of a statically allocated array
-#define array_len(x)        (sizeof(x) / sizeof((x)[0]))
+#define array_len(x)            (sizeof(x) / sizeof((x)[0]))
 
 /*----------------------------------------------------------------------------
  * Step and Go Commands
  *----------------------------------------------------------------------------*/
 
 // The maximum number of arguments that can be specified to the step command
-#define STEP_MAX_NUM_ARGS   1
+#define STEP_MAX_NUM_ARGS       1
 
 // The expected number of arguments for the go command
-#define GO_NUM_ARGS         0
+#define GO_NUM_ARGS             0
 
 /**
  * run_simulator
@@ -226,13 +226,13 @@ static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
 {
     assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
 
-    // Print out the ABI alias name for the register, with parenthesis
+    // Format out the ABI alias name for the register, with parenthesis
     int abi_name_len = REG_ABI_MAX_LEN + 2;
     char abi_name[abi_name_len+1];
     const register_name_t *reg_name = &RISCV_REGISTER_NAMES[reg_num];
     snprintf(abi_name, sizeof(abi_name), "(%s)", reg_name->abi_name);
 
-    // Print out the signed and unsigned integer views of the register value
+    // Format out the signed and unsigned integer views of the register value
     uint32_t reg_value = cpu_state->regs[reg_num];
     int reg_value_len = INT32_MAX_DEC_DIGITS + 2;
     char reg_int_value[reg_value_len+1];
