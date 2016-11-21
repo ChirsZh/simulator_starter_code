@@ -41,9 +41,8 @@ void process_instruction(cpu_state_t *cpu_state)
 
     /* Decode the instruction as an I-type instruction, sign extending the
      * immediate value. */
-    // Decode the fields of the I-type instruction, sign extending it
     riscv_itype_funct3_t itype_funct3 = (instr >> 12) & 0x7;
-    int32_t itype_imm = ((int32_t)instr) >> 12;
+    int32_t itype_imm = ((int32_t)instr) >> 20;
 
     // Decode the instruction as an R-type instruction
     riscv_rtype_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
