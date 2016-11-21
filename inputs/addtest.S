@@ -15,15 +15,15 @@
  **/
 
 // The initial value to seed the test with
-#define TEST_SEED				512
+#define TEST_SEED               512
 
     .text                       // Declare the code to be in the .text segment
     .global main                // Make main visible to the linker
 main:
     addi t0, zero, TEST_SEED    // t0 (x5) = TEST_SEED (512)
-    add t1, t0, zero			// t1 (x6) = t0
-    add t2, t1, t1				// t2 (x7) = t1 + t1
-    add t3, t2, t2				// t3 (x28) = t2 + t2
+    add t1, t0, zero            // t1 (x6) = t0
+    add t2, t1, t1              // t2 (x7) = t1 + t1
+    add t3, t2, t2              // t3 (x28) = t2 + t2
 
     addi a0, zero, 0xa          // a0 (x10) = 0xa
     ret                         // Return 0xa to the startup code to terminate
