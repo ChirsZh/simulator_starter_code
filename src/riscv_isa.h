@@ -20,7 +20,13 @@
 #define RISCV_ISA_H_
 
 // The number of registers in the register file
-#define RISCV_NUM_REGS    32
+#define RISCV_NUM_REGS  32
+
+// The register used as argument to the ECALL function
+#define ECALL_ARG_REG   10
+
+// The magic value the argument register must be to terminate the simulator
+#define ECALL_ARG_MAGIC 0xa
 
 // Opcodes for the RISC-V ISA, in the lowest 7 bits of the instruction
 typedef enum riscv_op {
