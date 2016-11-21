@@ -123,20 +123,20 @@ void process_instruction(cpu_state_t *cpu_state)
             }
             break;
 
-        // I-type jump instruction JALR
-        case OP_JALR:
-            if (rd != 0) {
-                cpu_state->regs[rd] = cpu_state->pc + sizeof(uint32_t);
-            }
-            cpu_state->pc = (cpu_state->regs[rs1] + itype_imm) & ~0x1;
-            break;
-
         // U-type instruction LUI
         case OP_LUI:
             if (rd != 0) {
                 cpu_state->regs[rd] = utype_imm;
             }
             cpu_state->pc = cpu_state->pc + sizeof(uint32_t);
+            break;
+
+        // I-type jump instruction JALR
+        case OP_JALR:
+            if (rd != 0) {
+                cpu_state->regs[rd] = cpu_state->pc + sizeof(uint32_t);
+            }
+            cpu_state->pc = (cpu_state->regs[rs1] + itype_imm) & ~0x1;
             break;
 
         // UJ-type instruction JAL
@@ -154,7 +154,7 @@ void process_instruction(cpu_state_t *cpu_state)
                 // 12-bit function code for ECALL
                 case FUNCT12_ECALL:
                     if (cpu_state->regs[ECALL_ARG_REG] == ECALL_ARG_HALT) {
-                        fprintf(stdout, "Ecall invoked with halt argument, "
+                        fprintf(stdout, "ECALL invoked with halt argument, "
                                 "halting the simulator.\n");
                         cpu_state->halted = true;
                     }
