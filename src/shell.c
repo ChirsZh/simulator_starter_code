@@ -302,7 +302,7 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
 
     // The user entered an empty line, so there's no command to process
     if (command == NULL) {
-        return true;
+        return false;
     }
 
     // Otherwise, identify the command based on its short alias or long form
