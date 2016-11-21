@@ -28,7 +28,7 @@ typedef enum riscv_op {
     OP_LUI              = 0x37,
     OP_AUIPC            = 0x17,
 
-    // Opcodes for UJ-type instructions (unconditional jumps)
+    // Opcodes for jump instructions (UJ-type and I-type)
     OP_JAL              = 0x6F,
     OP_JALR             = 0x67,
 
