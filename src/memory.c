@@ -28,7 +28,7 @@
 
 #include "sim.h"                    // Interface to the core simulator
 #include "memory.h"                 // This file's interface
-#include "riscv_isa.h"              // Definition of the stack pointer register
+#include "riscv_abi.h"              // ABI registers and definitions
 
 /*----------------------------------------------------------------------------
  * Internal Definitions

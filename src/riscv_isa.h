@@ -5,7 +5,7 @@
  * the instructions that must be implemented by the simulator.
  *
  * Note that the names of the enumerations are based on the names given in the
- * RISC-V 2.1 ISA manual.
+ * RISC-V 2.1 ISA manual, sections 2 and 5.
  *
  * Authors:
  *  - 2016: Brandon Perez
@@ -21,15 +21,6 @@
 
 // The number of registers in the register file
 #define RISCV_NUM_REGS      32
-
-// The register used as argument to the ECALL function
-#define ECALL_ARG_REG       10
-
-// The magic value the argument register must be to terminate the simulator
-#define ECALL_ARG_HALT      0xa
-
-// The register used as the stack pointer
-#define REG_SP              2
 
 // Opcodes for the RISC-V ISA, in the lowest 7 bits of the instruction
 typedef enum riscv_op {
