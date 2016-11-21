@@ -1,7 +1,5 @@
 /**
- * @file commands.c
- * @date Sunday, November 13, 2016 at 09:10:00 PM EST
- * @author Brandon Perez (bmperez)
+ * commands.c
  *
  * This file contains the implementation for the shell commands.
  *
@@ -9,7 +7,8 @@
  * The commands are pretty basic, such as stepping the program, displaying
  * registers, etc.
  *
- * @bug No known bugs.
+ * Authors:
+ *  - 2016: Brandon Perez
  **/
 
 #include <stdlib.h>         // Malloc and related functions

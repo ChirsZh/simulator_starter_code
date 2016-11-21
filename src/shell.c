@@ -1,11 +1,17 @@
-/***************************************************************/
-/*                                                             */
-/*   MIPS-32 Instruction Level Simulator                       */
-/*                                                             */
-/*   ECE 447                                                   */
-/*   Carnegie Mellon University                                */
-/*                                                             */
-/***************************************************************/
+/**
+ * shell.c
+ *
+ * RISC-V 32-bit Instruction Level Simulator
+ *
+ * This file contains the shell for the simulator.
+ *
+ * The shell is the user-interactive interface that lets the user view the
+ * processor state, run programs, and view other information about the program
+ * being simulated on the processor.
+ *
+ * Authors:
+ *  - 2016: Brandon Perez
+ **/
 
 /*----------------------------------------------------------------------------*
  *                          DO NOT MODIFY THIS FILE!                          *
