@@ -142,7 +142,7 @@ void process_instruction(cpu_state_t *cpu_state)
         // UJ-type instruction JAL
         case OP_JAL:
             if (rd != 0) {
-                cpu_state->regs[rd] = cpu_state->pc;
+                cpu_state->regs[rd] = cpu_state->pc + sizeof(uint32_t);
             }
             cpu_state->pc = cpu_state->pc + ujtype_imm;
             break;
