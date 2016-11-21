@@ -19,6 +19,7 @@
 #include <assert.h>         // Assert macro
 #include <string.h>         // String manipulation functions and memset
 #include <errno.h>          // Error codes and perror
+#include <signal.h>         // Signal numbers and sigaction function
 
 #include "sim.h"            // Interface to the core simulator, cpu_state_t
 #include "memory.h"         // Interface to the processor memory
@@ -150,6 +151,41 @@ static int parse_arguments(int argc, char *argv[], char **program_path)
     *program_path = argv[1];
     return 0;
 }
+
+/*----------------------------------------------------------------------------
+ * Signal Handling
+ *----------------------------------------------------------------------------*/
+
+/**
+ * sigint_handler
+ *
+ * This function handles CTRL-C keystrokes from the user. Its purpose is to
+ * prevent the program from being terminated when a CTRL-C is typed.
+ **/
+void sigint_handler(int signum)
+{
+    (void)signum;       // Silence the compiler
+    return;
+}
+
+/**
+ * setup_signals
+ *
+ * Setups up the signal handling for the simulator, which is simply handling
+ * SIGINT's from CTRL-C keystrokes from the user.
+ **/
+static void setup_signals()
+{
+    // Setup the SIGINT handler
+    struct sigaction sigact;
+    memset(&sigact, 0, sizeof(sigact));
+    sigact.sa_handler = sigint_handler;
+    sigemptyset(&sigact.sa_mask);
+    sigaction(SIGINT, &sigact, NULL);
+
+    return;
+}
+
 
 /*----------------------------------------------------------------------------
  * Simulator REPL
@@ -343,11 +379,19 @@ static void simulator_repl(cpu_state_t *cpu_state)
         fprintf(stdout, "RISC-V Sim> ");
         fflush(stdout);
 
-        // Read the next line from the user, terminating on an EOF character
+        /* Read the next line from the user, only terminating on an EOF
+         * character or an error that isn't EINTR. */
         int rc = getline(&line, &buf_size, stdin);
-        if (rc < 0) {
+        if (rc < 0 && feof(stdin)) {
             fprintf(stdout, "\n");
             break;
+        } else if (rc < 0 && errno != EINTR) {
+            perror("\nError: Unable to read line of user input");
+            break;
+        } else if (rc < 0) {
+            fprintf(stdout, "\n");
+            clearerr(stdin);
+            continue;
         }
 
         // Strip the newline character from the input
@@ -412,6 +456,9 @@ int main(int argc, char *argv[])
                 "simulator.\n");
         return -rc;
     }
+
+    // Setup the signal handling for the program
+    setup_signals();
 
     // The REPL loop for the simulator, wait for and read user commands
     simulator_repl(&cpu_state);
