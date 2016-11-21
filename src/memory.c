@@ -36,10 +36,14 @@
 // Macro to get the length of a statically allocated array
 #define array_len(x) (sizeof(x) / sizeof(x[0]))
 
-// The starting addresses of the user's stack, data, and text segments
+// The starting addresses of the user's data and text segments
 #define USER_TEXT_START             0x00400000
 #define USER_DATA_START             0x10000000
-#define USER_STACK_START            0x7ff00000
+
+// The starting and ending addresses of the stack segment, and its size
+#define STACK_END                   0x7ff00000
+#define STACK_SIZE                  (1 * 1024 * 1024)
+#define STACK_START                 (STACK_END - STACK_SIZE)
 
 // The starting addresses and sizes of the kernel's data, and text segments
 #define KERNEL_TEXT_START           0x80000000
@@ -58,14 +62,14 @@ static const mem_region_t USER_TEXT_REGION = {
 // The user data memory region, containing user global variables
 static const mem_region_t USER_DATA_REGION = {
     .base_addr = USER_DATA_START,
-    .max_size = USER_STACK_START - USER_DATA_START,
+    .max_size = STACK_START - USER_DATA_START,
     .hex_extension = ".data.hex"
 };
 
 // The default parameters stack memory region, containing local values in the program
 static const mem_region_t STACK_REGION = {
-    .base_addr = USER_STACK_START,
-    .max_size = KERNEL_DATA_START - USER_STACK_START,
+    .base_addr = STACK_END - STACK_SIZE,
+    .max_size = STACK_SIZE,
     .hex_extension = NULL,
 };
 
