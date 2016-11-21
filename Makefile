@@ -85,29 +85,62 @@ TEST_SECTIONS_HEX = $(addsuffix .$(HEX_EXTENSION),$(TEST_SECTIONS))
 assemble: $(TEST_SECTIONS_HEX)
 
 # Convert a binary file for program of the ELF file to an ASCII hex
-%.$(HEX_EXTENSION): %.$(BINARY_EXTENSION)
+%.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
 	$(HEX_CC) $(HEX_CFLAGS) $^ > $@
 
 # Extract the given section from the program ELF file, generating a binary
-$(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE)
+$(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
 # Compile the assembly test program with a *.s extension to create an ELF file
-%.$(ELF_EXTENSION): %.s
+%.$(ELF_EXTENSION): %.s | assemble-check-compiler assemble-check-test
 	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the assembly test program with a *.S extension to create an ELF file
-%.$(ELF_EXTENSION): %.S
+%.$(ELF_EXTENSION): %.S | assemble-check-compiler assemble-check-test
 	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the C test program with the startup file to create an ELF file
-%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c
+%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c | assemble-check-compiler \
+		assemble-check-test
 	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
 
 # Clean up all the hex files in project directories
 assemble-veryclean:
 	rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)' \
 			-o -name '*.$(ELF_EXTENSION)')
+
+# Suppresses 'no rule to make...' error when the TEST doesn't exist
+$(TEST):
+
+# Check that the RISC-V compiler exists
+assemble-check-compiler:
+ifeq ($(shell which $(RISCV_CC) 2> /dev/null),)
+	@printf "Error: $(RISCV_CC): RISC-V compiler was not found in your PATH.\n"
+	@exit 1
+endif
+
+# Check that the specified test file exists
+assemble-check-test:
+ifeq ($(wildcard $(TEST)),)
+	@printf "Error: $(TEST): RISC-V test file does not exist.\n"
+	@exit 1
+endif
+
+# Check that the RISC-V objcopy binary utility exists
+assemble-check-objcopy:
+ifeq ($(shell which $(RISCV_OBJCOPY) 2> /dev/null),)
+	@printf "Error: $(RISCV_OBJCOPY): RISC-V objcopy binary utility was not "
+	@printf "found in your PATH.\n"
+	@exit 1
+endif
+
+# Check that the hex compiler exists (converts binary to ASCII hex)
+assemble-check-hex-compiler:
+ifeq ($(shell which $(HEX_CC) 2> /dev/null),)
+	@printf "Error: $(HEX_CC): Hex dump utility was not found in your PATH.\n"
+	@exit 1
+endif
 
 ################################################################################
 # Compile the Simulator
