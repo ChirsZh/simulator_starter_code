@@ -29,6 +29,7 @@
 #include "sim.h"                    // Interface to the core simulator
 #include "memory.h"                 // This file's interface
 #include "riscv_abi.h"              // ABI registers and definitions
+#include "parse.h"                  // Parsing utilities
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -239,27 +240,6 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
  *----------------------------------------------------------------------------*/
 
 /**
- * parse_uint32
- *
- * Attempts to parse the given string as a 32-bit hexadecimal unsigned integer.
- * If successful, the value pointer is updated with the string's value.
- **/
-static int parse_uint32(const char *string, uint32_t *val)
-{
-    // Attempt to parse the string as an unsigned long long
-    errno = 0;
-    unsigned long long parsed_val = strtoull(string, NULL, 16);
-    if (errno != 0) {
-        return -errno;
-    } else if (parsed_val > (unsigned long long)UINT32_MAX) {
-        return -ERANGE;
-    }
-
-    *val = (uint32_t)parsed_val;
-    return 0;
-}
-
-/**
  * load_file
  *
  * Loads the given hex file into the specified memory region, allocating the
@@ -283,8 +263,8 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
         line[newline_index] = '\0';
 
         // Parse the line as a 32-bit unsigned hexadecimal integer
-        uint32_t value;
-        rc = parse_uint32(line, &value);
+        int32_t value;
+        rc = parse_int32_hex(line, &value);
         if (rc < 0) {
             fprintf(stderr, "Error: %s: Line %zu: Unable to parse '%s' as a "
                     "32-bit unsigned hexadecimal integer.\n", hex_path,
@@ -294,7 +274,7 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
 
         // Write the value to memory, and increment the offset into memory
         size_t offset = line_num * sizeof(uint32_t);
-        write_little_endian(&mem_region->mem[offset], value);
+        write_little_endian(&mem_region->mem[offset], (uint32_t)value);
 
         // Get the next line of the file
         rc = getline(&line, &buf_size, hex_file);
