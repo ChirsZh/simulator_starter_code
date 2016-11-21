@@ -53,7 +53,7 @@ RISCV_ENTRY_POINT = main
 
 # The compiler for assembly files, along with its flags
 RISCV_CC = riscv64-unknown-elf-gcc
-RISCV_CFLAGS = -static -nostdlib -nostartfiles
+RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32
 RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
 
 # The objcopy utility for assembly files, along with its flags
