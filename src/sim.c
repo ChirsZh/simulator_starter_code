@@ -49,19 +49,6 @@ void process_instruction(cpu_state_t *cpu_state)
     riscv_rtype_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
     riscv_rtype_funct7_t rtype_funct7 = (instr >> 25) & 0x7F;
 
-    // Decode the instruction as a U-type instruction
-    uint32_t utype_imm = instr & ~0xFFF;
-
-    /* Decode the instruction as a UJ-type instruction. Since the instruction is
-     * encoded in a particular bit order, switch the bits to get the value. */
-    int32_t raw_ujtype_imm = ((int32_t)instr) >> 12;
-    int32_t ujtype_imm_10_1 = (raw_ujtype_imm >> 9) & 0x2FF;
-    int32_t ujtype_imm_11 = (raw_ujtype_imm >> 8) & 0x1;
-    int32_t ujtype_imm_19_12 = (raw_ujtype_imm >> 0) & 0xFF;
-    int32_t ujtype_imm = (raw_ujtype_imm & ~0x7FFFF) |
-        (ujtype_imm_19_12 << 12) | (ujtype_imm_11 << 11) |
-        (ujtype_imm_10_1 << 1);
-
     // Decode the 12-bit function code for system instructions
     riscv_sys_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
 
@@ -122,30 +109,6 @@ void process_instruction(cpu_state_t *cpu_state)
                     cpu_state->halted = true;
                     break;
             }
-            break;
-
-        // U-type instruction LUI
-        case OP_LUI:
-            if (rd != 0) {
-                cpu_state->regs[rd] = utype_imm;
-            }
-            cpu_state->pc = cpu_state->pc + sizeof(uint32_t);
-            break;
-
-        // I-type jump instruction JALR
-        case OP_JALR:
-            if (rd != 0) {
-                cpu_state->regs[rd] = cpu_state->pc + sizeof(uint32_t);
-            }
-            cpu_state->pc = (cpu_state->regs[rs1] + itype_imm) & ~0x1;
-            break;
-
-        // UJ-type instruction JAL
-        case OP_JAL:
-            if (rd != 0) {
-                cpu_state->regs[rd] = cpu_state->pc + sizeof(uint32_t);
-            }
-            cpu_state->pc = cpu_state->pc + ujtype_imm;
             break;
 
         // General system operation
