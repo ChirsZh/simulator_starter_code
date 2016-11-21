@@ -23,7 +23,8 @@
 _start:
     lui sp, USER_STACK_END      // Initialize the stack pointer (x2)
 
-    call main                   // Call the user's main program
+    call main                   // Call the user's main program. `call` is
+                                // `jal x1, offset`
 
     ecall                       // Terminate the program by doing a syscall.
                                 // The return value a0 (x10) must be 0xa

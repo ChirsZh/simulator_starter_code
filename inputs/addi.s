@@ -14,4 +14,6 @@ main:
     addi t4, t3, 34             # t4 (x29) = t3 + 34
     addi t4, t4, 45             # t4 (x29) = t4 + 45
 
-    ret                         # Return to the startup code
+    addi a0, zero, 0xa          # a0 (x10) = 0xa
+    ret                         # Return 0xa to the startup code to terminate
+                                # the simulator. `ret` is `jalr x0, x1, 0`.
