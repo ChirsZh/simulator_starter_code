@@ -86,12 +86,16 @@ assemble: $(TEST_SECTIONS_HEX)
 $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE)
 	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
-# Compile the test program with a *.s extension to create an ELF file
+# Compile the assembly test program with a *.s extension to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.s
 	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
 
-# Compile the test program with a *.S extension to create an ELF file
+# Compile the assembly test program with a *.S extension to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.S
+	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
+
+# Compile the C test program with the startup file to create an ELF file
+%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c
 	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
 
 # Clean up all the hex files in project directories
