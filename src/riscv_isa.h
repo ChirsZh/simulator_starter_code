@@ -1,6 +1,11 @@
 /**
  * riscv_isa.h
  *
+ * RISC-V 32-bit Instruction Level Simulator
+ *
+ * ECE 18-447
+ * Carnegie Mellon University
+ *
  * This contains the definitions for the RISC-V opcodes and function codes for
  * the instructions that must be implemented by the simulator.
  *

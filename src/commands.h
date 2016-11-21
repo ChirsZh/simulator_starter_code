@@ -1,15 +1,24 @@
 /**
- * @file commands.h
- * @date Sunday, November 13, 2016 at 09:10:09 PM EST
- * @author Brandon Perez (bmperez)
+ * commands.h
+ *
+ * RISC-V 32-bit Instruction Level Simulator
+ *
+ * ECE 18-447
+ * Carnegie Mellon University
  *
  * This file contains the interface to the shell commands.
  *
  * This is the interface to implementation of all the commands available in the
  * shell.
  *
- * @bug No known bugs.
+ * Authors:
+ *  - 2016: Brandon Perez
  **/
+
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *                 You should only add files or change sim.c!                 *
+ *----------------------------------------------------------------------------*/
 
 #ifndef COMMANDS_H_
 #define COMMANDS_H_

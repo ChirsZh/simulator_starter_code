@@ -3,6 +3,9 @@
  *
  * RISC-V 32-bit Instruction Level Simulator
  *
+ * ECE 18-447
+ * Carnegie Mellon University
+ *
  * This file contains the shell for the simulator.
  *
  * The shell is the user-interactive interface that lets the user view the

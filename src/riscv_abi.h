@@ -1,6 +1,11 @@
 /**
  * riscv_abi.h
  *
+ * RISC-V 32-bit Instruction Level Simulator
+ *
+ * ECE 18-447
+ * Carnegie Mellon University
+ *
  * This file contains the definitions for the RISC-V application binary
  * interface (ABI), which are namely the register aliases for application
  * registers, such as temporaries, the stack pointer, etc.
@@ -11,6 +16,11 @@
  * Authors:
  *  - 2016: Brandon Perez
  **/
+
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *                 You should only add files or change sim.c!                 *
+ *----------------------------------------------------------------------------*/
 
 #ifndef RISCV_ABI_H_
 #define RISCV_ABI_H_

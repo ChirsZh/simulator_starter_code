@@ -1,6 +1,11 @@
 /**
  * commands.c
  *
+ * RISC-V 32-bit Instruction Level Simulator
+ *
+ * ECE 18-447
+ * Carnegie Mellon University
+ *
  * This file contains the implementation for the shell commands.
  *
  * The commands are how the user interacts with the simulator from the shell.
@@ -10,6 +15,11 @@
  * Authors:
  *  - 2016: Brandon Perez
  **/
+
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *                 You should only add files or change sim.c!                 *
+ *----------------------------------------------------------------------------*/
 
 #include <stdlib.h>         // Malloc and related functions
 #include <stdio.h>          // Printf and related functions
