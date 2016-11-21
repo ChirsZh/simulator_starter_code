@@ -9,8 +9,8 @@
  *  - 2016: Brandon Perez
  **/
 
-// The top 20 bits of the start of the user's stack segment address
-#define USER_STACK_START    (0x7ff00000 >> (32 - 20))
+// The top 20 bits of the end address of the user's stack segment (exclusive)
+#define USER_STACK_END          (0x7ff00000 >> (32 - 20))
 
 /**
  * _start
@@ -21,9 +21,9 @@
     .text
     .global _start
 _start:
-    lui sp, USER_STACK_START    // Initialize the stack pointer (x2)
+    lui sp, USER_STACK_END      // Initialize the stack pointer (x2)
 
-    jal main                    // Call the user's main program
+    call main                   // Call the user's main program
 
-    addi x2, x0, 0xa            // Terminate the program
-    ecall
+    ecall                       // Terminate the program by doing a syscall.
+                                // The return value a0 (x10) must be 0xa
