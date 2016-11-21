@@ -226,7 +226,6 @@ static void print_register(cpu_state_t *cpu_state, int reg_num)
     return;
 }
 
-
 /**
  * command_reg
  *
@@ -251,8 +250,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
      * parse it as string for one of its names. */
     const char *reg_string = args[0];
     int reg_num = -ENOENT;
-    int rc = parse_int(reg_string, &reg_num);
-    if (rc < 0) {
+    if (parse_int(reg_string, &reg_num) < 0) {
         reg_num = find_register(reg_string);
     }
 
@@ -266,9 +264,20 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
     // If the user didn't specify a value, then we simply print the register out
     if (num_args == REG_MIN_NUM_ARGS) {
         print_register(cpu_state, reg_num);
+        return;
     }
 
-    // TODO: Implement write behavior
+    // Otherwise, parse the second argument as a 32-bit integer
+    const char *reg_value_string = args[1];
+    int32_t reg_value;
+    if (parse_int32(reg_value_string, &reg_value) < 0) {
+        fprintf(stderr, "Error: reg: Unable to parse '%s' as a 32-bit "
+                "integer.\n", reg_value_string);
+        return;
+    }
+
+    // Update the register with the new value
+    cpu_state->regs[reg_num] = (uint32_t)reg_value;
     return;
 }
 
