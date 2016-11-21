@@ -154,7 +154,7 @@ void process_instruction(cpu_state_t *cpu_state)
             {
                 // 12-bit function code for ECALL
                 case FUNCT12_ECALL:
-                    if (cpu_state->regs[ECALL_ARG_REG] == ECALL_ARG_MAGIC) {
+                    if (cpu_state->regs[ECALL_ARG_REG] == ECALL_ARG_HALT) {
                         fprintf(stdout, "Ecall invoked with halt argument, "
                                 "halting the simulator.\n");
                         cpu_state->halted = true;
