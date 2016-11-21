@@ -18,13 +18,15 @@
 # User Controlled Parameters
 ################################################################################
 
-# The user can specify the test they want to assemble. By default, addi.s is.
+# The user can specify the test they want to assemble. Defaults to addi.s
 DEFAULT_TEST = 447inputs/addi.s
-TEST = $(DEFAULT_TEST)
+TEST ?= $(DEFAULT_TEST)
 
 ################################################################################
 # General Targets and Variables
 ################################################################################
+
+.PHONY: all default clean veryclean
 
 # By default, compile the simulator
 all default: sim
@@ -40,7 +42,7 @@ veryclean: clean assemble-veryclean
 ################################################################################
 
 # These targets don't correspond to actual files
-.PHONY: sim assemble clean assemble-veryclean
+.PHONY: assemble assemble-veryclean
 
 # Prevent make from automatically deleting intermediate files generated.
 # Specifically, prevent the deletion of the binary files.

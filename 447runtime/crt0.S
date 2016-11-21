@@ -9,7 +9,7 @@
  * match the halt argument value (0xa).
  *
  * Note that the simulator sets up the sp (x2) register, so the startup code
- * does not need to setup the stack pointer.
+ * does not need to do this.
  *
  * Authors:
  *  - 2016: Brandon Perez
