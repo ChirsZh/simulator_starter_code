@@ -184,6 +184,9 @@ static const register_name_t RISCV_REGISTER_NAMES[RISCV_NUM_REGS] = {
 #define REG_MIN_NUM_ARGS    1
 #define REG_MAX_NUM_ARGS    2
 
+// The maximum expected number of arguments for the rdump command
+#define RDUMP_MAX_NUM_ARGS  1
+
 /**
  * find_register
  *
@@ -213,14 +216,14 @@ static int find_register(const char *reg_name)
  *
  * Prints out the information for a given register on one line.
  **/
-static void print_register(cpu_state_t *cpu_state, int reg_num)
+static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
 {
     assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
 
     // Print out the register names and its values
     const register_name_t *reg_info = &RISCV_REGISTER_NAMES[reg_num];
     uint32_t reg_value = cpu_state->regs[reg_num];
-    printf("%-3s (%-5s) = 0x%08x (%u) (%d).\n", reg_info->isa_name,
+    fprintf(file, "%-3s (%-5s) = 0x%08x (%u) (%d).\n", reg_info->isa_name,
             reg_info->abi_name, reg_value, reg_value, (int32_t)reg_value);
 
     return;
@@ -237,7 +240,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
     assert(REG_MAX_NUM_ARGS - REG_MIN_NUM_ARGS == 1);
     assert(array_len(cpu_state->regs) == array_len(RISCV_REGISTER_NAMES));
 
-    // Check that the appropiat enumber of arguments was specified
+    // Check that the appropriate number of arguments was specified
     if (num_args < REG_MIN_NUM_ARGS) {
         fprintf(stderr, "Error: reg: Too few arguments specified.\n");
         return;
@@ -263,7 +266,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
 
     // If the user didn't specify a value, then we simply print the register out
     if (num_args == REG_MIN_NUM_ARGS) {
-        print_register(cpu_state, reg_num);
+        print_register(cpu_state, reg_num, stdout);
         return;
     }
 
@@ -290,11 +293,45 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
  **/
 void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
-    (void)args;
-    (void)num_args;
+    // Check that the appropriate number of arguments was specified
+    if (num_args > RDUMP_MAX_NUM_ARGS) {
+        fprintf(stderr, "Error: rdump: Too many arguments specified.\n");
+        return;
+    }
 
+    /* If specified, dump the register values to the given file. Otherwise,
+     * print the values to stdout. */
+    FILE *dump_file = stdout;
+    if (num_args == RDUMP_MAX_NUM_ARGS) {
+        const char *dump_filename = args[0];
+        dump_file = fopen(dump_filename, "w");
+        if (dump_file == NULL) {
+            fprintf(stderr, "Error: rdump: %s: Unable to open file: %s\n",
+                    dump_filename, strerror(errno));
+            return;
+        }
+    }
+
+    // Print out the header for the register dump
+    fprintf(dump_file, "Current CPU State and Register Values:\n");
+    fprintf(dump_file, "--------------------------------------\n");
+    fprintf(dump_file, "%-20s = %d\n", "Instruction Count",
+            cpu_state->instr_count);
+    fprintf(dump_file, "%-20s = 0x%08x\n", "Program Counter (PC)",
+            cpu_state->pc);
+    fprintf(dump_file, "\nRegister Values:\n");
+    fprintf(dump_file, "--------------------------------------\n");
+
+    // Print out all of the general purpose register values
+    for (int i = 0; i < (int)array_len(cpu_state->regs); i++)
+    {
+        print_register(cpu_state, i, dump_file);
+    }
+
+    // Close the dump file it was specified by the user (not stdout)
+    if (dump_file != stdout) {
+        fclose(dump_file);
+    }
     return;
 }
 
