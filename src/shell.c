@@ -346,6 +346,7 @@ static void simulator_repl(cpu_state_t *cpu_state)
         // Read the next line from the user, terminating on an EOF character
         int rc = getline(&line, &buf_size, stdin);
         if (rc < 0) {
+            fprintf(stdout, "\n");
             break;
         }
 
