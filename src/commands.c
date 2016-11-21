@@ -16,11 +16,20 @@
 #include <stdio.h>          // Printf and related functions
 #include <stdint.h>         // Fixed-size integral types
 
-#include <errno.h>          // Error codes and perror
 #include <limits.h>         // Limits for integer types
+#include <assert.h>         // Assert macro
+#include <string.h>         // String manipulation functions and memset
+#include <errno.h>          // Error codes and perror
 
-#include "sim.h"            // Interface
+#include "sim.h"            // Definition of cpu_state_t
 #include "commands.h"       // This file's interface
+
+/*----------------------------------------------------------------------------
+ * Internal Definitions
+ *----------------------------------------------------------------------------*/
+
+// Macro to get the length of a statically allocated array
+#define array_len(x)        ((int)(sizeof(x) / sizeof(x[0])))
 
 /*----------------------------------------------------------------------------
  * Parsing Helper Functions
@@ -34,6 +43,7 @@
  **/
 static int parse_int(const char *string, int *val)
 {
+    // TODO: Need to use endptr (second arg) to determine if conversion failed
     // Attempt to parse the string as a signed long
     errno = 0;
     long parsed_val = strtol(string, NULL, 10);
@@ -145,6 +155,95 @@ void command_go(cpu_state_t *cpu_state, const char *args[], int num_args)
  * Reg and Rdump Commands
  *----------------------------------------------------------------------------*/
 
+// Structure representing the naming information about a register
+typedef struct register_name {
+    const char *isa_name;       // The ISA name for a register (x0..x31)
+    const char *abi_name;       // The ABI name for a register (sp, t0, etc.)
+} register_name_t;
+
+// An array of all the naming information for a register, and its ABI aliases
+static const register_name_t RISCV_REGISTER_NAMES[RISCV_NUM_REGS] = {
+    { .isa_name = "x0", .abi_name = "zero", },
+    { .isa_name = "x1", .abi_name = "ra", },
+    { .isa_name = "x2", .abi_name = "sp", },
+    { .isa_name = "x3", .abi_name = "gp", },
+    { .isa_name = "x4", .abi_name = "tp", },
+    { .isa_name = "x5", .abi_name = "t0", },
+    { .isa_name = "x6", .abi_name = "t1", },
+    { .isa_name = "x7", .abi_name = "t2", },
+    { .isa_name = "x8", .abi_name = "s0/fp", },
+    { .isa_name = "x9", .abi_name = "s1", },
+    { .isa_name = "x10", .abi_name = "a0", },
+    { .isa_name = "x11", .abi_name = "a1", },
+    { .isa_name = "x12", .abi_name = "a2", },
+    { .isa_name = "x13", .abi_name = "a3", },
+    { .isa_name = "x14", .abi_name = "a4", },
+    { .isa_name = "x15", .abi_name = "a5", },
+    { .isa_name = "x16", .abi_name = "a6", },
+    { .isa_name = "x17", .abi_name = "a7", },
+    { .isa_name = "x18", .abi_name = "s2", },
+    { .isa_name = "x19", .abi_name = "s3", },
+    { .isa_name = "x20", .abi_name = "s4", },
+    { .isa_name = "x21", .abi_name = "s5", },
+    { .isa_name = "x22", .abi_name = "s6", },
+    { .isa_name = "x23", .abi_name = "s7", },
+    { .isa_name = "x24", .abi_name = "s8", },
+    { .isa_name = "x25", .abi_name = "s9", },
+    { .isa_name = "x26", .abi_name = "s10", },
+    { .isa_name = "x27", .abi_name = "s11", },
+    { .isa_name = "x28", .abi_name = "t3", },
+    { .isa_name = "x29", .abi_name = "t4", },
+    { .isa_name = "x30", .abi_name = "t5", },
+    { .isa_name = "x31", .abi_name = "t6", },
+};
+
+// The minimum and maximum expected number of arguments for the reg command
+#define REG_MIN_NUM_ARGS    1
+#define REG_MAX_NUM_ARGS    2
+
+/**
+ * find_register
+ *
+ * Tries to find the register with a matching ISA name or ABI alias from the
+ * available registers. Returns a register number [0..31] on success, or a
+ * negative number on failure.
+ **/
+static int find_register(const char *reg_name)
+{
+    // Iterate over each register, and try to find a match to the name
+    for (int i = 0; i < array_len(RISCV_REGISTER_NAMES); i++)
+    {
+        const register_name_t *reg_info = &RISCV_REGISTER_NAMES[i];
+        if (strcmp(reg_name, reg_info->isa_name) == 0) {
+            return i;
+        } else if (strcmp(reg_name, reg_info->abi_name) == 0) {
+            return i;
+        }
+    }
+
+    // No matching registers were found
+    return -ENOENT;
+}
+
+/**
+ * print_register
+ *
+ * Prints out the information for a given register on one line.
+ **/
+static void print_register(cpu_state_t *cpu_state, int reg_num)
+{
+    assert(0 <= reg_num && reg_num < array_len(RISCV_REGISTER_NAMES));
+
+    // Print out the register names and its values
+    const register_name_t *reg_info = &RISCV_REGISTER_NAMES[reg_num];
+    uint32_t reg_value = cpu_state->regs[reg_num];
+    printf("%-3s (%-5s) = 0x%08x (%u) (%d).\n", reg_info->isa_name,
+            reg_info->abi_name, reg_value, reg_value, (int32_t)reg_value);
+
+    return;
+}
+
+
 /**
  * command_reg
  *
@@ -153,11 +252,40 @@ void command_go(cpu_state_t *cpu_state, const char *args[], int num_args)
  **/
 void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
-    (void)args;
-    (void)num_args;
+    assert(REG_MAX_NUM_ARGS - REG_MIN_NUM_ARGS == 1);
+    assert(array_len(cpu_state->regs) == array_len(RISCV_REGISTER_NAMES));
 
+    // Check that the appropiat enumber of arguments was specified
+    if (num_args < REG_MIN_NUM_ARGS) {
+        fprintf(stderr, "Error: reg: Too few arguments specified.\n");
+        return;
+    } else if (num_args > REG_MAX_NUM_ARGS) {
+        fprintf(stderr, "Error: reg: Too many arguments specified.\n");
+        return;
+    }
+
+    /* First, try to parse the register argument as an integer, then try to
+     * parse it as string for one of its names. */
+    const char *reg_string = args[0];
+    int reg_num = -ENOENT;
+    int rc = parse_int(reg_string, &reg_num);
+    if (rc < 0) {
+        reg_num = find_register(reg_string);
+    }
+
+    // If we couldn't parse the given register, or it is out of range, stop
+    if (reg_num < 0 || reg_num >= array_len(cpu_state->regs)) {
+        fprintf(stderr, "Error: reg: Invalid register '%s' specified.\n",
+                reg_string);
+        return;
+    }
+
+    // If the user didn't specify a value, then we simply print the register out
+    if (num_args == REG_MIN_NUM_ARGS) {
+        print_register(cpu_state, reg_num);
+    }
+
+    // TODO: Implement write behavior
     return;
 }
 
