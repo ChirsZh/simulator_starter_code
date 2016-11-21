@@ -28,7 +28,7 @@
  *----------------------------------------------------------------------------*/
 
 // Macro to get the length of a statically allocated array
-#define array_len(x)        ((int)(sizeof(x) / sizeof(x[0])))
+#define array_len(x)        (sizeof(x) / sizeof((x)[0]))
 
 /*----------------------------------------------------------------------------
  * Parsing Helper Functions
@@ -42,7 +42,6 @@
  **/
 static int parse_int(const char *string, int *val)
 {
-    // TODO: Need to use endptr (second arg) to determine if conversion failed
     // Attempt to parse the string as a signed long
     errno = 0;
     char *end_str;
@@ -213,7 +212,7 @@ static const register_name_t RISCV_REGISTER_NAMES[RISCV_NUM_REGS] = {
 static int find_register(const char *reg_name)
 {
     // Iterate over each register, and try to find a match to the name
-    for (int i = 0; i < array_len(RISCV_REGISTER_NAMES); i++)
+    for (int i = 0; i < (int)array_len(RISCV_REGISTER_NAMES); i++)
     {
         const register_name_t *reg_info = &RISCV_REGISTER_NAMES[i];
         if (strcmp(reg_name, reg_info->isa_name) == 0) {
@@ -234,7 +233,7 @@ static int find_register(const char *reg_name)
  **/
 static void print_register(cpu_state_t *cpu_state, int reg_num)
 {
-    assert(0 <= reg_num && reg_num < array_len(RISCV_REGISTER_NAMES));
+    assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
 
     // Print out the register names and its values
     const register_name_t *reg_info = &RISCV_REGISTER_NAMES[reg_num];
@@ -276,7 +275,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
     }
 
     // If we couldn't parse the given register, or it is out of range, stop
-    if (reg_num < 0 || reg_num >= array_len(cpu_state->regs)) {
+    if (reg_num < 0 || reg_num >= (int)array_len(cpu_state->regs)) {
         fprintf(stderr, "Error: reg: Invalid register '%s' specified.\n",
                 reg_string);
         return;
