@@ -344,6 +344,8 @@ static int load_mem_region(mem_region_t *mem_region, char *hex_path)
         mem_region->mem = NULL;
     }
 
+    // Close the hex file
+    fclose(hex_file);
     return rc;
 }
 
