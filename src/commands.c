@@ -32,14 +32,7 @@
 
 #include "sim.h"                // Definition of cpu_state_t
 #include "commands.h"           // This file's interface
-#include "parse.h"              // Parsing utilities
-
-/*----------------------------------------------------------------------------
- * Internal Definitions
- *----------------------------------------------------------------------------*/
-
-// Macro to get the length of a statically allocated array
-#define array_len(x)            (sizeof(x) / sizeof((x)[0]))
+#include "libc_extensions.h"    // Parsing functions, array_len, Snprintf
 
 /*----------------------------------------------------------------------------
  * Step and Go Commands
@@ -231,24 +224,17 @@ static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
     int abi_name_max_len = REG_ABI_MAX_LEN + 2;
     char abi_name[abi_name_max_len+1];
     const register_name_t *reg_name = &RISCV_REGISTER_NAMES[reg_num];
-    size_t written = snprintf(abi_name, sizeof(abi_name), "(%s)",
-            reg_name->abi_name);
-    assert(written < sizeof(abi_name));
-
+    Snprintf(abi_name, sizeof(abi_name), "(%s)", reg_name->abi_name);
 
     // Format the unsigned view of the register's surrounded with parenthesis
     uint32_t reg_value = cpu_state->regs[reg_num];
     int reg_value_max_len = INT32_MAX_DEC_DIGITS + 2;
     char reg_uint_value[reg_value_max_len+1];
-    written = snprintf(reg_uint_value, sizeof(reg_uint_value), "(%u)",
-            reg_value);
-    assert(written < sizeof(reg_uint_value));
+    Snprintf(reg_uint_value, sizeof(reg_uint_value), "(%u)", reg_value);
 
     // Format the signed view of the register's surrounded with parenthesis
     char reg_int_value[reg_value_max_len+1];
-    written = snprintf(reg_int_value, sizeof(reg_int_value), "(%d)",
-            (int32_t)reg_value);
-    assert(written < sizeof(reg_int_value));
+    Snprintf(reg_int_value, sizeof(reg_int_value), "(%d)", (int32_t)reg_value);
 
     // Print out the register names and its values
     fprintf(file, "%-*s %-*s = 0x%08x %-*s %-*s\n", REG_ISA_MAX_LEN,

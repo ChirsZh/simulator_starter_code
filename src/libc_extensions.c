@@ -1,15 +1,16 @@
 /**
- * parse.c
+ * libc_extensions.h
  *
- * RISC-V 32-bit Instruction Level Simulator
+ * RISC-V 32-bit Instruction Level Simulator.
  *
  * ECE 18-447
- * Carnegie Mellon Univeristy
+ * Carnegie Mellon University
  *
- * This file contains miscellaneous utilities used throughout the simulator.
+ * This file contains the interface to various helper functions and macros used
+ * throughout the simulator.
  *
- * The utilities consist of parsing helper functions for integers and other
- * values, and various functions to get information about files.
+ * This is a general set of helper utilities and macros that can be considered
+ * and extension to the standard C library.
  *
  * Authors:
  *  - 2016: Brandon Perez
@@ -20,9 +21,12 @@
  *                 You should only add files or change sim.c!                 *
  *----------------------------------------------------------------------------*/
 
-#include <stdlib.h>         // Malloc and related functions
+#include <stdlib.h>         // Exit, strtol functions
+#include <stdio.h>          // snprintf function
+#include <stdarg.h>         // Variable argument list functions and list
 #include <stdint.h>         // Fixed-size integral types
 
+#include <string.h>         // Strerror function
 #include <limits.h>         // Limits for integer types
 #include <errno.h>          // Error codes and perror
 
@@ -129,3 +133,40 @@ int parse_int32(const char *string, int32_t *val)
     *val = (int32_t)parsed_val;
     return 0;
 }
+
+/*----------------------------------------------------------------------------
+ * Libc Wrappers
+ *----------------------------------------------------------------------------*/
+
+/**
+ * snprintf_wrapper
+ *
+ * A wrapper around libc's snprintf that checks for errors and verifies that all
+ * arguments were able to be formatted into the string. If either of these are
+ * not the case, it prints out an error message with the supplied call site
+ * information, and exits.
+ **/
+void snprintf_wrapper(const char *filename, int line, const char *function_name,
+        char *str, size_t size, const char *format, ...)
+{
+    // Handle the variable argument list, and invoke snprintf with the args
+    va_list args;
+    va_start(args, format);
+    ssize_t bytes_written = vsnprintf(str, size, format, args);
+    va_end(args);
+
+    // Check that call was successful, and the string could fit all the args
+    if (bytes_written < 0) {
+        int rc = errno;
+        fprintf(stderr, "Error: %s: %s: %d: Unable to format string: %s\n",
+                filename, function_name, line, strerror(errno));
+        exit(rc);
+    } else if (bytes_written >= (ssize_t)size) {
+        fprintf(stderr, "Error: %s: %s: %d: String is too small to fit "
+                "formatted arguments.\n", filename, function_name, line);
+        exit(E2BIG);
+    }
+
+    return;
+}
+

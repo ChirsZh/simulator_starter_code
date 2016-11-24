@@ -29,14 +29,11 @@
 #include "sim.h"                    // Interface to the core simulator
 #include "memory.h"                 // This file's interface
 #include "riscv_abi.h"              // ABI registers and definitions
-#include "parse.h"                  // Parsing utilities
+#include "libc_extensions.h"        // Parsing utilities and array_len macro
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
  *----------------------------------------------------------------------------*/
-
-// Macro to get the length of a statically allocated array
-#define array_len(x) (sizeof(x) / sizeof(x[0]))
 
 // The starting addresses of the user's data and text segments
 #define USER_TEXT_START             0x00400000
