@@ -145,7 +145,8 @@ void command_go(cpu_state_t *cpu_state, const char *args[], int num_args)
 // The maximum expected number of arguments for the rdump command
 #define RDUMP_MAX_NUM_ARGS      1
 
-// The maximum length of an ABI alias name for a register
+// The maximum length of an ISA and ABI alias name for a register
+#define REG_ISA_MAX_LEN         3
 #define REG_ABI_MAX_LEN         5
 
 // The maximum number of decimal digits for a 32-bit integer value
@@ -226,25 +227,34 @@ static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
 {
     assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
 
-    // Format out the ABI alias name for the register, with parenthesis
-    int abi_name_len = REG_ABI_MAX_LEN + 2;
-    char abi_name[abi_name_len+1];
+    // Format the ABI alias name for the register, surrounded with parenthesis
+    int abi_name_max_len = REG_ABI_MAX_LEN + 2;
+    char abi_name[abi_name_max_len+1];
     const register_name_t *reg_name = &RISCV_REGISTER_NAMES[reg_num];
-    snprintf(abi_name, sizeof(abi_name), "(%s)", reg_name->abi_name);
+    size_t written = snprintf(abi_name, sizeof(abi_name), "(%s)",
+            reg_name->abi_name);
+    assert(written < sizeof(abi_name));
 
-    // Format out the signed and unsigned integer views of the register value
+
+    // Format the unsigned view of the register's surrounded with parenthesis
     uint32_t reg_value = cpu_state->regs[reg_num];
-    int reg_value_len = INT32_MAX_DEC_DIGITS + 2;
-    char reg_int_value[reg_value_len+1];
-    char reg_uint_value[reg_value_len+1];
-    snprintf(reg_int_value, sizeof(reg_int_value), "(%d)", (int32_t)reg_value);
-    snprintf(reg_uint_value, sizeof(reg_uint_value), "(%u)", reg_value);
+    int reg_value_max_len = INT32_MAX_DEC_DIGITS + 2;
+    char reg_uint_value[reg_value_max_len+1];
+    written = snprintf(reg_uint_value, sizeof(reg_uint_value), "(%u)",
+            reg_value);
+    assert(written < sizeof(reg_uint_value));
+
+    // Format the signed view of the register's surrounded with parenthesis
+    char reg_int_value[reg_value_max_len+1];
+    written = snprintf(reg_int_value, sizeof(reg_int_value), "(%d)",
+            (int32_t)reg_value);
+    assert(written < sizeof(reg_int_value));
 
     // Print out the register names and its values
-    fprintf(file, "%-3s %-*s = 0x%08x %-*s %-*s\n", reg_name->isa_name,
-            abi_name_len, abi_name, reg_value, reg_value_len, reg_int_value,
-            reg_value_len, reg_uint_value);
-
+    fprintf(file, "%-*s %-*s = 0x%08x %-*s %-*s\n", REG_ISA_MAX_LEN,
+            reg_name->isa_name, abi_name_max_len, abi_name, reg_value,
+            reg_value_max_len, reg_int_value, reg_value_max_len,
+            reg_uint_value);
     return;
 }
 
@@ -347,7 +357,7 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
         print_register(cpu_state, i, dump_file);
     }
 
-    // Close the dump file it was specified by the user (not stdout)
+    // Close the dump file if was specified by the user (not stdout)
     if (dump_file != stdout) {
         fclose(dump_file);
     }
