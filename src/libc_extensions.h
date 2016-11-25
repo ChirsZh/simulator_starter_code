@@ -98,6 +98,26 @@ int parse_uint32_hex(const char *string, uint32_t *val);
 int parse_int32(const char *string, int32_t *val);
 
 /*----------------------------------------------------------------------------
+ * Bit Manipulation Utilities
+ *----------------------------------------------------------------------------*/
+
+/**
+ * get_byte
+ *
+ * Gets the specified byte from the specified value, where the byte must be
+ * between 0 and 3.
+ **/
+uint8_t get_byte(uint32_t value, int byte);
+
+/**
+ * set_byte
+ *
+ * Creates a new 32-bit value where the specified value is the specified byte of
+ * the 32-bit value, and all other bytes in the word are 0.
+ **/
+uint32_t set_byte(uint8_t value, int byte);
+
+/*----------------------------------------------------------------------------
  * Libc Wrappers
  *----------------------------------------------------------------------------*/
 

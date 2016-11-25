@@ -21,14 +21,17 @@
  *                 You should only add files or change sim.c!                 *
  *----------------------------------------------------------------------------*/
 
-#include <stdlib.h>         // Exit, strtol functions
-#include <stdio.h>          // snprintf function
-#include <stdarg.h>         // Variable argument list functions and list
-#include <stdint.h>         // Fixed-size integral types
+#include <stdlib.h>             // Exit, strtol functions
+#include <stdio.h>              // snprintf function
+#include <stdarg.h>             // Variable argument list functions and list
+#include <stdint.h>             // Fixed-size integral types
 
-#include <string.h>         // Strerror function
-#include <limits.h>         // Limits for integer types
-#include <errno.h>          // Error codes and perror
+#include <assert.h>             // Assert macro
+#include <string.h>             // Strerror function
+#include <limits.h>             // Limits for integer types
+#include <errno.h>              // Error codes and perror
+
+#include "libc_extensions.h"    // Our interface
 
 /*----------------------------------------------------------------------------
  * Parsing Utilities
@@ -127,8 +130,6 @@ int parse_int32(const char *string, int32_t *val)
 
     // Otherwise, if we couldn't parse the value, try as a hexadecimal value
     rc = parse_long(string, 0, &parsed_val);
-        printf("parsed_val=0x%08lx, -parsed_val=0x%08lx, min=0x%08lx\n",
-                parsed_val, -parsed_val, (unsigned long)UINT32_MAX);
     if (rc < 0) {
         return rc;
     } else if (parsed_val < 0 && (unsigned long)-parsed_val > UINT32_MAX) {
@@ -140,6 +141,36 @@ int parse_int32(const char *string, int32_t *val)
     // If we could parse the value, then cast it to an integer
     *val = (int32_t)parsed_val;
     return 0;
+}
+
+/*----------------------------------------------------------------------------
+ * Bit Manipulation Utilities
+ *----------------------------------------------------------------------------*/
+
+/**
+ * get_byte
+ *
+ * Gets the specified byte from the specified value, where the byte must be
+ * between 0 and 3.
+ **/
+uint8_t get_byte(uint32_t value, int byte)
+{
+    assert(0 <= byte && byte < (int)sizeof(value));
+
+    return (value >> (8 * byte)) & 0xFF;
+}
+
+/**
+ * set_byte
+ *
+ * Creates a new 32-bit value where the specified value is the specified byte of
+ * the 32-bit value, and all other bytes in the word are 0.
+ **/
+uint32_t set_byte(uint8_t value, int byte)
+{
+    assert(0 <= byte && byte < (int)sizeof(uint32_t));
+
+    return ((uint32_t)value) << (8 * byte);
 }
 
 /*----------------------------------------------------------------------------

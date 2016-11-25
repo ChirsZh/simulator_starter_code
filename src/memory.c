@@ -29,7 +29,7 @@
 #include "sim.h"                    // Interface to the core simulator
 #include "memory.h"                 // This file's interface
 #include "riscv_abi.h"              // ABI registers and definitions
-#include "libc_extensions.h"        // Parsing utilities and array_len macro
+#include "libc_extensions.h"        // Various utilities
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -95,32 +95,6 @@ static const mem_region_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
 /*----------------------------------------------------------------------------
  * Shared Helper Functions
  *----------------------------------------------------------------------------*/
-
-/**
- * get_byte
- *
- * Gets the specified byte from the specified value, where the byte must be
- * between 0 and 3.
- **/
-static uint8_t get_byte(uint32_t value, int byte)
-{
-    assert(0 <= byte && byte < (int)sizeof(value));
-
-    return (value >> (8 * byte)) & 0xFF;
-}
-
-/**
- * set_byte
- *
- * Creates a new 32-bit value where the specified value is the specified byte of
- * the 32-bit value, and all other bytes in the word are 0.
- **/
-static uint32_t set_byte(uint8_t value, int byte)
-{
-    assert(0 <= byte && byte < (int)sizeof(uint32_t));
-
-    return ((uint32_t)value) << (8 * byte);
-}
 
 /**
  * mem_read_word
@@ -189,7 +163,7 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 }
 
 /*----------------------------------------------------------------------------
- * Memory Shell Interface
+ * Shell Interface Functions
  *----------------------------------------------------------------------------*/
 
 /**
