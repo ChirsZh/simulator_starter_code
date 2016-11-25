@@ -110,19 +110,13 @@ int parse_int32_hex(const char *string, int32_t *val)
  *
  * Attempts to parse the given string as a 32-bit hexadecimal or decimal
  * integer. If successful, the value pointer is updated with the integer value
- * of the string. Negative signs are permitted in the string.
+ * of the string.
  **/
 int parse_int32(const char *string, int32_t *val)
 {
-    // First, try to parse the value as a hexadecimal string
-    int rc = parse_int32_hex(string, val);
-    if (rc == 0) {
-        return 0;
-    }
-
-    // Otherwise, try to parse the value a decimal string
+    // Try to parse the value as an integer constanst (decimal or hex)
     long parsed_val;
-    rc = parse_long(string, 10, &parsed_val);
+    int rc = parse_long(string, 0, &parsed_val);
     if (rc < 0) {
         return rc;
     } else if (parsed_val < (long)INT32_MIN || parsed_val > (long)INT32_MAX) {
