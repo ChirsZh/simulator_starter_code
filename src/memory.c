@@ -216,8 +216,8 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
         line[newline_index] = '\0';
 
         // Parse the line as a 32-bit unsigned hexadecimal integer
-        int32_t value;
-        rc = parse_int32_hex(line, &value);
+        uint32_t value;
+        rc = parse_uint32_hex(line, &value);
         if (rc < 0) {
             fprintf(stderr, "Error: %s: Line %zu: Unable to parse '%s' as a "
                     "32-bit unsigned hexadecimal integer.\n", hex_path,
@@ -226,8 +226,8 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
         }
 
         // Write the value to memory, and increment the offset into memory
-        size_t offset = line_num * sizeof(uint32_t);
-        mem_write_word(&mem_region->mem[offset], (uint32_t)value);
+        size_t offset = line_num * sizeof(value);
+        mem_write_word(&mem_region->mem[offset], value);
 
         // Get the next line of the file
         rc = getline(&line, &buf_size, hex_file);

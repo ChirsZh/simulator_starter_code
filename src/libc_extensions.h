@@ -79,20 +79,21 @@
 int parse_int(const char *string, int *val);
 
 /**
- * parse_int32_hex
+ * parse_uint32_hex
  *
- * Attempts to parse the given string as a 32-bit hexadecimal integer. If
- * successful, the value pointer is updated with the integer value of the
- * string. Negative signs are permitted in the string.
+ * Attempts to parse the given string as a 32-bit unsigned hexadecimal integer.
+ * If successful, the value pointer is updated with the integer value of the
+ * string.
  **/
-int parse_int32_hex(const char *string, int32_t *val);
+int parse_uint32_hex(const char *string, uint32_t *val);
 
 /**
  * parse_int32
  *
- * Attempts to parse the given string as a 32-bit hexadecimal or decimal
- * integer. If successful, the value pointer is updated with the integer value
- * of the string. Negative signs are permitted in the string.
+ * Attempts to parse the given string as a 32-bit value. The string can be
+ * either a signed decimal integer or signed or unsigned hexadecimal integer.
+ * If successful, the value pointer is updated with the integer value of the
+ * string.
  **/
 int parse_int32(const char *string, int32_t *val);
 
