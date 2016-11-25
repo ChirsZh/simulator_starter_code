@@ -51,14 +51,24 @@ veryclean: clean assemble-veryclean
 # The name of the entrypoint for assembly tests, which matches the typical main
 RISCV_ENTRY_POINT = main
 
+# The addresses of the data and text sections in the program
+RISCV_TEXT_START = 0x00400000
+RISCV_DATA_START = 0x10000000
+
 # The compiler for assembly files, along with its flags
 RISCV_CC = riscv64-unknown-elf-gcc
 RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32
 RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
+RISCV_LDFLAGS = -Wl,--section=.text=$(RISCV_TEXT_START) \
+				-Wl,--section=.data=$(RISCV_DATA_START)
 
-# The objcopy utility for assembly files, along with its flags
+# The objcopy utility for ELF files, along with its flags
 RISCV_OBJCOPY = riscv64-unknown-elf-objcopy
 RISCV_OBJCOPY_FLAGS = -O binary
+
+# The objdump utility for ELF files, along with its flags
+RISCV_OBJDUMP = riscv64-unknown-elf-objdump
+RISCV_OBJDUMP_FLAGS = -d
 
 # The compiler for hex files, which convert copied binary to ASCII hex files,
 # where there is one word per line.
@@ -74,15 +84,17 @@ SECTIONS = text data ktext kdata
 ELF_EXTENSION = elf
 BINARY_EXTENSION = bin
 HEX_EXTENSION = hex
+DISAS_EXTENSION = disassembly.s
 
 # The name of the test, and the hex and ELF files generated for the given test
 TEST_NAME = $(basename $(TEST))
 TEST_EXECUTABLE = $(addsuffix .$(ELF_EXTENSION), $(TEST_NAME))
 TEST_SECTIONS = $(addprefix $(TEST_NAME).,$(SECTIONS))
 TEST_SECTIONS_HEX = $(addsuffix .$(HEX_EXTENSION),$(TEST_SECTIONS))
+TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION),$(TEST_NAME))
 
 # Assemble the program specified by the user on the command line
-assemble: $(TEST_SECTIONS_HEX)
+assemble: $(TEST_SECTIONS_HEX) $(TEST_DISASSEMBLY)
 
 # Convert a binary file for program of the ELF file to an ASCII hex
 %.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
@@ -92,23 +104,27 @@ assemble: $(TEST_SECTIONS_HEX)
 $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
+# Generate a dissabemly of the compiled program for debugging pruposes
+%.$(DISAS_EXTENSION): %.$(ELF_EXTENSION) | assemble-check-objdump
+	$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_FLAGS) $^ > $@
+
 # Compile the assembly test program with a *.s extension to create an ELF file
 %.$(ELF_EXTENSION): %.s | assemble-check-compiler assemble-check-test
-	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
+	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the assembly test program with a *.S extension to create an ELF file
 %.$(ELF_EXTENSION): %.S | assemble-check-compiler assemble-check-test
-	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
+	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the C test program with the startup file to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c | assemble-check-compiler \
 		assemble-check-test
-	$(RISCV_CC) $(RISCV_CFLAGS) $^ -o $@
+	$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $^ -o $@
 
 # Clean up all the hex files in project directories
 assemble-veryclean:
 	rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)' \
-			-o -name '*.$(ELF_EXTENSION)')
+			-o -name '*.$(ELF_EXTENSION)' -o -name '*.$(DISAS_EXTENSION)')
 
 # Suppresses 'no rule to make...' error when the TEST doesn't exist
 $(TEST):
@@ -131,6 +147,14 @@ endif
 assemble-check-objcopy:
 ifeq ($(shell which $(RISCV_OBJCOPY) 2> /dev/null),)
 	@printf "Error: $(RISCV_OBJCOPY): RISC-V objcopy binary utility was not "
+	@printf "found in your PATH.\n"
+	@exit 1
+endif
+
+# Check that the RISC-V objdump binary utility exists
+assemble-check-objdump:
+ifeq ($(shell which $(RISCV_OBJDUMP) 2> /dev/null),)
+	@printf "Error: $(RISCV_OBJDUMP): RISC-V objdump binary utility was not "
 	@printf "found in your PATH.\n"
 	@exit 1
 endif
