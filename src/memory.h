@@ -95,4 +95,12 @@ int mem_load_program(struct cpu_state *cpu_state, const char *program_path);
  **/
 void mem_unload_program(struct cpu_state *cpu_state);
 
+/**
+ * mem_find_address
+ *
+ * Find the address on the host machine that corresponds to the address in the
+ * simulator. If no such address exists, return NULL.
+ **/
+uint8_t *mem_find_address(const struct cpu_state *cpu_state, uint32_t addr);
+
 #endif /* MEMORY_H_ */

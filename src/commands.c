@@ -34,6 +34,25 @@
 #include "libc_extensions.h"    // Parsing functions, array_len, Snprintf
 
 /*----------------------------------------------------------------------------
+ * Shared Helper Functions
+ *----------------------------------------------------------------------------*/
+
+/**
+ * print_separator
+ *
+ * Prints a line of line_width separators to the given file. This is used in the
+ * dump commands to seperate headers from values.
+ **/
+static void print_separator(char separator, ssize_t line_width, FILE* file)
+{
+    char separator_line[line_width+1];
+    memset(separator_line, separator, sizeof(separator_line));
+    separator_line[line_width] = '\0';
+    fprintf(file, "%s\n", separator_line);
+    return;
+}
+
+/*----------------------------------------------------------------------------
  * Step and Go Commands
  *----------------------------------------------------------------------------*/
 
@@ -237,7 +256,7 @@ static void print_register_header(FILE* file)
             (int)REG_UINT_COL_LEN, "Uint Value", (int)REG_INT_COL_LEN,
             "Int Value");
 
-    // Print out a seperator of dashses between the header and values
+    // Print out a separator of dashses between the header and values
     char horizontal_line[line_width-1+1];
     memset(horizontal_line, '-', sizeof(horizontal_line)-1);
     horizontal_line[sizeof(horizontal_line)-1] = '\0';
@@ -389,6 +408,31 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
  * Memory and Mdump Commands
  *----------------------------------------------------------------------------*/
 
+// The minimum and maximum expected number of arguments for the memory command
+#define MEMORY_MIN_NUM_ARGS     1
+#define MEMORY_MAX_NUM_ARGS     2
+
+static void print_memory_header(FILE* file)
+{
+    ssize_t line_width = fprintf(file, "%-10s  %-4s %-4s %-4s %-4s\n",
+            "Address", "0", "1", "2", "3");
+    print_separator('-', line_width-1, file);
+    return;
+}
+
+/**
+ * print_memory
+ *
+ * Prints out information for the given address on one line to the file. The
+ * memory is printed out in little-endian order
+ **/
+static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
+{
+    fprintf(file, "0x%08x: 0x%02x 0x%02x 0x%02x 0x%02x\n", address, memory[0],
+            memory[1], memory[2], memory[3]);
+    return;
+}
+
 /**
  * command_memory
  *
@@ -397,10 +441,37 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
  **/
 void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
-    (void)args;
-    (void)num_args;
+    if (num_args < MEMORY_MIN_NUM_ARGS) {
+        fprintf(stderr, "Error: memory: Too few arguments specified.\n");
+        return;
+    } else if (num_args > MEMORY_MAX_NUM_ARGS) {
+        fprintf(stderr, "Error: memory: Too many arguments specified.\n");
+        return;
+    }
+
+    // First, try to parse the memory address
+    const char *address_string = args[0];
+    int32_t address;
+    if (parse_int32(address_string, &address) < 0) {
+        fprintf(stderr, "Error: memory: Unable to parse '%s' as a 32-bit "
+                "integer.\n", address_string);
+        return;
+    }
+
+    // Find and check that the address specified is valid.
+    uint8_t *memory = mem_find_address(cpu_state, address);
+    if (memory == NULL) {
+        fprintf(stderr, "Error: memory: Invalid memory address 0x%08x "
+                "specified.\n", address);
+        return;
+    }
+
+    // If the user didn't specify a value, then we print the value
+    if (num_args == MEMORY_MIN_NUM_ARGS) {
+        print_memory_header(stdout);
+        print_memory(address, memory, stdout);
+        return;
+    }
 
     return;
 }

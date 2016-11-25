@@ -159,29 +159,6 @@ static uint32_t read_little_endian(const uint8_t *mem_addr)
     return value;
 }
 
-/**
- * find_address
- *
- * Find the address on the host machine that corresponds to the address in the
- * simulator. If no such address exists, return NULL.
- **/
-static uint8_t *find_address(const memory_t *memory, uint32_t addr)
-{
-    // Iterate over the memory regions, checking if the address lies in them
-    for (int i = 0; i < memory->num_mem_regions; i++)
-    {
-        const mem_region_t *mem_region = &memory->mem_regions[i];
-        uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
-
-        if (mem_region->base_addr <= addr && addr < region_end_addr) {
-            uint32_t offset = addr - mem_region->base_addr;
-            return &mem_region->mem[offset];
-        }
-    }
-
-    return NULL;
-}
-
 /*----------------------------------------------------------------------------
  * Core Simulator Interface Functions
  *----------------------------------------------------------------------------*/
@@ -197,7 +174,7 @@ static uint8_t *find_address(const memory_t *memory, uint32_t addr)
 uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 {
     // Try to find the specified address
-    uint8_t *mem_addr = find_address(&cpu_state->memory, addr);
+    uint8_t *mem_addr = mem_find_address(cpu_state, addr);
     if (mem_addr == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
                 "simulation.\n", addr);
@@ -219,7 +196,7 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 {
     // Try to find the specified address
-    uint8_t *mem_addr = find_address(&cpu_state->memory, addr);
+    uint8_t *mem_addr = mem_find_address(cpu_state, addr);
     if (mem_addr == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
                 "simulation.\n", addr);
@@ -442,4 +419,27 @@ void mem_unload_program(struct cpu_state *cpu_state)
     }
 
     return;
+}
+
+/**
+ * mem_find_address
+ *
+ * Find the address on the host machine that corresponds to the address in the
+ * simulator. If no such address exists, return NULL.
+ **/
+uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
+{
+    // Iterate over the memory regions, checking if the address lies in them
+    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
+    {
+        const mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
+        uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
+
+        if (mem_region->base_addr <= addr && addr < region_end_addr) {
+            uint32_t offset = addr - mem_region->base_addr;
+            return &mem_region->mem[offset];
+        }
+    }
+
+    return NULL;
 }
