@@ -52,6 +52,43 @@ static void print_separator(char separator, ssize_t line_width, FILE* file)
     return;
 }
 
+/**
+ * open_dump_file
+ *
+ * Opens the dump file if it was specified by the user, otherwise defaults to
+ * stdout. Returns NULL on error.
+ **/
+static FILE *open_dump_file(const char *args[], int num_args,
+        int dumpfile_arg_num, const char *cmd)
+{
+    // Default to stdout if there aren't enough arguments
+    if (!(dumpfile_arg_num < num_args)) {
+        return stdout;
+    }
+
+    // Otherwise, try to open the specified dump file
+    FILE *dump_file = fopen(args[dumpfile_arg_num], "w");
+    if (dump_file == NULL) {
+        fprintf(stderr, "Error: %s: %s: Unable to open file: %s.\n", cmd,
+                args[dumpfile_arg_num], strerror(errno));
+    }
+    return dump_file;
+}
+
+/**
+ * close_dump_file
+ *
+ * Closes a previously opened dump file. If the dump file is stdout, then
+ * nothing is done.
+ **/
+static void close_dump_file(FILE *dump_file)
+{
+    if (dump_file != stdout) {
+        fclose(dump_file);
+    }
+    return;
+}
+
 /*----------------------------------------------------------------------------
  * Step and Go Commands
  *----------------------------------------------------------------------------*/
@@ -377,17 +414,11 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
         return;
     }
 
-    /* If specified, dump the register values to the given file. Otherwise,
-     * print the values to stdout. */
-    FILE *dump_file = stdout;
-    if (num_args == RDUMP_MAX_NUM_ARGS) {
-        const char *dump_filename = args[0];
-        dump_file = fopen(dump_filename, "w");
-        if (dump_file == NULL) {
-            fprintf(stderr, "Error: rdump: %s: Unable to open file: %s.\n",
-                    dump_filename, strerror(errno));
-            return;
-        }
+    // Open the dump file, defaulting to stdout if it is not specified
+    int arg_num = RDUMP_MAX_NUM_ARGS - 1;
+    FILE *dump_file = open_dump_file(args, num_args, arg_num, "rdump");
+    if (dump_file == NULL) {
+        return;
     }
 
     // Print out the current CPU state, and the header for the registers
@@ -401,10 +432,8 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
         print_register(cpu_state, i, dump_file);
     }
 
-    // Close the dump file if was specified by the user (not stdout)
-    if (dump_file != stdout) {
-        fclose(dump_file);
-    }
+    // Close the dump file if it was specified by the user
+    close_dump_file(dump_file);
     return;
 }
 
@@ -417,7 +446,7 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 #define MEMORY_MAX_NUM_ARGS     2
 
 // The maximum expected number of arguments for the mdump command
-#define MDUMP_MIN_NUM_ARGS       2
+#define MDUMP_MIN_NUM_ARGS      2
 #define MDUMP_MAX_NUM_ARGS      3
 
 static void print_memory_header(FILE* file)
@@ -526,17 +555,11 @@ void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args)
         return;
     }
 
-    /* If specified, dump the memory values to the given file. Otherwise, print
-     * the values to stdout. */
-    FILE *dump_file = stdout;
-    if (num_args == MDUMP_MAX_NUM_ARGS) {
-        const char *dump_filename = args[num_args-1];
-        dump_file = fopen(dump_filename, "w");
-        if (dump_file == NULL) {
-            fprintf(stderr, "Error: mdump: %s: Unable to open file: %s.\n",
-                    dump_filename, strerror(errno));
-            return;
-        }
+    // Open the dump file, defaulting to stdout if it is not specified
+    int arg_num = MDUMP_MAX_NUM_ARGS - 1;
+    FILE *dump_file = open_dump_file(args, num_args, arg_num, "mdump");
+    if (dump_file == NULL) {
+        return;
     }
 
     // Check that the start address is less than the end, and the range is valid
