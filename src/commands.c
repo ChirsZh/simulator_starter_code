@@ -414,7 +414,11 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 
 // The minimum and maximum expected number of arguments for the memory command
 #define MEMORY_MIN_NUM_ARGS     1
-#define MEMORY_MAX_NUM_ARGS     3
+#define MEMORY_MAX_NUM_ARGS     2
+
+// The maximum expected number of arguments for the mdump command
+#define MDUMP_MIN_NUM_ARGS       2
+#define MDUMP_MAX_NUM_ARGS      3
 
 static void print_memory_header(FILE* file)
 {
@@ -499,11 +503,66 @@ void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args)
  **/
 void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
-    (void)args;
-    (void)num_args;
+    // Check that the appropriate number of arguments was specified
+    if (num_args < MDUMP_MIN_NUM_ARGS) {
+        fprintf(stderr, "Error: mdump: Too few arguments specified.\n");
+        return;
+    } else if (num_args > MDUMP_MAX_NUM_ARGS) {
+        fprintf(stderr, "Error: mdump: Too many arguments specified.\n");
+    }
 
+    // Parse the starting and ending addresses for the memory dump
+    uint32_t start_addr, end_addr;
+    const char *start_addr_string = args[0];
+    if (parse_uint32_hex(start_addr_string, &start_addr) < 0) {
+        fprintf(stderr, "Error: mdump: Unable to parse '%s' as a 32-bit "
+                "unsigned hexadecimal integer.\n", start_addr_string);
+        return;
+    }
+    const char *end_addr_string = args[1];
+    if (parse_uint32_hex(end_addr_string, &end_addr) < 0) {
+        fprintf(stderr, "Error: mdump: Unable to parse '%s' as a 32-bit "
+                "unsigned hexadecimal integer.\n", end_addr_string);
+        return;
+    }
+
+    /* If specified, dump the memory values to the given file. Otherwise, print
+     * the values to stdout. */
+    FILE *dump_file = stdout;
+    if (num_args == MDUMP_MAX_NUM_ARGS) {
+        const char *dump_filename = args[num_args-1];
+        dump_file = fopen(dump_filename, "w");
+        if (dump_file == NULL) {
+            fprintf(stderr, "Error: mdump: %s: Unable to open file: %s.\n",
+                    dump_filename, strerror(errno));
+            return;
+        }
+    }
+
+    // Check that the start address is less than the end, and the range is valid
+    if (end_addr < start_addr) {
+        fprintf(stderr, "Error: mdump: Ending address is less than start "
+                "address.\n");
+        return;
+    } else  if (!mem_range_valid(cpu_state, start_addr, end_addr)) {
+        fprintf(stderr, "Error: mdump: Address range 0x%08x - 0x%08x is not "
+                "valid.\n", start_addr, end_addr);
+        return;
+    }
+
+    // Print out all the values in memory over the specified range
+    print_memory_header(dump_file);
+    for (uint32_t addr = start_addr; addr < end_addr; addr += sizeof(uint32_t))
+    {
+        uint8_t *mem_addr = mem_find_address(cpu_state, addr);
+        assert(mem_addr != NULL);
+        print_memory(addr, mem_addr, dump_file);
+    }
+
+    // Close the dump file if was specified by the user (not stdout)
+    if (dump_file != stdout) {
+        fclose(dump_file);
+    }
     return;
 }
 

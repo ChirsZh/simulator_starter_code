@@ -401,6 +401,32 @@ void mem_unload_program(struct cpu_state *cpu_state)
 }
 
 /**
+ * mem_range_valid
+ *
+ * Checks if the given memory range from start to end (inclusive) is valid.
+ * Namely, this means that all addresses between start and end are valid.
+ **/
+bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
+        uint32_t end_addr)
+{
+    assert(start_addr < end_addr);
+
+    /* Iterate over the memory regions, checking if the range is completely
+     * contained in any region. */
+    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
+    {
+        const mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
+        uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
+
+        if (mem_region->base_addr <= start_addr && end_addr < region_end_addr) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * mem_find_address
  *
  * Find the address on the host machine that corresponds to the address in the

@@ -22,6 +22,7 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
+#include <stdbool.h>            // Boolean type and definitions
 #include <stdint.h>             // Fixed-size integral types
 
 /*----------------------------------------------------------------------------
@@ -94,6 +95,15 @@ int mem_load_program(struct cpu_state *cpu_state, const char *program_path);
  * frees the allocated memory for the processor's memory region.
  **/
 void mem_unload_program(struct cpu_state *cpu_state);
+
+/**
+ * mem_range_valid
+ *
+ * Checks if the given memory range from start to end (inclusive) is valid.
+ * Namely, this means that all addresses between start and end are valid.
+ **/
+bool mem_range_valid(const struct cpu_state *cpu_state, uint32_t start_addr,
+        uint32_t end_addr);
 
 /**
  * mem_find_address
