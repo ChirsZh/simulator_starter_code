@@ -255,13 +255,7 @@ static void print_register_header(FILE* file)
             "ABI Name", (int)REG_HEX_COL_LEN, "Hex Value",
             (int)REG_UINT_COL_LEN, "Uint Value", (int)REG_INT_COL_LEN,
             "Int Value");
-
-    // Print out a separator of dashses between the header and values
-    char horizontal_line[line_width-1+1];
-    memset(horizontal_line, '-', sizeof(horizontal_line)-1);
-    horizontal_line[sizeof(horizontal_line)-1] = '\0';
-    fprintf(file, "%s\n", horizontal_line);
-
+    print_separator('-', line_width, file);
     return;
 }
 
@@ -295,6 +289,20 @@ static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
             reg_name->isa_name, (int)ABI_NAME_COL_LEN, abi_name,
             (int)REG_HEX_COL_LEN, reg_hex_value, (int)REG_UINT_COL_LEN,
             reg_uint_value, (int)REG_INT_COL_LEN, reg_int_value);
+    return;
+}
+
+/**
+ * print_cpu_state
+ *
+ * Prints out information about the current CPU state to the file.
+ **/
+static void print_cpu_state(const cpu_state_t *cpu_state, FILE* file)
+{
+    ssize_t width = fprintf(file, "Current CPU State and Register Values:\n");
+    print_separator('-', width-1, file);
+    fprintf(file, "%-20s = %d\n", "Instruction Count", cpu_state->instr_count);
+    fprintf(file, "%-20s = 0x%08x\n", "Program Counter (PC)", cpu_state->pc);
     return;
 }
 
@@ -382,13 +390,9 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
         }
     }
 
-    // Print out the header for the register dump
-    fprintf(dump_file, "Current CPU State and Register Values:\n");
-    fprintf(dump_file, "--------------------------------------\n");
-    fprintf(dump_file, "%-20s = %d\n", "Instruction Count",
-            cpu_state->instr_count);
-    fprintf(dump_file, "%-20s = 0x%08x\n\n", "Program Counter (PC)",
-            cpu_state->pc);
+    // Print out the current CPU state, and the header for the registers
+    print_cpu_state(cpu_state, dump_file);
+    fprintf(dump_file, "\n");
     print_register_header(dump_file);
 
     // Print out all of the general purpose register values
@@ -415,7 +419,7 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 static void print_memory_header(FILE* file)
 {
     ssize_t line_width = fprintf(file, "%-10s  %-4s %-4s %-4s %-4s\n",
-            "Address", "0", "1", "2", "3");
+            "Address", "+3", "+2", "+1", "+0");
     print_separator('-', line_width-1, file);
     return;
 }
@@ -428,8 +432,8 @@ static void print_memory_header(FILE* file)
  **/
 static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
 {
-    fprintf(file, "0x%08x: 0x%02x 0x%02x 0x%02x 0x%02x\n", address, memory[0],
-            memory[1], memory[2], memory[3]);
+    fprintf(file, "0x%08x: 0x%02x 0x%02x 0x%02x 0x%02x\n", address, memory[3],
+            memory[2], memory[1], memory[0]);
     return;
 }
 
