@@ -410,7 +410,7 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 
 // The minimum and maximum expected number of arguments for the memory command
 #define MEMORY_MIN_NUM_ARGS     1
-#define MEMORY_MAX_NUM_ARGS     2
+#define MEMORY_MAX_NUM_ARGS     3
 
 static void print_memory_header(FILE* file)
 {
@@ -473,6 +473,17 @@ void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args)
         return;
     }
 
+    // Otherwise, parse the second argument as a 32-bit integer
+    const char *mem_value_string = args[1];
+    int32_t mem_value;
+    if (parse_int32(mem_value_string, &mem_value) < 0) {
+        fprintf(stderr, "Error: memory: Unable to parse '%s' as a 32-bit "
+                "integer.\n", mem_value_string);
+        return;
+    }
+
+    // Update the memory location with the new value
+    mem_write_word(memory, mem_value);
     return;
 }
 

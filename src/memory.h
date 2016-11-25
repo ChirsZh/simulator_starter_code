@@ -103,4 +103,12 @@ void mem_unload_program(struct cpu_state *cpu_state);
  **/
 uint8_t *mem_find_address(const struct cpu_state *cpu_state, uint32_t addr);
 
+/**
+ * mem_write_word
+ *
+ * Writes the specified word value to the given memory location. The given
+ * address must be a valid memory location in the processor.
+ **/
+void mem_write_word(uint8_t *mem_addr, uint32_t value);
+
 #endif /* MEMORY_H_ */

@@ -123,39 +123,18 @@ static uint32_t set_byte(uint8_t value, int byte)
 }
 
 /**
- * mem_write_word
- *
- * Writes the spcified value out to the given address in little endian order.
- * The address must be aligned on a 4-byte boundary.
- **/
-static void write_little_endian(uint8_t *mem_addr, uint32_t value)
-{
-    assert((uintptr_t)mem_addr % sizeof(value) == 0);
-
-    mem_addr[0] = get_byte(value, 0);
-    mem_addr[1] = get_byte(value, 1);
-    mem_addr[2] = get_byte(value, 2);
-    mem_addr[3] = get_byte(value, 3);
-
-    return;
-}
-
-/**
  * mem_read_word
  *
  * Reads the specified value out from the given address in little endian order.
  * The address must be aligned on a 4-byte boundary
  **/
-static uint32_t read_little_endian(const uint8_t *mem_addr)
+static uint32_t mem_read_word(const uint8_t *mem_addr)
 {
-    assert((uintptr_t)mem_addr % sizeof(uint32_t) == 0);
-
     uint32_t value = 0;
     value |= set_byte(mem_addr[0], 0);
     value |= set_byte(mem_addr[1], 1);
     value |= set_byte(mem_addr[2], 2);
     value |= set_byte(mem_addr[3], 3);
-
     return value;
 }
 
@@ -182,7 +161,7 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
         return 0;
     }
 
-    return read_little_endian(mem_addr);
+    return mem_read_word(mem_addr);
 }
 
 /**
@@ -205,7 +184,7 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
     }
 
     // Write the value out in little-endian order
-    write_little_endian(mem_addr, value);
+    mem_write_word(mem_addr, value);
     return;
 }
 
@@ -248,7 +227,7 @@ static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
 
         // Write the value to memory, and increment the offset into memory
         size_t offset = line_num * sizeof(uint32_t);
-        write_little_endian(&mem_region->mem[offset], (uint32_t)value);
+        mem_write_word(&mem_region->mem[offset], (uint32_t)value);
 
         // Get the next line of the file
         rc = getline(&line, &buf_size, hex_file);
@@ -442,4 +421,19 @@ uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
     }
 
     return NULL;
+}
+
+/**
+ * mem_write_word
+ *
+ * Writes the spcified value out to the given address in little endian order.
+ * The address must be aligned on a 4-byte boundary.
+ **/
+void mem_write_word(uint8_t *mem_addr, uint32_t value)
+{
+    mem_addr[0] = get_byte(value, 0);
+    mem_addr[1] = get_byte(value, 1);
+    mem_addr[2] = get_byte(value, 2);
+    mem_addr[3] = get_byte(value, 3);
+    return;
 }
