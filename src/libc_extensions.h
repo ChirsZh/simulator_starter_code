@@ -41,12 +41,30 @@
     (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : __FILE__)
 
 /**
+ * max
+ *
+ * Gets the maximum of two values, which should be of the same type.
+ **/
+#define max(x, y) \
+    (((x) > (y)) ? (x) : (y))
+
+/**
  * array_len
  *
- * Gets the length of a statically allocated array.
+ * Gets the length of a statically allocated array. The result will be
+ * incorrect if array is simply a pointer.
  **/
 #define array_len(array) \
     (sizeof(array) / sizeof((array)[0]))
+
+/**
+ * string_len
+ *
+ * Gets the length of a statically allocated string. The result will be
+ * incorrect if the string is simply a pointer.
+ **/
+#define string_len(string) \
+    (array_len(string) - 1)
 
 /*----------------------------------------------------------------------------
  * Parsing Utilities

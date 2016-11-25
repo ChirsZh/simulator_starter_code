@@ -27,7 +27,6 @@
 
 #include <limits.h>             // Limits for integer types
 #include <assert.h>             // Assert macro
-#include <string.h>             // String manipulation functions and memset
 #include <errno.h>              // Error codes and perror
 
 #include "sim.h"                // Definition of cpu_state_t
@@ -139,11 +138,24 @@ void command_go(cpu_state_t *cpu_state, const char *args[], int num_args)
 #define RDUMP_MAX_NUM_ARGS      1
 
 // The maximum length of an ISA and ABI alias name for a register
-#define REG_ISA_MAX_LEN         3
-#define REG_ABI_MAX_LEN         5
+#define ISA_NAME_MAX_LEN        3
+#define ABI_NAME_MAX_LEN        5
 
-// The maximum number of decimal digits for a 32-bit integer value
-#define INT32_MAX_DEC_DIGITS    10
+// The maximum number of hexadecimal and decimal digits for a 32-bit integer
+#define INT32_MAX_DIGITS        10
+#define INT32_MAX_HEX_DIGITS    (2 * sizeof(uint32_t))
+
+/* Define the format for a register dump line. This is the width of each column
+ * in the, which is a max between a value and its column title. */
+#define ISA_NAME_COL_LEN        max(ISA_NAME_MAX_LEN, string_len("ISA Name"))
+#define ABI_NAME_COL_LEN        max(ABI_NAME_MAX_LEN + string_len("()"), \
+                                        string_len("ABI NAME"))
+#define REG_HEX_COL_LEN         max(INT32_MAX_HEX_DIGITS + string_len("0x"), \
+                                        string_len("Hex Value"))
+#define REG_UINT_COL_LEN        max(INT32_MAX_DIGITS + string_len("()"), \
+                                        string_len("Uint Value"))
+#define REG_INT_COL_LEN         max(INT32_MAX_DIGITS + string_len("()"), \
+                                        string_len("Int Value"))
 
 // Structure representing the naming information about a register
 typedef struct register_name {
@@ -153,16 +165,16 @@ typedef struct register_name {
 
 // An array of all the naming information for a register, and its ABI aliases
 static const register_name_t RISCV_REGISTER_NAMES[RISCV_NUM_REGS] = {
-    { .isa_name = "x0", .abi_name = "zero", },
-    { .isa_name = "x1", .abi_name = "ra", },
-    { .isa_name = "x2", .abi_name = "sp", },
-    { .isa_name = "x3", .abi_name = "gp", },
-    { .isa_name = "x4", .abi_name = "tp", },
-    { .isa_name = "x5", .abi_name = "t0", },
-    { .isa_name = "x6", .abi_name = "t1", },
-    { .isa_name = "x7", .abi_name = "t2", },
-    { .isa_name = "x8", .abi_name = "s0/fp", },
-    { .isa_name = "x9", .abi_name = "s1", },
+    { .isa_name = "x0",  .abi_name = "zero", },
+    { .isa_name = "x1",  .abi_name = "ra", },
+    { .isa_name = "x2",  .abi_name = "sp", },
+    { .isa_name = "x3",  .abi_name = "gp", },
+    { .isa_name = "x4",  .abi_name = "tp", },
+    { .isa_name = "x5",  .abi_name = "t0", },
+    { .isa_name = "x6",  .abi_name = "t1", },
+    { .isa_name = "x7",  .abi_name = "t2", },
+    { .isa_name = "x8",  .abi_name = "s0/fp", },
+    { .isa_name = "x9",  .abi_name = "s1", },
     { .isa_name = "x10", .abi_name = "a0", },
     { .isa_name = "x11", .abi_name = "a1", },
     { .isa_name = "x12", .abi_name = "a2", },
@@ -212,35 +224,58 @@ static int find_register(const char *reg_name)
 }
 
 /**
+ * print_register_header
+ *
+ * Prints out the header lines for a register dump to the given file. This
+ * contains the titles for each column of a line of register output.
+ **/
+static void print_register_header(FILE* file)
+{
+    ssize_t line_width = fprintf(file, "%-*s %-*s   %-*s %-*s %-*s\n",
+            (int)ISA_NAME_COL_LEN, "ISA Name", (int)ABI_NAME_COL_LEN,
+            "ABI Name", (int)REG_HEX_COL_LEN, "Hex Value",
+            (int)REG_UINT_COL_LEN, "Uint Value", (int)REG_INT_COL_LEN,
+            "Int Value");
+
+    // Print out a seperator of dashses between the header and values
+    char horizontal_line[line_width-1+1];
+    memset(horizontal_line, '-', sizeof(horizontal_line)-1);
+    horizontal_line[sizeof(horizontal_line)-1] = '\0';
+    fprintf(file, "%s\n", horizontal_line);
+
+    return;
+}
+
+/**
  * print_register
  *
- * Prints out the information for a given register on one line.
+ * Prints out the information for a given register on one line to the file.
  **/
 static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
 {
     assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
 
-    // Format the ABI alias name for the register, surrounded with parenthesis
-    int abi_name_max_len = REG_ABI_MAX_LEN + 2;
-    char abi_name[abi_name_max_len+1];
+    // Get the register value, and its register name struct
     const register_name_t *reg_name = &RISCV_REGISTER_NAMES[reg_num];
+    uint32_t reg_value = cpu_state->regs[reg_num];
+
+    // Format the ABI alias name for the register surrounded with parenthesis
+    char abi_name[ABI_NAME_COL_LEN+1];
     Snprintf(abi_name, sizeof(abi_name), "(%s)", reg_name->abi_name);
 
-    // Format the unsigned view of the register's surrounded with parenthesis
-    uint32_t reg_value = cpu_state->regs[reg_num];
-    int reg_value_max_len = INT32_MAX_DEC_DIGITS + 2;
-    char reg_uint_value[reg_value_max_len+1];
+    // Format the hexadecimal, signed, and unsigned views of the register
+    char reg_hex_value[REG_HEX_COL_LEN+1];
+    char reg_uint_value[REG_UINT_COL_LEN+1];
+    char reg_int_value[REG_INT_COL_LEN+1];
+    Snprintf(reg_hex_value, sizeof(reg_hex_value), "0x%08x", reg_value);
     Snprintf(reg_uint_value, sizeof(reg_uint_value), "(%u)", reg_value);
-
-    // Format the signed view of the register's surrounded with parenthesis
-    char reg_int_value[reg_value_max_len+1];
     Snprintf(reg_int_value, sizeof(reg_int_value), "(%d)", (int32_t)reg_value);
 
     // Print out the register names and its values
-    fprintf(file, "%-*s %-*s = 0x%08x %-*s %-*s\n", REG_ISA_MAX_LEN,
-            reg_name->isa_name, abi_name_max_len, abi_name, reg_value,
-            reg_value_max_len, reg_int_value, reg_value_max_len,
-            reg_uint_value);
+    fprintf(file, "%-*s %-*s = %-*s %-*s %-*s\n", (int)ISA_NAME_COL_LEN,
+            reg_name->isa_name, (int)ABI_NAME_COL_LEN, abi_name,
+            (int)REG_HEX_COL_LEN, reg_hex_value, (int)REG_UINT_COL_LEN,
+            reg_uint_value, (int)REG_INT_COL_LEN, reg_int_value);
     return;
 }
 
@@ -281,6 +316,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
 
     // If the user didn't specify a value, then we simply print the register out
     if (num_args == REG_MIN_NUM_ARGS) {
+        print_register_header(stdout);
         print_register(cpu_state, reg_num, stdout);
         return;
     }
@@ -332,10 +368,9 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
     fprintf(dump_file, "--------------------------------------\n");
     fprintf(dump_file, "%-20s = %d\n", "Instruction Count",
             cpu_state->instr_count);
-    fprintf(dump_file, "%-20s = 0x%08x\n", "Program Counter (PC)",
+    fprintf(dump_file, "%-20s = 0x%08x\n\n", "Program Counter (PC)",
             cpu_state->pc);
-    fprintf(dump_file, "\nRegister Values:\n");
-    fprintf(dump_file, "--------------------------------------\n");
+    print_register_header(dump_file);
 
     // Print out all of the general purpose register values
     for (int i = 0; i < (int)array_len(cpu_state->regs); i++)
