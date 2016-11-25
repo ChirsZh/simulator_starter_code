@@ -68,63 +68,6 @@ void help() {
   printf("quit             -  exit the program                  \n\n");
 }
 
-/***************************************************************/
-/*                                                             */
-/* Procedure : mdump                                           */
-/*                                                             */
-/* Purpose   : Dump a word-aligned region of memory to the     */
-/*             output file.                                    */
-/*                                                             */
-/***************************************************************/
-void mdump(cpu_state_t *cpu_state, FILE* dumpsim_file, int start,
-        int stop) {
-  int address;
-
-  printf("\nMemory content [0x%08x..0x%08x] :\n", start, stop);
-  printf("-------------------------------------\n");
-  for (address = start; address <= stop; address += 4)
-    printf("  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(cpu_state, address));
-  printf("\n");
-
-  /* dump the memory contents into the dumpsim file */
-  fprintf(dumpsim_file, "\nMemory content [0x%08x..0x%08x] :\n", start, stop);
-  fprintf(dumpsim_file, "-------------------------------------\n");
-  for (address = start; address <= stop; address += 4)
-    fprintf(dumpsim_file, "  0x%08x (%d) : 0x%08x\n", address, address, mem_read32(cpu_state, address));
-  fprintf(dumpsim_file, "\n");
-}
-
-/***************************************************************/
-/*                                                             */
-/* Procedure : rdump                                           */
-/*                                                             */
-/* Purpose   : Dump current register and bus values to the     */
-/*             output file.                                    */
-/*                                                             */
-/***************************************************************/
-void rdump(const cpu_state_t *cpu_state, FILE * dumpsim_file) {
-  int k;
-
-  printf("\nCurrent register/bus values :\n");
-  printf("-------------------------------------\n");
-  printf("Instruction Count : %u\n", cpu_state->instr_count);
-  printf("PC                : 0x%08x\n", cpu_state->pc);
-  printf("Registers:\n");
-  for (k = 0; k < RISCV_NUM_REGS; k++)
-    printf("R%d: 0x%08x\n", k, cpu_state->regs[k]);
-  printf("\n");
-
-  /* dump the state information into the dumpsim file */
-  fprintf(dumpsim_file, "\nCurrent register/bus values :\n");
-  fprintf(dumpsim_file, "-------------------------------------\n");
-  fprintf(dumpsim_file, "Instruction Count : %u\n", cpu_state->instr_count);
-  fprintf(dumpsim_file, "PC                : 0x%08x\n", cpu_state->pc);
-  fprintf(dumpsim_file, "Registers:\n");
-  for (k = 0; k < RISCV_NUM_REGS; k++)
-    fprintf(dumpsim_file, "R%d: 0x%08x\n", k, cpu_state->regs[k]);
-  fprintf(dumpsim_file, "\n");
-}
-
 /*----------------------------------------------------------------------------
  * Command Line Parsing
  *----------------------------------------------------------------------------*/
