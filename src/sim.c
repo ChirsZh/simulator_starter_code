@@ -68,7 +68,7 @@ void process_instruction(cpu_state_t *cpu_state)
                                 cpu_state->regs[rd] = cpu_state->regs[rs1]
                                                       + cpu_state->regs[rs2];
                             }
-                            cpu_state->pc = cpu_state->pc + sizeof(uint32_t);
+                            cpu_state->pc = cpu_state->pc + sizeof(instr);
                             break;
 
                         default:
@@ -99,7 +99,7 @@ void process_instruction(cpu_state_t *cpu_state)
                         cpu_state->regs[rd] = cpu_state->regs[rs1] +
                                               itype_imm;
                     }
-                    cpu_state->pc = cpu_state->pc + sizeof(uint32_t);
+                    cpu_state->pc = cpu_state->pc + sizeof(instr);
                     break;
 
                 default:
