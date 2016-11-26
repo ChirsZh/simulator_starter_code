@@ -12,7 +12,7 @@ main:
 
 label0:
     addi    x5, zero, 1         # x5 = 1
-    j       label1              # Goto label1
+    jal     zero, label1        # Goto label1 (no link)
 
     addi    x10, x10, 0x700     # x10 = x10 + 0x700
     ori     x0, x0, 0           # No-op

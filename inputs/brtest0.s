@@ -11,7 +11,7 @@ main:
     addi    a0, zero, 0xa       # a0 (x10) = 0xa
 
 label0:
-    j       label1              # Goto label1
+    jal     zero, label1        # Goto label1 (no link)
 
 label1:
     bne     zero, zero, label3  # If (0 != 0) goto label3
