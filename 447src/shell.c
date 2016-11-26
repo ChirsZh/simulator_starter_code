@@ -39,7 +39,7 @@
  *----------------------------------------------------------------------------*/
 
 // The expected number of command line arguments, including the program name
-const int NUM_CMDLINE_ARGS  = 2;
+#define NUM_CMDLINE_ARGS    2
 
 // The maximum line length the user can type in for a command
 #define COMMAND_MAX_LEN     100
@@ -47,26 +47,6 @@ const int NUM_CMDLINE_ARGS  = 2;
 /* The maximum number of arguments that can be parsed from user input. This more
  * than the max possible, so too many arguments can be detected. */
 #define COMMAND_MAX_ARGS    4
-
-/***************************************************************/
-/*                                                             */
-/* Procedure : help                                            */
-/*                                                             */
-/* Purpose   : Print out a list of commands                    */
-/*                                                             */
-/***************************************************************/
-void help() {
-  printf("----------------MIPS ISIM Help-----------------------\n");
-  printf("go               -  run program to completion         \n");
-  printf("run n            -  execute program for n instructions\n");
-  printf("mdump low high   -  dump memory from low to high      \n");
-  printf("rdump            -  dump the register & bus values    \n");
-  printf("input reg_no reg_value - set GPR reg_no to reg_value  \n");
-  printf("high value             - set the HI register to value \n");
-  printf("low value              - set the LO register to value \n");
-  printf("?                -  display this help menu            \n");
-  printf("quit             -  exit the program                  \n\n");
-}
 
 /*----------------------------------------------------------------------------
  * Command Line Parsing
