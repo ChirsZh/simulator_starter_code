@@ -1,72 +1,77 @@
-        # Advanced branch test
-	.text
+# brtest2.s
+#
+# Advanced Branch Test
+#
+# This tests all of the control flow instructions in the RISC-V ISA. This tests
+# all of the signed branch instructions, including reversing the operands to
+# achieve branches that aren't explicitly in the RISC-V ISA). For example, to
+# perform a less than or equal to branch, you can reverse the operands of a
+# a BGE instruction.
 
-        # J, JR, JAL, JALR, BEQ, BNE, BLEZ, BGTZ, BLTZ, BGEZ, BLTZAL, BGEZAL
-        # BLTZAL, BGEZAL
+    .text                       # Declare the code to be in the .text segment
+    .global main                # Make main visible to the linker
 main:
-        addiu $v0, $zero, 0xa
+    addi    a0, zero, 0xa       # a0 (x10) = 0xa
 
-        # Set up some comparison values in registers
-        addiu $3, $zero, 1
-        addiu $4, $zero, -1
+    addi    x3, zero, 1         # x3 = 1
+    addi    x4, zero, -1        # x4 = -1
+    addi    x5, zero, 0x123     # x5 = 0x123 (Checksum register)
 
-        # Checksum register
-        addiu $5, $zero, 0x1234
+    jal     zero, label1        # Goto label1, no link
 
-        # Test jump
-        j l_1
-l_0:
-        addu $5, $5, $ra
-        beq   $zero, $zero, l_2
-l_1:
-        addiu $5, $5, 7
-        jal l_0
-        j l_8
-l_2:    
-        addiu $5, $5, 9
-        bne $3, $4, l_4
-l_3:
-        # Taken
-        addiu $5, $5, 5
-        bgez $zero, l_6
-l_4:
-        # Not taken
-        addiu $5, $5, 11
-        blez  $3, l_3
-l_5:
-        # Taken
-        addiu $5, $5, 99
-        bgtz  $3, l_3
-l_6:
-        # here
-        addiu $5, $5, 111
-        jr $ra
-        # Should go to l_1, then go to l_8
-l_7:
-        # Should not get here
-        addiu $5, $5, 200
-        
-        syscall
-l_8:    
-        addiu $5, $5, 215
-        jal l_10
-l_9:
-        # Should not get here
-        addiu $5, $5, 1
-        syscall        
-l_10:    
-        addu $5, $5, $6
-        bltzal $4, l_12
-l_11:
-        # Should not get here
-        addiu $5, $5, 400
-        syscall
-l_12:    
-        addu $5, $5, $6
-        bgezal $4, l_11
-        
-l_13:    
-        addiu $5, $5, 0xbeb0063d
-        syscall
-        
-        
+label0:                         # Should reach here (2.)
+    add     x5, x5, ra          # x5 = x5 + ra (x1)
+    beq     zero, zero, label2  # if (0 == 0) goto label2
+
+label1:                         # Should reach here (1.)
+    addi    x5, x5, 7           # x5 = x5 + 7
+    jal     ra, label0          # Goto label0, ra (x1) = pc + 4
+    jal     zero, label8        # Goto label8, no link
+
+label2:                         # Should reach here (3.)
+    addi    x5, x5, 9           # x5 = x5 + 9
+    bne     x3, x4, label4      # if (x3 != x4) goto label4
+
+label3:                         # Should reach here (6.)
+    addi    x5, x5, 5           # x5 = x5 + 5
+    bge     zero, zero, label6  # if (0 >= 0) goto label6
+
+label4:                         # Should reach here (4.)
+    addi    x5, x5, 11          # x5 = x5 + 11
+    bge     zero, x3, label3    # if (x3 <= 0) goto label3
+
+label5:                         # Should reach here (5.)
+    addi    x5, x5, 99          # x5 = x5 + 99
+    blt     zero, x3, label3    # if (x3 > 0) goto label3
+
+label6:                         # Should reach here (7.)
+    addi    x5, x5, 111         # x5 = x5 + 111
+    jalr    zero, ra, 0         # Return to label1 (no link)
+
+label7:                         # Should not reach here
+    addi    x5, x5, 200         # x5 = x5 + 200
+    ecall                       # Terminate simulation (should not reach here)
+
+label8:                         # Should reach here (8.)
+    addi    x5, x5, 215         # x5 = x5 + 215
+    jal     ra, label10         # Goto label10, ra (x1) = pc + 4
+
+label9:                         # Should not reach here
+    addi    x5, x5, 1           # x5 = x5 + 1
+    ecall                       # Terminate simulation (should not reach here)
+
+label10:                        # Should reach here (9.)
+    addi    x5, x5, 447         # x5 = x5 + 447
+    blt     x4, zero, label12   # if (x4 < 0) goto label12
+
+label11:                        # Should not reach here
+    addi    x5, x5, 400         # x5 = x5 + 400
+    ecall                       # Terminate simulation (should not reach here)
+
+label12:                        # Should reach here (10.)
+    add     x5, x5, ra          # x5 = x5 + ra (x1)
+    bge     x4, zero, label11   # if (x4 >= 0) goto label11
+
+label13:                        # Should reach here (11.)
+    addi    x5, x5, 0x63d       # x5 = x5 + 0x63d
+    ecall                       # Terminate simulation (should reach here)
