@@ -58,7 +58,7 @@ static void print_separator(char separator, ssize_t line_width, FILE* file)
  * Opens the dump file if it was specified by the user, otherwise defaults to
  * stdout. Returns NULL on error.
  **/
-static FILE *open_dump_file(const char *args[], int num_args,
+static FILE *open_dump_file(char *args[], int num_args,
         int dumpfile_arg_num, const char *cmd)
 {
     // Default to stdout if there aren't enough arguments
@@ -118,7 +118,7 @@ static void run_simulator(cpu_state_t *cpu_state)
  * is halted. The user can optionally specify the number of cycles, otherwise
  * the default is one.
  **/
-void command_step(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_step(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Check that the appropiate number of arguments was specified
     if (num_args > STEP_MAX_NUM_ARGS) {
@@ -155,7 +155,7 @@ void command_step(cpu_state_t *cpu_state, const char *args[], int num_args)
  *
  * Runs the simulator until program completion or an exception is encountered.
  **/
-void command_go(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_go(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Silence unused variable warnings from the compiler
     (void)args;
@@ -349,7 +349,7 @@ static void print_cpu_state(const cpu_state_t *cpu_state, FILE* file)
  * Display the value of the specified register to the user. The user can
  * optionally specify a value to update the register's value instead.
  **/
-void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     assert(REG_MAX_NUM_ARGS - REG_MIN_NUM_ARGS == 1);
     assert(array_len(cpu_state->regs) == array_len(RISCV_REGISTER_NAMES));
@@ -406,7 +406,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args)
  * instructions executed so far. The user can optionally specify a file to dump
  * the values to.
  **/
-void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Check that the appropriate number of arguments was specified
     if (num_args > RDUMP_MAX_NUM_ARGS) {
@@ -476,7 +476,7 @@ static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
  * Displays the value of the specified memory address to the user. The user can
  * optionally specify a value to update the memory locations value instead.
  **/
-void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_memory(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     if (num_args < MEMORY_MIN_NUM_ARGS) {
         fprintf(stderr, "Error: memory: Too few arguments specified.\n");
@@ -530,7 +530,7 @@ void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args)
  * Displays the values of a range of memory locations in the system. The user
  * can optionally specify a file to dump the memory values to.
  **/
-void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Check that the appropriate number of arguments was specified
     if (num_args < MDUMP_MIN_NUM_ARGS) {
@@ -635,7 +635,7 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
  * Resets the processor and restarts the currently loaded program from its first
  * instruction.
  **/
-void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_restart(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Silence unused variable warnings from the compiler
     (void)args;
@@ -668,7 +668,7 @@ void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args)
  * the currently executing program. The execution starts from the beginning of
  * the loaded program.
  **/
-void command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Check that the appropriate number of arguments was specified
     if (num_args != LOAD_NUM_ARGS) {
@@ -685,8 +685,8 @@ void command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
     char *new_program = args[0];
     int rc = init_cpu_state(cpu_state, new_program);
     if (rc < 0) {
-        fprintf(stderr, "Error: load: %s: Unable to load program. Halting "
-                "the simulator.\n", new_program);
+        fprintf(stderr, "Error: load: Unable to load program. Halting the "
+                "simulator.\n");
     }
 
     return;
@@ -701,7 +701,7 @@ void command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
  *
  * Quits the simulator.
  **/
-void command_quit(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Silence the compiler
     (void)cpu_state;
@@ -717,7 +717,7 @@ void command_quit(cpu_state_t *cpu_state, const char *args[], int num_args)
  * Displays a help message to the user, explaining the commands in for the
  * simulator and how to use them.
  **/
-void command_help(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Silence the compiler
     (void)cpu_state;

@@ -48,14 +48,14 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path);
  * is halted. The user can optionally specify the number of cycles, otherwise
  * the default is one.
  **/
-void command_step(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_step(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_go
  *
  * Runs the simulator until program completion or an exception is encountered.
  **/
-void command_go(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_go(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_reg
@@ -63,7 +63,7 @@ void command_go(cpu_state_t *cpu_state, const char *args[], int num_args);
  * Display the value of the specified register to the user. The user can
  * optionally specify a value to update the register's value instead.
  **/
-void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_reg(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_memory
@@ -71,7 +71,7 @@ void command_reg(cpu_state_t *cpu_state, const char *args[], int num_args);
  * Displays the value of the specified memory address to the user. The user can
  * optionally specify a value to update the memory locations value instead.
  **/
-void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_memory(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * comand_rdump
@@ -80,7 +80,7 @@ void command_memory(cpu_state_t *cpu_state, const char *args[], int num_args);
  * instructions executed so far. The user can optionally specify a file to dump
  * the values to.
  **/
-void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_mdump
@@ -88,7 +88,7 @@ void command_rdump(cpu_state_t *cpu_state, const char *args[], int num_args);
  * Displays the values of a range of memory locations in the system. The user
  * can optionally specify a file to dump the memory values to.
  **/
-void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_restart
@@ -96,7 +96,7 @@ void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args);
  * Resets the processor and restarts the currently loaded program from its first
  * instruction.
  **/
-void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_restart(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_load
@@ -105,14 +105,14 @@ void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args);
  * the currently executing program. The execution starts from the beginning of
  * the loaded program.
  **/
-void command_load(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_load(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_quit
  *
  * Quits the simulator.
  **/
-void command_quit(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_quit(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_help
@@ -120,6 +120,6 @@ void command_quit(cpu_state_t *cpu_state, const char *args[], int num_args);
  * Displays a help message to the user, explaining the commands in for the
  * simulator and how to use them.
  **/
-void command_help(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_help(cpu_state_t *cpu_state, char *args[], int num_args);
 
 #endif /* COMMANDS_H_ */

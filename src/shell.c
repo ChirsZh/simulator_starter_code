@@ -152,7 +152,7 @@ static void setup_signals()
  * if a quit command was specified.
  **/
 static bool process_long_command(cpu_state_t *cpu_state, const char *command,
-    const char *args[], int num_args, bool *quit)
+    char *args[], int num_args, bool *quit)
 {
     // Assume the command is not quit
     *quit = false;
@@ -198,7 +198,7 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
  * process_long_command, or it may parse commands incorrectly.
  **/
 static bool process_short_command(cpu_state_t *cpu_state, const char *command,
-        const char *args[], int num_args, bool *quit)
+        char *args[], int num_args, bool *quit)
 {
     // Assume the command is not quit
     *quit = false;
@@ -248,7 +248,7 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
  * returned returned.
  **/
 static int split_command(char *command_string, char **command,
-        const char *args[COMMAND_MAX_ARGS+1])
+        char *args[COMMAND_MAX_ARGS+1])
 {
     /* First, parse the command out of the string. If the string is empty, then
      * there aren't any arguments to parse. */
@@ -290,7 +290,7 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
 {
     // Seperate the command string into the command and a list of arguments
     char *command;
-    const char *args[COMMAND_MAX_ARGS+1];
+    char *args[COMMAND_MAX_ARGS+1];
     int num_args = split_command(command_string, &command, args);
 
     // The user entered an empty line, so there's no command to process
