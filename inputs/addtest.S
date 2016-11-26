@@ -29,5 +29,5 @@ main:
     add t3, t2, t2              // t3 (x28) = t2 + t2
 
     addi a0, zero, 0xa          // a0 (x10) = 0xa
-    ecall                       # Terminate the simulation by passing 0xa to
-                                # ecall in register a0 (x10).
+    ecall                       // Terminate the simulation by passing 0xa to
+                                // ecall in register a0 (x10).
