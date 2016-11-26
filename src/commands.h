@@ -112,7 +112,7 @@ void command_load(cpu_state_t *cpu_state, char *args[], int num_args);
  *
  * Quits the simulator.
  **/
-void command_quit(cpu_state_t *cpu_state, char *args[], int num_args);
+bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * command_help

@@ -696,19 +696,28 @@ void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
  * Help and Quit Commands
  *----------------------------------------------------------------------------*/
 
+// The expected number of arguments for the quit command
+#define QUIT_NUM_ARGS           0
+
 /**
  * command_quit
  *
  * Quits the simulator.
  **/
-void command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
+bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
+    // Silence unused variable warnings from the compiler
     (void)args;
-    (void)num_args;
 
-    return;
+    if (num_args != QUIT_NUM_ARGS) {
+        fprintf(stderr, "Error: quit: Improper number of arguments "
+                "specified.\n");
+        return false;
+    }
+
+    // Indicate that we should quit
+    cpu_state->halted = true;
+    return true;
 }
 
 /**

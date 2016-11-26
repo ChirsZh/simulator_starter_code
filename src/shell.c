@@ -175,8 +175,7 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
     } else if (strcmp(command, "load") == 0) {
         command_load(cpu_state, args, num_args);
     } else if (strcmp(command, "quit") == 0) {
-        *quit = true;
-        command_quit(cpu_state, args, num_args);
+        *quit = command_quit(cpu_state, args, num_args);
     } else if (strcmp(command, "help") == 0) {
         command_help(cpu_state, args, num_args);
     } else {
@@ -227,8 +226,7 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
             return true;
 
         case 'q':
-            command_quit(cpu_state, args, num_args);
-            *quit = true;
+            *quit = command_quit(cpu_state, args, num_args);
             return true;
 
         case '?':
