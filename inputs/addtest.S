@@ -10,7 +10,7 @@
  * preprocessor on the file before assembling it. Thus, you can leverage the
  * C preprocessor (#define, #include, #ifdef, etc.) in your assembly code.
  *
- * Also, you can use C-style comments (// and /*) in addition to the normal
+ * Also, you can use C-style comments (// and slash-*) in addition to the normal
  * assembly comments (#).
  **/
 
