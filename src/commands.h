@@ -105,7 +105,7 @@ void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args);
  * the currently executing program. The execution starts from the beginning of
  * the loaded program.
  **/
-int command_load(cpu_state_t *cpu_state, const char *args[], int num_args);
+void command_load(cpu_state_t *cpu_state, const char *args[], int num_args);
 
 /**
  * command_quit

@@ -595,6 +595,7 @@ void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args)
 
 // The expected number of arguments for the load and restart commands
 #define LOAD_NUM_ARGS           1
+#define RESTART_NUM_ARGS        0
 
 /**
  * init_cpu_state
@@ -616,7 +617,14 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 
     // Initialize the memory subsystem, and load the program into memory
     int rc = mem_load_program(cpu_state, program_path);
-    cpu_state->halted = (rc != 0);
+    if (rc < 0) {
+        cpu_state->halted = true;
+        return rc;
+    }
+
+    // Mark the CPU as running, and save the name of the loaded program
+    cpu_state->halted = false;
+    cpu_state->program = program_path;
 
     return rc;
 }
@@ -629,10 +637,26 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
  **/
 void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
+    // Silence unused variable warnings from the compiler
     (void)args;
-    (void)num_args;
+
+    // Check that the appropiate nubmer of arguments was specified
+    if (num_args != RESTART_NUM_ARGS) {
+        fprintf(stderr, "Error: restart: Improper number of arguments "
+                "specified.\n");
+        return;
+    }
+
+    // Unload the program on the processor
+    mem_unload_program(cpu_state);
+
+    // Reinitialize the CPU state and reload the program, exit on failure
+    int rc = init_cpu_state(cpu_state, cpu_state->program);
+    if (rc < 0) {
+        fprintf(stderr, "Error: restart: Unable to restart program. Exiting "
+                "the simulator.\n");
+        exit(rc);
+    }
 
     return;
 }
@@ -644,13 +668,13 @@ void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args)
  * the currently executing program. The execution starts from the beginning of
  * the loaded program.
  **/
-int command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
+void command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
     // Check that the appropriate number of arguments was specified
     if (num_args != LOAD_NUM_ARGS) {
         fprintf(stderr, "Error: load: Improper number of arguments "
                 "specified.\n");
-        return -EINVAL;
+        return;
     }
 
     // Unload the current program on the processor
@@ -665,7 +689,7 @@ int command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
                 "the simulator.\n", new_program);
     }
 
-    return rc;
+    return;
 }
 
 /*----------------------------------------------------------------------------

@@ -31,6 +31,7 @@ typedef struct cpu_state {
     bool halted;                        // Indicates if the CPU is halted
     int instr_count;                    // Number of simulated instructions
     uint32_t pc;                        // Current program counter
+    char *program;                      // Name of the currently loaded program
     memory_t memory;                    // Processor memory regions
     uint32_t regs[RISCV_NUM_REGS];      // CPU register file
 } cpu_state_t;
