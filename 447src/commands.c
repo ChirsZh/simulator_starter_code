@@ -30,8 +30,9 @@
 #include <errno.h>              // Error codes and perror
 
 #include "sim.h"                // Definition of cpu_state_t
-#include "commands.h"           // This file's interface
+#include "memory_shell.h"       // Interface to the processor memory
 #include "libc_extensions.h"    // Parsing functions, array_len, Snprintf
+#include "commands.h"           // This file's interface
 
 /*----------------------------------------------------------------------------
  * Shared Helper Functions

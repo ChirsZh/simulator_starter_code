@@ -10,6 +10,9 @@
  * backend handles abstracting the processor memory from the core simulator
  * functions.
  *
+ * Specifically, this file contains the interface that is only used by the core
+ * simulator, and definitions required to define the CPU state.
+ *
  * Authors:
  *  - 2016: Brandon Perez
  **/
@@ -22,7 +25,6 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
-#include <stdbool.h>            // Boolean type and definitions
 #include <stdint.h>             // Fixed-size integral types
 
 /*----------------------------------------------------------------------------
@@ -50,8 +52,9 @@ typedef struct memory {
     mem_region_t mem_regions[NUM_MEM_REGIONS];  // Memory regions in the CPU
 } memory_t;
 
+
 /*----------------------------------------------------------------------------
- * Interface to the Core Simulator
+ * Interface
  *----------------------------------------------------------------------------*/
 
 /**
@@ -59,8 +62,7 @@ typedef struct memory {
  *
  * Reads the value at the specified address in the processor's memory. The
  * function ensures that the value is written in little-endian order. If the
- * address is unaligned or invalid, this function will stop the simulator on an
- * exception.
+ * address is invalid, this function will mark the CPU as halted.
  **/
 uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
 
@@ -69,56 +71,8 @@ uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
  *
  * Writes the specified value to the given address in the processor's memory.
  * The function ensures that the value is written in little-endian order. If the
- * address is unaligned or invalid, this function will stop the simulator on an
- * exception.
+ * address is invalid, this function will mark the CPU as halted.
  **/
 void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
-
-/*----------------------------------------------------------------------------
- * Interface to the Shell
- *----------------------------------------------------------------------------*/
-
-/**
- * mem_load_program
- *
- * Initializes the memory subsystem part of the CPU state. This loads the memory
- * regions from the specified program into the CPU memory, and initializes them
- * to the values specified in the respective hex files. Program path can either
- * be a relative or absolute path to the program file.
- **/
-int mem_load_program(struct cpu_state *cpu_state, const char *program_path);
-
-/**
- * mem_unload_program
- *
- * Unloads a program previously loaded by mem_load_program. This cleans up and
- * frees the allocated memory for the processor's memory region.
- **/
-void mem_unload_program(struct cpu_state *cpu_state);
-
-/**
- * mem_range_valid
- *
- * Checks if the given memory range from start to end (inclusive) is valid.
- * Namely, this means that all addresses between start and end are valid.
- **/
-bool mem_range_valid(const struct cpu_state *cpu_state, uint32_t start_addr,
-        uint32_t end_addr);
-
-/**
- * mem_find_address
- *
- * Find the address on the host machine that corresponds to the address in the
- * simulator. If no such address exists, return NULL.
- **/
-uint8_t *mem_find_address(const struct cpu_state *cpu_state, uint32_t addr);
-
-/**
- * mem_write_word
- *
- * Writes the specified word value to the given memory location. The given
- * address must be a valid memory location in the processor.
- **/
-void mem_write_word(uint8_t *mem_addr, uint32_t value);
 
 #endif /* MEMORY_H_ */

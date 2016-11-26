@@ -31,7 +31,7 @@
 #include <signal.h>         // Signal numbers and sigaction function
 
 #include "sim.h"            // Interface to the core simulator, cpu_state_t
-#include "memory.h"         // Interface to the processor memory
+#include "memory_shell.h"   // Interface to the processor memory
 #include "commands.h"       // Interface to the shell commands
 
 /*----------------------------------------------------------------------------

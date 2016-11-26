@@ -27,9 +27,10 @@
 #include <string.h>                 // String manipulation functions and memset
 
 #include "sim.h"                    // Interface to the core simulator
-#include "memory.h"                 // This file's interface
 #include "riscv_abi.h"              // ABI registers and definitions
 #include "libc_extensions.h"        // Various utilities
+#include "memory.h"                 // This file's interface to core simulator
+#include "memory_shell.h"           // This file's itnerface to the shell
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
