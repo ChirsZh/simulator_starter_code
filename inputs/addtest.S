@@ -1,17 +1,20 @@
-# addtest.S
-#
-# Add Test
-#
-# This test exercises the various add instructions in the RISC-V ISA.
-# This also demonstrates how *.S files differ from *.s files.
+/**
+ * addtest.S
+ *
+ * Add Test
+ *
+ * This test exercises the various add instructions in the RISC-V ISA.
+ * This also demonstrates how *.S files differ from *.s files.
+ **/
 
 /**
  * When files have a *.S (vs *.s) extension, the compiler will run the
  * preprocessor on the file before assembling it. Thus, you can leverage the
  * C preprocessor (#define, #include, #ifdef, etc.) in your assembly code.
  *
- * Also, you can use C-style comments (// and slash-*) in addition to the normal
- * assembly comments (#).
+ * Also, you can use C++-style comments (//) in addition to the normal
+ * assembly comments (#, slash-*). Be careful with using #, because certain words
+ * (e.g. if, define, etc.) may be interpreted as preprocessor directives.
  **/
 
 // The initial value to seed the test with
