@@ -52,7 +52,6 @@ typedef struct memory {
     mem_region_t mem_regions[NUM_MEM_REGIONS];  // Memory regions in the CPU
 } memory_t;
 
-
 /*----------------------------------------------------------------------------
  * Interface
  *----------------------------------------------------------------------------*/
