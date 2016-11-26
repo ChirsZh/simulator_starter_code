@@ -479,10 +479,10 @@ static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
 void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     if (num_args < MEMORY_MIN_NUM_ARGS) {
-        fprintf(stderr, "Error: memory: Too few arguments specified.\n");
+        fprintf(stderr, "Error: mem: Too few arguments specified.\n");
         return;
     } else if (num_args > MEMORY_MAX_NUM_ARGS) {
-        fprintf(stderr, "Error: memory: Too many arguments specified.\n");
+        fprintf(stderr, "Error: mem: Too many arguments specified.\n");
         return;
     }
 
@@ -490,7 +490,7 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
     const char *address_string = args[0];
     int32_t address;
     if (parse_int32(address_string, &address) < 0) {
-        fprintf(stderr, "Error: memory: Unable to parse '%s' as a 32-bit "
+        fprintf(stderr, "Error: mem: Unable to parse '%s' as a 32-bit "
                 "integer.\n", address_string);
         return;
     }
@@ -498,7 +498,7 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
     // Find and check that the address specified is valid.
     uint8_t *memory = mem_find_address(cpu_state, address);
     if (memory == NULL) {
-        fprintf(stderr, "Error: memory: Invalid memory address 0x%08x "
+        fprintf(stderr, "Error: mem: Invalid memory address 0x%08x "
                 "specified.\n", address);
         return;
     }
@@ -514,7 +514,7 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
     const char *mem_value_string = args[1];
     int32_t mem_value;
     if (parse_int32(mem_value_string, &mem_value) < 0) {
-        fprintf(stderr, "Error: memory: Unable to parse '%s' as a 32-bit "
+        fprintf(stderr, "Error: mem: Unable to parse '%s' as a 32-bit "
                 "integer.\n", mem_value_string);
         return;
     }
@@ -693,7 +693,7 @@ void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
 }
 
 /*----------------------------------------------------------------------------
- * Help and Quit Commands
+ * Quit Command
  *----------------------------------------------------------------------------*/
 
 // The expected number of arguments for the quit command
@@ -720,6 +720,25 @@ bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
     return true;
 }
 
+/*----------------------------------------------------------------------------
+ * Help Command
+ *----------------------------------------------------------------------------*/
+
+// The expected number of arguments for the help command
+#define HELP_NUM_ARGS           0
+
+static void print_help_header()
+{
+    ssize_t line_width = fprintf(stdout, "RISC-V Simulator Help:\n");
+    print_separator('-', line_width-1, stdout);
+    return;
+}
+
+static void print_help(const char *cmd_usage, const char *help_message)
+{
+    fprintf(stdout, "%-37s - %s\n", cmd_usage, help_message);
+}
+
 /**
  * command_help
  *
@@ -728,10 +747,46 @@ bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
  **/
 void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
 {
-    // Silence the compiler
+    // Silence unused variable warnings from the compiler
     (void)cpu_state;
     (void)args;
-    (void)num_args;
+
+    // Check that the proper number of command line arguments were specified
+    if (num_args != HELP_NUM_ARGS) {
+        fprintf(stderr, "Error: help: Improper number of arguments "
+                "specified.\n");
+        return;
+    }
+
+    // Print the header and help message for the simulator commands
+    print_help_header();
+    print_help("s[tep] [cycles]", "Run the command for one or the specified "
+            "number of cycles.");
+    print_help("go", "Run the simulator until the processor is halted.");
+
+    // Print help messages for register commands
+    print_help("r[eg] <isa_name|abi_name|num> [value]", "Display the "
+            "register's value or update it with a value.");
+    print_help("rdump [dump_file]", "Display the CPU state and all registers, "
+            "optionally dumping it to the file.");
+
+    // Print help messages for memory commands
+    print_help("m[em] <addr> [value]", "Display the memory address's value or "
+            "update it with a value.");
+    print_help("mdump <start> <end> [dump_file]", "Display the memory values "
+            "from start to end (inclusive), optionally dumping it to the "
+            "file.");
+
+    // Print help messages for the load and restart commmands
+    print_help("restart", "Reset the processor and restart the program from "
+            "the beginning.");
+    print_help("load <program>", "Reset the processor and load the new program "
+            "into memory for execution.");
+
+    // Print help message for the quit and help commands
+    print_help("q[uit]", "Quit the simulator. Can also be done with an EOF "
+            "(CTRL-D).");
+    print_help("help /?", "Display this help message.");
 
     return;
 }
