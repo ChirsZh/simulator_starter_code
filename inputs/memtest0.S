@@ -21,18 +21,18 @@
  **/
 
 // The size of the data section accessed
-#define DATA_SEG_SIZE           16
+#define DATA_SEG_SIZE           20
 
     .data                       // Declare items to be in the .data segment
 data:                           // Symbol representing the start of .data
-    .space DATA_SEG_SIZE        // Allocate 16 bytes for the .data segment
+    .space DATA_SEG_SIZE        // Allocate 20 bytes for the .data segment
 data_end:                       // Symbol representing the end of .data
 
     .text                       // Declare the code to be in the .text segment
     .global main                // Make main visible to the linker
 main:
     add    x1, zero, gp         // At program start gp has the start of the
-                                // .data segment. x1 = gp (x1)
+                                // .data segment. x1 = gp (x3)
 
     addi    x5, zero, 255       // x5 = 255
     add     x6, x5, x5          // x6 = x5 + x5
