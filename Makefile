@@ -26,6 +26,19 @@ TEST ?= $(DEFAULT_TEST)
 # General Targets and Variables
 ################################################################################
 
+# Terminal color and modifier attributes
+# Return to the normal terminal colors
+n := $(shell tput sgr0)
+# Red color
+r := $(shell tput setaf 1)
+# Green color
+g := $(shell tput setaf 2)
+# Bold text
+b := $(shell tput bold)
+# Underlined text
+u := $(shell tput smul)
+
+# These targets don't correspond to actual generated files
 .PHONY: all default clean veryclean
 
 # By default, compile the simulator
@@ -128,37 +141,39 @@ $(TEST):
 # Check that the RISC-V compiler exists
 assemble-check-compiler:
 ifeq ($(shell which $(RISCV_CC) 2> /dev/null),)
-	@printf "Error: $(RISCV_CC): RISC-V compiler was not found in your PATH.\n"
+	@printf "$rError: $u$(RISCV_CC)$n$r: RISC-V compiler was not found in "
+	@printf "your PATH.$n\n"
 	@exit 1
 endif
 
 # Check that the specified test file exists
 assemble-check-test:
 ifeq ($(wildcard $(TEST)),)
-	@printf "Error: $(TEST): RISC-V test file does not exist.\n"
+	@printf "$rError: $u$(TEST)$n$r: RISC-V test file does not exist.$n\n"
 	@exit 1
 endif
 
 # Check that the RISC-V objcopy binary utility exists
 assemble-check-objcopy:
 ifeq ($(shell which $(RISCV_OBJCOPY) 2> /dev/null),)
-	@printf "Error: $(RISCV_OBJCOPY): RISC-V objcopy binary utility was not "
-	@printf "found in your PATH.\n"
+	@printf "$rError: $u$(RISCV_OBJCOPY)$n$r: RISC-V objcopy binary utility "
+	@printf "was not found in your PATH.$n\n"
 	@exit 1
 endif
 
 # Check that the RISC-V objdump binary utility exists
 assemble-check-objdump:
 ifeq ($(shell which $(RISCV_OBJDUMP) 2> /dev/null),)
-	@printf "Error: $(RISCV_OBJDUMP): RISC-V objdump binary utility was not "
-	@printf "found in your PATH.\n"
+	@printf "$rError: $u$(RISCV_OBJDUMP)$n$r: RISC-V objdump binary utility "
+	@printf "was not found in your PATH.$n\n"
 	@exit 1
 endif
 
 # Check that the hex compiler exists (converts binary to ASCII hex)
 assemble-check-hex-compiler:
 ifeq ($(shell which $(HEX_CC) 2> /dev/null),)
-	@printf "Error: $(HEX_CC): Hex dump utility was not found in your PATH.\n"
+	@printf "$rError: $u$(HEX_CC)$n$r: Hex dump utility was not found in your "
+	@printf "PATH.\n"
 	@exit 1
 endif
 
