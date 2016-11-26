@@ -44,10 +44,6 @@ veryclean: clean assemble-veryclean
 # These targets don't correspond to actual files
 .PHONY: assemble assemble-veryclean
 
-# Prevent make from automatically deleting intermediate files generated.
-# Specifically, prevent the deletion of the binary files.
-.SECONDARY:
-
 # The name of the entrypoint for assembly tests, which matches the typical main
 RISCV_ENTRY_POINT = main
 
