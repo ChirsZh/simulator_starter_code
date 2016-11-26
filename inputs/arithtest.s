@@ -23,7 +23,7 @@ main:
     and     x13, x11, x5        # x13 = x11 & x5
     andi    x14, x4, 100        # x14 = x4 & 100
     sub     x15, x0, x10        # x15 = -x10
-    lui     x17, 100            # x17 = 100 << 20
+    lui     x17, 100            # x17 = 100 << 12
 
     addi    x10, x0, 0xa        # x10 (a0) = 0xa
     ecall                       # Terminate the simulation by passing 0xa to
