@@ -16,11 +16,6 @@
  *  - 2016: Brandon Perez
  **/
 
-/*----------------------------------------------------------------------------*
- *                          DO NOT MODIFY THIS FILE!                          *
- *                 You should only add files or change sim.c!                 *
- *----------------------------------------------------------------------------*/
-
 #ifndef RISCV_ISA_H_
 #define RISCV_ISA_H_
 

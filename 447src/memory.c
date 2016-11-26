@@ -15,7 +15,7 @@
 
 /*----------------------------------------------------------------------------*
  *                          DO NOT MODIFY THIS FILE!                          *
- *                 You should only add files or change sim.c!                 *
+ *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
 #include <stdlib.h>                 // Malloc and related functions

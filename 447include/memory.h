@@ -16,7 +16,7 @@
 
 /*----------------------------------------------------------------------------*
  *                          DO NOT MODIFY THIS FILE!                          *
- *                 You should only add files or change sim.c!                 *
+ *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
 #ifndef MEMORY_H_

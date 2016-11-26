@@ -15,7 +15,7 @@
 
 /*----------------------------------------------------------------------------*
  *                          DO NOT MODIFY THIS FILE!                          *
- *                 You should only add files or change sim.c!                 *
+ *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
 #ifndef SIM_H_
@@ -27,6 +27,11 @@
 #include "riscv_abi.h"                  // RISC-V ABI, the number of registers
 #include "memory.h"                     // Interface to the processor memory
 
+/*----------------------------------------------------------------------------
+ * Definitions
+ *----------------------------------------------------------------------------*/
+
+// A structure representing all of the state in a processor.
 typedef struct cpu_state {
     bool halted;                        // Indicates if the CPU is halted
     int instr_count;                    // Number of simulated instructions
@@ -36,12 +41,16 @@ typedef struct cpu_state {
     uint32_t regs[RISCV_NUM_REGS];      // CPU register file
 } cpu_state_t;
 
+/*----------------------------------------------------------------------------
+ * Interface
+ *----------------------------------------------------------------------------*/
+
 /**
  * process_instruction
  *
  * The core part of the simulator. Simulates a single cycle on the CPU,
  * simulating the current instruction pointed to by the PC. Updates the CPU
- * state appropiately.
+ * state appropriately.
  *
  * You implement this function.
  **/

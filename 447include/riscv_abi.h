@@ -19,11 +19,15 @@
 
 /*----------------------------------------------------------------------------*
  *                          DO NOT MODIFY THIS FILE!                          *
- *                 You should only add files or change sim.c!                 *
+ *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
 #ifndef RISCV_ABI_H_
 #define RISCV_ABI_H_
+
+/*----------------------------------------------------------------------------
+ * Definitions
+ *----------------------------------------------------------------------------*/
 
 // The number of registers in the register file
 #define RISCV_NUM_REGS      32
