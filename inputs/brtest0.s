@@ -8,37 +8,36 @@
     .text                       # Declare the code to be in the .text segment
     .global main                # Make main visible to the linker
 main:
-    li a1, 0xdeadbeef
-    addi a0, zero, 0xa          # a0 (x10) = 0xa
+    addi    a0, zero, 0xa       # a0 (x10) = 0xa
 
 label0:
-    addi x5, zero, 1            # x5 = 1
-    j label1                    # Goto label1
+    addi    x5, zero, 1         # x5 = 1
+    j       label1              # Goto label1
 
-    addi x10, x10, 0x700        # x10 = x10 + 0x700
-    ori x0, x0, 0               # No-op
-    ori x0, x0, 0               # No-op
-    addi x5, zero, 100          # x5 = 100
+    addi    x10, x10, 0x700     # x10 = x10 + 0x700
+    ori     x0, x0, 0           # No-op
+    ori     x0, x0, 0           # No-op
+    addi    x5, zero, 100       # x5 = 100
     ecall                       # Terminate simulation (should not reach here)
 
 label1:
-    bne zero, zero, label3      # If (0 != 0) goto label3
-    ori x0, x0, 0               # No-op
-    ori x0, x0, 0               # No-op
-    addi x6, zero, 1337         # x6 = 1337
+    bne     zero, zero, label3  # If (0 != 0) goto label3
+    ori     x0, x0, 0           # No-op
+    ori     x0, x0, 0           # No-op
+    addi    x6, zero, 1337      # x6 = 1337
 
 label2:
-    beq zero, zero, label4      # If (0 == 0) goto label4
-    ori x0, x0, 0               # No-op
-    ori x0, x0, 0               # No-op
-    addi x7, zero, 0x347        # x7 = 0x347
+    beq     zero, zero, label4  # If (0 == 0) goto label4
+    ori     x0, x0, 0           # No-op
+    ori     x0, x0, 0           # No-op
+    addi    x7, zero, 0x347     # x7 = 0x347
     ecall                       # Terminate simulation (should not reach here)
 
 label3:
-    addi x8, zero, 0x404        # x8 = 0x3404
+    addi    x8, zero, 0x404     # x8 = 0x3404
     ecall                       # Terminate simulation (should not reach here)
 
 label4:
-    addi x7, zero, 0x447        # x7 = 0x447
+    addi    x7, zero, 0x447     # x7 = 0x447
     ecall                       # Terminate simulation (should reach here)
 
