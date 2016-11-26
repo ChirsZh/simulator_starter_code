@@ -57,6 +57,10 @@ veryclean: clean assemble-veryclean
 # These targets don't correspond to actual files
 .PHONY: assemble assemble-veryclean
 
+# Prevent make from automatically deleting intermediate files generated.
+# Instead, we do this manually. This prevents the commands from being echoed.
+.SECONDARY:
+
 # The name of the entrypoint for assembly tests, which matches the typical main
 RISCV_ENTRY_POINT = main
 
@@ -108,6 +112,7 @@ assemble: $(TEST) $(TEST_SECTIONS_HEX) $(TEST_DISASSEMBLY)
 # Convert a binary file for program of the ELF file to an ASCII hex
 %.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
 	@$(HEX_CC) $(HEX_CFLAGS) $^ > $@
+	@rm -f $^
 
 # Extract the given section from the program ELF file, generating a binary
 $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
@@ -116,9 +121,10 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 # Generate a disassembly of the compiled program for debugging proposes
 %.$(DISAS_EXTENSION): %.$(ELF_EXTENSION) | assemble-check-objdump
 	@$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_FLAGS) $^ > $@
+	@rm -f $^
 	@printf "Assembly of the test has completed.\n"
 	@printf "A dissablemly of the test can be found at "
-	@printf "$u$*$(DISAS_EXTENSION)$n.\n"
+	@printf "$u$*.$(DISAS_EXTENSION)$n.\n"
 
 # Compile the assembly test program with a *.s extension to create an ELF file
 %.$(ELF_EXTENSION): %.s | assemble-check-compiler assemble-check-test
