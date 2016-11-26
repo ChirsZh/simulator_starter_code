@@ -25,6 +25,22 @@
 
 #include "sim.h"            // Definition of cpu_state_t
 
+/*----------------------------------------------------------------------------
+ * CPU Initialization
+ *----------------------------------------------------------------------------*/
+
+/**
+ * init_cpu_state
+ *
+ * Initializes the CPU state, and loads the specified program into the
+ * processor's memory.
+ **/
+int init_cpu_state(cpu_state_t *cpu_state, char *program_path);
+
+/*----------------------------------------------------------------------------
+ * Commands
+ *----------------------------------------------------------------------------*/
+
 /**
  * command_step
  *
@@ -89,7 +105,7 @@ void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args);
  * the currently executing program. The execution starts from the beginning of
  * the loaded program.
  **/
-void command_load(cpu_state_t *cpu_state, const char *args[], int num_args);
+int command_load(cpu_state_t *cpu_state, const char *args[], int num_args);
 
 /**
  * command_quit

@@ -593,6 +593,34 @@ void command_mdump(cpu_state_t *cpu_state, const char *args[], int num_args)
  * Restart and Load Commands
  *----------------------------------------------------------------------------*/
 
+// The expected number of arguments for the load and restart commands
+#define LOAD_NUM_ARGS           1
+
+/**
+ * init_cpu_state
+ *
+ * Initializes the CPU state, and loads the specified program into the
+ * processor's memory.
+ **/
+int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
+{
+    // Clear out the CPU state, and initialize the CPU state fields
+    cpu_state->instr_count = 0;
+    memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
+
+    // Strip the extension from the program path, if there is one
+    char *extension_start = strrchr(program_path, '.');
+    if (extension_start != NULL) {
+        extension_start[0] = '\0';
+    }
+
+    // Initialize the memory subsystem, and load the program into memory
+    int rc = mem_load_program(cpu_state, program_path);
+    cpu_state->halted = (rc != 0);
+
+    return rc;
+}
+
 /**
  * command_restart
  *
@@ -616,14 +644,28 @@ void command_restart(cpu_state_t *cpu_state, const char *args[], int num_args)
  * the currently executing program. The execution starts from the beginning of
  * the loaded program.
  **/
-void command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
+int command_load(cpu_state_t *cpu_state, const char *args[], int num_args)
 {
-    // Silence the compiler
-    (void)cpu_state;
-    (void)args;
-    (void)num_args;
+    // Check that the appropriate number of arguments was specified
+    if (num_args != LOAD_NUM_ARGS) {
+        fprintf(stderr, "Error: load: Improper number of arguments "
+                "specified.\n");
+        return -EINVAL;
+    }
 
-    return;
+    // Unload the current program on the processor
+    mem_unload_program(cpu_state);
+
+    // Re-initialize the CPU state, and load the new program
+    // Re-initialize the CPU state
+    char *new_program = args[0];
+    int rc = init_cpu_state(cpu_state, new_program);
+    if (rc < 0) {
+        fprintf(stderr, "Error: load: %s: Unable to load program. Halting "
+                "the simulator.\n", new_program);
+    }
+
+    return rc;
 }
 
 /*----------------------------------------------------------------------------

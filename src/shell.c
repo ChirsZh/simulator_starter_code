@@ -361,31 +361,6 @@ static void simulator_repl(cpu_state_t *cpu_state)
 }
 
 /**
- * init_cpu_state
- *
- * Initializes the CPU state, and loads the specified program into the
- * processor's memory.
- **/
-static int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
-{
-    // Clear out the CPU state, and initialize the CPU state fields
-    cpu_state->instr_count = 0;
-    memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
-
-    // Strip the extension from the program path, if there is one
-    char *extension_start = strrchr(program_path, '.');
-    if (extension_start != NULL) {
-        extension_start[0] = '\0';
-    }
-
-    // Initialize the memory subsystem, and load the program into memory
-    int rc = mem_load_program(cpu_state, program_path);
-    cpu_state->halted = (rc != 0);
-
-    return rc;
-}
-
-/**
  * main
  *
  * The main method for the simulator. This parses the command line arguments,
@@ -402,6 +377,7 @@ int main(int argc, char *argv[])
 
     // Initialize the CPU state, loading the program if specified
     cpu_state_t cpu_state;
+    memset(&cpu_state, 0, sizeof(cpu_state));
     rc = init_cpu_state(&cpu_state, program_path);
     if (rc < 0) {
         fprintf(stderr, "Failed to load the first program. Not starting the "
