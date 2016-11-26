@@ -1,26 +1,30 @@
-        # Basic arithmetic instructions
-        # This is a hodgepodge of arithmetic instructions to test
-        # your basic functionality.
-        # No overflow exceptions should occur
-	.text
-main:   
-        addiu   $2, $zero, 1024
-        addu    $3, $2, $2
-        or      $4, $3, $2
-        add     $5, $zero, 1234
-        sll     $6, $5, 16
-        addiu   $7, $6, 9999
-        subu    $8, $7, $2
-        xor     $9, $4, $3
-        xori    $10, $2, 255
-        srl     $11, $6, 5
-        sra     $12, $6, 4
-        and     $13, $11, $5
-        andi    $14, $4, 100
-        sub     $15, $zero, $10
-        lui     $17, 100
-        addiu   $v0, $zero, 0xa
-        syscall
-        
-        
-                        
+# arithtest.s
+#
+# Basic Arithmetic Instructions Test
+#
+# This tests a subset of the arithmetic instructions in RISC-V to test basic
+# functionality. This test also demonstrates how the ISA names names for
+# registers can be used, as opposed to their ABI names (e.g. x2 vs. ra).
+
+    .text                       # Declare the code to be in the .text segment
+    .global main                # Make main visible to the linker
+main:
+    addi    x2, x0, 1024        # x2 = 1024
+    add     x3, x2, x2          # x3 = x2 + x2
+    or      x4, x3, x2          # x4 = x3 | x2
+    add     x5, x0, 1234        # x5 = 1234
+    slli    x6, x5, 16          # x6 = x5 << 16
+    addi    x7, x6, 999         # x7 = x6 + 9999
+    sub     x8, x7, x2          # x8 = x7 - x2
+    xor     x9, x4, x3          # x9 = x4 ^ x3
+    xori    x10, x2, 255        # x10 = x2 ^ 255
+    srli    x11, x6, 5          # x11 = x6 >> 5 (logical)
+    srai    x12, x6, 4          # x12 = x6 >> 4 (arithmetic)
+    and     x13, x11, x5        # x13 = x11 & x5
+    andi    x14, x4, 100        # x14 = x4 & 100
+    sub     x15, x0, x10        # x15 = -x10
+    lui     x17, 100            # x17 = 100 << 20
+
+    addi    x10, x0, 0xa        # x10 (a0) = 0xa
+    ecall                       # Terminate the simulation by passing 0xa to
+                                # ecall in register a0 (x10).
