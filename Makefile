@@ -103,7 +103,7 @@ TEST_SECTIONS_HEX = $(addsuffix .$(HEX_EXTENSION),$(TEST_SECTIONS))
 TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION),$(TEST_NAME))
 
 # Assemble the program specified by the user on the command line
-assemble: $(TEST_SECTIONS_HEX) $(TEST_DISASSEMBLY)
+assemble: $(TEST) $(TEST_SECTIONS_HEX) $(TEST_DISASSEMBLY)
 
 # Convert a binary file for program of the ELF file to an ASCII hex
 %.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
@@ -142,8 +142,9 @@ assemble-veryclean:
 	@rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)' \
 			-o -name '*.$(ELF_EXTENSION)' -o -name '*.$(DISAS_EXTENSION)')
 
-# Suppresses 'no rule to make...' error when the TEST doesn't exist
-$(TEST):
+# Checks that the given test exists. This is used when the test doesn't have
+# a known extension, and suppresses the 'no rule to make...' error message
+$(TEST): assemble-check-test
 
 # Check that the RISC-V compiler exists
 assemble-check-compiler:
