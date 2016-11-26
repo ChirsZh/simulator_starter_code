@@ -93,24 +93,26 @@ HEX_CFLAGS = -v -e '1/4 "%08x" "\n"'
 447_RUNTIME_DIR = 447runtime
 RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
 
-# The sections of the ELF executable that we parse out, and file extensions
-SECTIONS = text data ktext kdata
+# The file extensions for all files generated, including intermediate ones
 ELF_EXTENSION = elf
 BINARY_EXTENSION = bin
 HEX_EXTENSION = hex
 DISAS_EXTENSION = disassembly.s
 
-# The name of the test, and the hex and ELF files generated for the given test
+# The hex files generated when the program is assembled. There's one for each
+# assembled segment: user and kernel text and data sections.
 TEST_NAME = $(basename $(TEST))
+HEX_SECTIONS = $(addsuffix .$(HEX_EXTENSION),text data ktext kdata)
+TEST_HEX = $(addprefix $(TEST_NAME).,$(HEX_SECTIONS))
+
+# The ELF and disassembly files generated when the test is assembled
 TEST_EXECUTABLE = $(addsuffix .$(ELF_EXTENSION), $(TEST_NAME))
-TEST_SECTIONS = $(addprefix $(TEST_NAME).,$(SECTIONS))
-TEST_SECTIONS_HEX = $(addsuffix .$(HEX_EXTENSION),$(TEST_SECTIONS))
-TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION),$(TEST_NAME))
+TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION), $(TEST_NAME))
 
 # Assemble the program specified by the user on the command line
-assemble: $(TEST) $(TEST_SECTIONS_HEX) $(TEST_DISASSEMBLY)
+assemble: $(TEST) $(TEST_HEX) $(TEST_DISASSEMBLY)
 
-# Convert a binary file for program of the ELF file to an ASCII hex
+# Convert a binary file for program of the ELF file to an ASCII hex file
 %.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
 	@$(HEX_CC) $(HEX_CFLAGS) $^ > $@
 	@rm -f $^
@@ -123,9 +125,8 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 %.$(DISAS_EXTENSION): %.$(ELF_EXTENSION) | assemble-check-objdump
 	@$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_FLAGS) $^ > $@
 	@rm -f $^
-	@printf "Assembly of the test has completed.\n"
-	@printf "A dissablemly of the test can be found at "
-	@printf "$u$*.$(DISAS_EXTENSION)$n.\n"
+	@printf "Assembly of the test has completed. A disassembly of the test can "
+	@printf "be found at $u$*.$(DISAS_EXTENSION)$n.\n"
 
 # Compile the assembly test program with a *.s extension to create an ELF file
 %.$(ELF_EXTENSION): %.s | assemble-check-compiler assemble-check-test
