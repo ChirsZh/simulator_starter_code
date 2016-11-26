@@ -164,8 +164,8 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
         command_go(cpu_state, args, num_args);
     } else if (strcmp(command, "reg") == 0) {
         command_reg(cpu_state, args, num_args);
-    } else if (strcmp(command, "memory") == 0) {
-        command_memory(cpu_state, args, num_args);
+    } else if (strcmp(command, "mem") == 0) {
+        command_mem(cpu_state, args, num_args);
     } else if (strcmp(command, "rdump") == 0) {
         command_rdump(cpu_state, args, num_args);
     } else if (strcmp(command, "mdump") == 0) {
@@ -222,7 +222,7 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
             return true;
 
         case 'm':
-            command_memory(cpu_state, args, num_args);
+            command_mem(cpu_state, args, num_args);
             return true;
 
         case 'q':

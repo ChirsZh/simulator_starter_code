@@ -471,12 +471,12 @@ static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
 }
 
 /**
- * command_memory
+ * command_mem
  *
  * Displays the value of the specified memory address to the user. The user can
  * optionally specify a value to update the memory locations value instead.
  **/
-void command_memory(cpu_state_t *cpu_state, char *args[], int num_args)
+void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     if (num_args < MEMORY_MIN_NUM_ARGS) {
         fprintf(stderr, "Error: memory: Too few arguments specified.\n");

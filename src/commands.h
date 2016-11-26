@@ -66,12 +66,12 @@ void command_go(cpu_state_t *cpu_state, char *args[], int num_args);
 void command_reg(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_memory
+ * command_mem
  *
  * Displays the value of the specified memory address to the user. The user can
  * optionally specify a value to update the memory locations value instead.
  **/
-void command_memory(cpu_state_t *cpu_state, char *args[], int num_args);
+void command_mem(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
  * comand_rdump
