@@ -24,9 +24,6 @@
 #ifndef RISCV_ISA_H_
 #define RISCV_ISA_H_
 
-// The number of registers in the register file
-#define RISCV_NUM_REGS      32
-
 // Opcodes for the RISC-V ISA, in the lowest 7 bits of the instruction
 typedef enum riscv_op {
     // Opcodes for U-type instructions (unsigned immediate)

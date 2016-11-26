@@ -25,6 +25,9 @@
 #ifndef RISCV_ABI_H_
 #define RISCV_ABI_H_
 
+// The number of registers in the register file
+#define RISCV_NUM_REGS      32
+
 /* The value that must be passed in register a0 (x10) to the ECALL instruction
  * to halt the processor and stop the simulator. */
 #define ECALL_ARG_HALT      0xa

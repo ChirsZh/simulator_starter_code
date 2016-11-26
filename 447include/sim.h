@@ -24,7 +24,7 @@
 #include <stdbool.h>                    // Boolean type and definitions
 #include <stdint.h>                     // Fixed-size integral types
 
-#include "riscv_isa.h"                  // RISC-V ISA, the number of registers
+#include "riscv_abi.h"                  // RISC-V ABI, the number of registers
 #include "memory.h"                     // Interface to the processor memory
 
 typedef struct cpu_state {
