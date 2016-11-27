@@ -32,6 +32,19 @@
 // The number of registers in the register file
 #define RISCV_NUM_REGS      32
 
+// The starting addresses of the user's data and text segments
+#define USER_TEXT_START     0x00400000
+#define USER_DATA_START     0x10000000
+
+// The starting and ending addresses of the stack segment, and its size
+#define STACK_END           0x7ff00000
+#define STACK_SIZE          (1 * 1024 * 1024)
+#define STACK_START         (STACK_END - STACK_SIZE)
+
+// The starting addresses and sizes of the kernel's data, and text segments
+#define KERNEL_TEXT_START   0x80000000
+#define KERNEL_DATA_START   0x90000000
+
 /* The value that must be passed in register a0 (x10) to the ECALL instruction
  * to halt the processor and stop the simulator. */
 #define ECALL_ARG_HALT      0xa
@@ -71,6 +84,6 @@ typedef enum riscv_abi_reg {
     REG_T4      = 29,       // Temporary register 4 (caller-saved)
     REG_T5      = 30,       // Temporary register 5 (caller-saved)
     REG_T6      = 31,       // Temporary register 6 (caller-saved)
-} riscv_abi_reg_t;
+} abi_reg_t;
 
 #endif /* RISCV_ABI_H_ */

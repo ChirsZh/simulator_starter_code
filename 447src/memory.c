@@ -27,7 +27,7 @@
 #include <string.h>                 // String manipulation functions and memset
 
 #include "sim.h"                    // Interface to the core simulator
-#include "riscv_abi.h"              // ABI registers and definitions
+#include "riscv_abi.h"              // ABI registers and memory segments
 #include "libc_extensions.h"        // Various utilities
 #include "memory.h"                 // This file's interface to core simulator
 #include "memory_shell.h"           // This file's itnerface to the shell
@@ -35,19 +35,6 @@
 /*----------------------------------------------------------------------------
  * Internal Definitions
  *----------------------------------------------------------------------------*/
-
-// The starting addresses of the user's data and text segments
-#define USER_TEXT_START             0x00400000
-#define USER_DATA_START             0x10000000
-
-// The starting and ending addresses of the stack segment, and its size
-#define STACK_END                   0x7ff00000
-#define STACK_SIZE                  (1 * 1024 * 1024)
-#define STACK_START                 (STACK_END - STACK_SIZE)
-
-// The starting addresses and sizes of the kernel's data, and text segments
-#define KERNEL_TEXT_START           0x80000000
-#define KERNEL_DATA_START           0x90000000
 
 // The length of a line in a hex file, including the newline character
 #define MEM_FILE_LINE_LEN           (8 + 1)
@@ -66,14 +53,14 @@ static const mem_region_t USER_DATA_REGION = {
     .hex_extension = ".data.hex"
 };
 
-// The default parameters stack memory region, containing local values in the program
+// The stack memory region, conatining local values in the program
 static const mem_region_t STACK_REGION = {
     .base_addr = STACK_END - STACK_SIZE,
     .max_size = STACK_SIZE,
     .hex_extension = NULL,
 };
 
-// The default parameters for the kernel text region
+// The kernel text region, containing kernel code
 static const mem_region_t KERNEL_TEXT_REGION = {
     .base_addr = KERNEL_TEXT_START,
     .max_size = KERNEL_DATA_START - KERNEL_TEXT_START,
@@ -89,8 +76,8 @@ static const mem_region_t KERNEL_DATA_REGION = {
 
 // An array of all the memory regions, and the number of memory regions
 static const mem_region_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
-        &USER_TEXT_REGION, &USER_DATA_REGION, &STACK_REGION,
-        &KERNEL_TEXT_REGION, &KERNEL_DATA_REGION,
+    &USER_TEXT_REGION, &USER_DATA_REGION, &STACK_REGION, &KERNEL_TEXT_REGION,
+    &KERNEL_DATA_REGION,
 };
 
 /*----------------------------------------------------------------------------
