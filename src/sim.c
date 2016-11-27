@@ -7,11 +7,12 @@
  * Carnegie Mellon University
  *
  * This is core part of the simulator, and is responsible for simulating the
- * current instruction, and updating the CPU state appropiately.
+ * current instruction, and updating the CPU state appropriately.
  *
- * This is where you can add code and make modifications to implement the
+ * This is where you can start add code and make modifications to implement the
  * rest of the instructions. You can add any additional files or change and
  * delete files as you need to implement the simulator, under the src directory.
+ *
  * The Makefile will automatically find any files you add, provided they are
  * under the src directory and have either a *.c or *.h extension.
  **/
