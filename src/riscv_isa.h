@@ -16,6 +16,10 @@
  *  - 2016: Brandon Perez
  **/
 
+/*----------------------------------------------------------------------------*
+ *  You may edit this file and add or change any files in the src directory.  *
+ *----------------------------------------------------------------------------*/
+
 #ifndef RISCV_ISA_H_
 #define RISCV_ISA_H_
 

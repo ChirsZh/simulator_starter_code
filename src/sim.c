@@ -9,11 +9,16 @@
  * This is core part of the simulator, and is responsible for simulating the
  * current instruction, and updating the CPU state appropiately.
  *
- * This is where you should add code and make modifications to implement the
- * rest of the instructions. You can also of course add additional files to
- * implement the simulator. The Makefile will automatically find any files you
- * under, provided they are under the src directory.
+ * This is where you can add code and make modifications to implement the
+ * rest of the instructions. You can add any additional files or change and
+ * delete files as you need to implement the simulator, under the src directory.
+ * The Makefile will automatically find any files you add, provided they are
+ * under the src directory and have either a *.c or *.h extension.
  **/
+
+/*----------------------------------------------------------------------------*
+ *  You may edit this file and add or change any files in the src directory.  *
+ *----------------------------------------------------------------------------*/
 
 #include <stdio.h>          // Printf and related functions
 
