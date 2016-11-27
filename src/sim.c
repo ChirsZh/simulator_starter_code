@@ -35,22 +35,22 @@ void process_instruction(cpu_state_t *cpu_state)
     uint32_t instr = mem_read32(cpu_state, cpu_state->pc);
 
     // Decode the opcode and registers from the instruction
-    riscv_op_t opcode = instr & 0x7F;
+    opcode_t opcode = instr & 0x7F;
     uint32_t rs1 = (instr >> 15) & 0x1F;
     uint32_t rs2 = (instr >> 20) & 0x1F;
     uint32_t rd = (instr >> 7) & 0x1F;
 
     /* Decode the instruction as an I-type instruction, sign extending the
      * immediate value. */
-    riscv_itype_funct3_t itype_funct3 = (instr >> 12) & 0x7;
+    itype_int_funct3_t itype_funct3 = (instr >> 12) & 0x7;
     int32_t itype_imm = ((int32_t)instr) >> 20;
 
     // Decode the instruction as an R-type instruction
-    riscv_rtype_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
-    riscv_rtype_funct7_t rtype_funct7 = (instr >> 25) & 0x7F;
+    rtype_int_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
+    rtype_arith_funct7_t rtype_funct7 = (instr >> 25) & 0x7F;
 
     // Decode the 12-bit function code for system instructions
-    riscv_sys_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
+    sys_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
 
     switch (opcode)
     {
