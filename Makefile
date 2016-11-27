@@ -112,7 +112,7 @@ TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION), $(TEST_NAME))
 # Assemble the program specified by the user on the command line
 assemble: $(TEST) $(TEST_HEX) $(TEST_DISASSEMBLY)
 
-# Convert a binary file for program of the ELF file to an ASCII hex file
+# Convert a binary file into an ASCII hex file, with one 4-byte word per line
 %.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
 	@$(HEX_CC) $(HEX_CFLAGS) $^ > $@
 	@rm -f $^
@@ -144,15 +144,15 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	@printf "Assembling test $u$<$n into hex files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $^ -o $@
 
+# Checks that the given test exists. This is used when the test doesn't have
+# a known extension, and suppresses the 'no rule to make...' error message
+$(TEST): assemble-check-test
+
 # Clean up all the hex files in project directories
 assemble-veryclean:
 	@printf "Cleaning up all assembled hex files in the project directory...\n"
 	@rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)' \
 			-o -name '*.$(ELF_EXTENSION)' -o -name '*.$(DISAS_EXTENSION)')
-
-# Checks that the given test exists. This is used when the test doesn't have
-# a known extension, and suppresses the 'no rule to make...' error message
-$(TEST): assemble-check-test
 
 # Check that the RISC-V compiler exists
 assemble-check-compiler:
