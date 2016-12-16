@@ -3,13 +3,13 @@
 # Advanced Memory Test
 #
 # This performs a more complete test of the load and instructions, checking
-# that sub-word (e.g. byte and half-word) instructions work. This alos tests
+# that sub-word (e.g. byte and half-word) instructions work. This also tests
 # that the processor is respecting the little-endian memory ordering mandated
 # by the RISC-V ISA.
 
     .data                       # Declare items to be in the .data segment
 data:                           # Symbol representing the start of .data
-    .space 20                   # Allocate 16 bytes for the .data segment
+    .space 20                   # Allocate 20 bytes for the .data segment
 data_end:                       # Symbol representing the end of .data
 
     .text                       # Declare the code to be in the .text segment
