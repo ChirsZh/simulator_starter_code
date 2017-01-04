@@ -31,45 +31,45 @@ data_end:                       // Symbol representing the end of .data
     .text                       // Declare the code to be in the .text segment
     .global main                // Make main visible to the linker
 main:
-    add    x1, zero, gp         // At program start gp has the start of the
+    add     x1,  zero, gp       // At program start gp has the start of the
                                 // .data segment. x1 = gp (x3)
 
-    addi    x5, zero, 255       // x5 = 255
-    add     x6, x5, x5          // x6 = x5 + x5
-    add     x7, x6, x6          // x7 = x6 + x6
-    addi    x8, x7, 2000        // x8 = x7 + 2000
+    addi    x5,  zero,  255     // x5 = 255
+    add     x6,  x5,    x5      // x6 = x5 + x5
+    add     x7,  x6,    x6      // x7 = x6 + x6
+    addi    x8,  x7,    2000    // x8 = x7 + 2000
 
-    sw      x5, 0(x1)           // *(x1 + 0) = x5
-    sw      x6, 4(x1)           // *(x1 + 4) = x6
-    sw      x7, 8(x1)           // *(x1 + 8) = x7
-    sw      x8, 12(x1)          // *(x1 + 12) = x8
+    sw      x5,  0(x1)          // *(x1 + 0) = x5
+    sw      x6,  4(x1)          // *(x1 + 4) = x6
+    sw      x7,  8(x1)          // *(x1 + 8) = x7
+    sw      x8,  12(x1)         // *(x1 + 12) = x8
 
     lw      x9,  0(x1)          // x9 = *(x1 + 0)
     lw      x10, 4(x1)          // x10 = *(x1 + 4)
     lw      x11, 8(x1)          // x11 = *(x1 + 8)
     lw      x12, 12(x1)         // x12 = *(x1 + 12)
 
-    addi    x1, x1, 4           // x1 = x1 + 4
-    sw      x5, 0(x1)           // *(x1 + 0) = x5
-    sw      x6, 4(x1)           // *(x1 + 4) = x6
-    sw      x7, 8(x1)           // *(x1 + 8) = x7
-    sw      x8, 12(x1)          // *(x1 + 12) = x8
+    addi    x1,  x1,    4       // x1 = x1 + 4
+    sw      x5,  0(x1)          // *(x1 + 0) = x5
+    sw      x6,  4(x1)          // *(x1 + 4) = x6
+    sw      x7,  8(x1)          // *(x1 + 8) = x7
+    sw      x8,  12(x1)         // *(x1 + 12) = x8
 
-    lw      x13,  -4(x1)        // x13 = *(x1 - 4)
-    lw      x14,  0(x1)         // x14 = *(x1 + 0)
-    lw      x15,  4(x1)         // x15 = *(x1 + 4)
-    lw      x16,  8(x1)         // x16 = *(x1 + 8)
+    lw      x13, -4(x1)         // x13 = *(x1 - 4)
+    lw      x14, 0(x1)          // x14 = *(x1 + 0)
+    lw      x15, 4(x1)          // x15 = *(x1 + 4)
+    lw      x16, 8(x1)          // x16 = *(x1 + 8)
 
     // Calculate a checksum for easy comparison
-    add     x17, zero, x9       // x17 = x9
-    add     x17, x17, x10       // x17 = x17 + x10
-    add     x17, x17, x11       // x17 = x17 + x11
-    add     x17, x17, x12       // x17 = x17 + x12
-    add     x17, x17, x13       // x17 = x17 + x13
-    add     x17, x17, x14       // x17 = x17 + x14
-    add     x17, x17, x15       // x17 = x17 + x15
-    add     x17, x17, x16       // x17 = x17 + x16
+    add     x17, zero,  x9      // x17 = x9
+    add     x17, x17,   x10     // x17 = x17 + x10
+    add     x17, x17,   x11     // x17 = x17 + x11
+    add     x17, x17,   x12     // x17 = x17 + x12
+    add     x17, x17,   x13     // x17 = x17 + x13
+    add     x17, x17,   x14     // x17 = x17 + x14
+    add     x17, x17,   x15     // x17 = x17 + x15
+    add     x17, x17,   x16     // x17 = x17 + x16
 
-    addi    a0, zero, 0xa       // a0 (x10) = 0xa
+    addi    a0,  zero,  0xa     // a0 (x10) = 0xa
     ecall                       // Terminate the simulation by passing 0xa to
                                 // ecall in register a0 (x10).

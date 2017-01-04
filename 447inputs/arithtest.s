@@ -9,20 +9,20 @@
     .text                       # Declare the code to be in the .text segment
     .global main                # Make main visible to the linker
 main:
-    addi    x2, x0, 1024        # x2 = 1024
-    add     x3, x2, x2          # x3 = x2 + x2
-    or      x4, x3, x2          # x4 = x3 | x2
-    add     x5, x0, 1234        # x5 = 1234
-    slli    x6, x5, 16          # x6 = x5 << 16
-    addi    x7, x6, 999         # x7 = x6 + 9999
-    sub     x8, x7, x2          # x8 = x7 - x2
-    xor     x9, x4, x3          # x9 = x4 ^ x3
-    xori    x10, x2, 255        # x10 = x2 ^ 255
-    srli    x11, x6, 5          # x11 = x6 >> 5 (logical)
-    srai    x12, x6, 4          # x12 = x6 >> 4 (arithmetic)
+    addi    x2,  x0,  1024      # x2 = 1024
+    add     x3,  x2,  x2        # x3 = x2 + x2
+    or      x4,  x3,  x2        # x4 = x3 | x2
+    add     x5,  x0,  1234      # x5 = 1234
+    slli    x6,  x5,  16        # x6 = x5 << 16
+    addi    x7,  x6,  999       # x7 = x6 + 999
+    sub     x8,  x7,  x2        # x8 = x7 - x2
+    xor     x9,  x4,  x3        # x9 = x4 ^ x3
+    xori    x10, x2,  255       # x10 = x2 ^ 255
+    srli    x11, x6,  5         # x11 = x6 >> 5 (logical)
+    srai    x12, x6,  4         # x12 = x6 >> 4 (arithmetic)
     and     x13, x11, x5        # x13 = x11 & x5
-    andi    x14, x4, 100        # x14 = x4 & 100
-    sub     x15, x0, x10        # x15 = -x10
+    andi    x14, x4,  100       # x14 = x4 & 100
+    sub     x15, x0,  x10       # x15 = -x10
     lui     x17, 100            # x17 = 100 << 12
 
     addi    x10, x0, 0xa        # x10 (a0) = 0xa
