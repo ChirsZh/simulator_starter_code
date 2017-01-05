@@ -39,8 +39,8 @@ main:
 
     lhu     x13, 0(gp)          # x13 = zero_extend(gp + 0)
     lhu     x14, 2(gp)          # x14 = zero_extend(gp + 2)
-    lh      x15, 4(gp)          # x15 = zero_extend(gp + 4)
-    lh      x16, 6(gp)          # x16 = zero_extend(gp + 6)
+    lh      x15, 4(gp)          # x15 = sign_extend(gp + 4)
+    lh      x16, 6(gp)          # x16 = sign_extend(gp + 6)
 
     # Calculate a checksum for easy comparison
     add     x17, zero, x9       # x17 = x9
