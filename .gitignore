@@ -1,0 +1,23 @@
+# Exclude all files, then include in only the required ones
+*
+
+# Allow for files nested within directories, ignore any output directory, this
+# is where compiled files go
+!*/
+output/
+
+# Allow for C and header files
+!*.c
+!*.h
+!*.cpp
+
+# Allow for assembly test files, but ignore disassembly files
+!*.s
+!*.S
+*.disassembly.s
+
+# Allow for Makefiles
+!*Makefile
+
+# Allow for gitignore files
+!.gitignore
