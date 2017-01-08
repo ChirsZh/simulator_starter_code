@@ -244,7 +244,7 @@ sim-clean:
 
 # Run the simulator with the specified test
 run: $(SIM_EXECUTABLE) $(TEST) $(TEST_HEX)
-	./$(SIM_EXECUTABLE) $(TEST)
+	@./$(SIM_EXECUTABLE) $(TEST)
 
 ################################################################################
 # Help Target
