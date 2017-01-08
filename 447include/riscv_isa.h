@@ -14,7 +14,8 @@
  **/
 
 /*----------------------------------------------------------------------------*
- *  You may edit this file and add or change any files in the src directory.  *
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
 #ifndef RISCV_ISA_H_
