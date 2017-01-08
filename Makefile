@@ -243,7 +243,7 @@ sim-clean:
 .PHONY: run
 
 # Run the simulator with the specified test
-run: $(SIM_EXECUTABLE) $(TEST) $(TEST_HEX)
+run: $(SIM_EXECUTABLE) $(TEST) assemble
 	@./$(SIM_EXECUTABLE) $(TEST)
 
 ################################################################################
