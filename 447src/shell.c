@@ -60,7 +60,7 @@
 static void print_usage()
 {
     fprintf(stdout, "Usage: riscv-sim <program>\n");
-    fprintf(stdout, "Example: riscv-sim inputs/addi.s\n");
+    fprintf(stdout, "Example: riscv-sim 447inputs/additest.s\n");
     return;
 }
 
