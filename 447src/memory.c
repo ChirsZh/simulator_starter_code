@@ -117,7 +117,7 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
     // Try to find the specified address
     uint8_t *mem_addr = mem_find_address(cpu_state, addr);
     if (mem_addr == NULL) {
-        fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
+        fprintf(stderr, "Encountered invalid memory address 0x%08x. Halting "
                 "simulation.\n", addr);
         cpu_state->halted = true;
         return 0;
@@ -139,7 +139,7 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
     // Try to find the specified address
     uint8_t *mem_addr = mem_find_address(cpu_state, addr);
     if (mem_addr == NULL) {
-        fprintf(stderr, "Encountered invalid memory address 0x%08x. Ending "
+        fprintf(stderr, "Encountered invalid memory address 0x%08x. Halting "
                 "simulation.\n", addr);
         cpu_state->halted = true;
         return;

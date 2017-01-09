@@ -109,7 +109,7 @@ void process_instruction(cpu_state_t *cpu_state)
 
                 default:
                     fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
-                            "itype function code 0x%01x. Ending Simulation.\n",
+                            "itype function code 0x%01x. Halting simulation.\n",
                             rtype_funct3);
                     cpu_state->halted = true;
                     break;
@@ -131,8 +131,8 @@ void process_instruction(cpu_state_t *cpu_state)
 
                 default:
                     fprintf(stderr, "Encountered unknown/unimplemented 12-bit "
-                            "system function code 0x%03x. Ending simulation.\n",
-                            sys_funct12);
+                            "system function code 0x%03x. Halting "
+                            "simulation.\n", sys_funct12);
                     cpu_state->halted = true;
                     break;
             }
