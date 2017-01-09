@@ -10,7 +10,7 @@
  * abstracting the processor memory to the core simulator functions.
  *
  * Authors:
- *  - 2016: Brandon Perez
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*

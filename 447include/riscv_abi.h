@@ -14,7 +14,7 @@
  * assignments in the RISC-V 2.1 ISA manual, section 20.2.
  *
  * Authors:
- *  - 2016: Brandon Perez
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*

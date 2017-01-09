@@ -13,7 +13,7 @@
  * being simulated on the processor.
  *
  * Authors:
- *  - 2016: Brandon Perez
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*

@@ -14,7 +14,7 @@
  * simulator, and definitions required to define the CPU state.
  *
  * Authors:
- *  - 2016: Brandon Perez
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*

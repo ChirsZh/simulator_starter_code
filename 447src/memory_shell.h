@@ -14,7 +14,7 @@
  * shell. These functions should not be invoked by the core simulator.
  *
  * Authors:
- *  - 2016: Brandon Perez
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*

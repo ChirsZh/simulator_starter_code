@@ -11,6 +11,9 @@
  *
  * Note that the names of the enumerations are based on the names given in the
  * RISC-V 2.1 ISA manual, sections 2 and 5.
+ *
+ * Authors:
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*

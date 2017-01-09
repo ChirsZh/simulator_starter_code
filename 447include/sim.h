@@ -10,7 +10,7 @@
  * simulator handles carrying out the actions required by instructions.
  *
  * Authors:
- *  - 2016: Brandon Perez
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 /*----------------------------------------------------------------------------*
