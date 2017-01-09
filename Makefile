@@ -70,7 +70,7 @@ RISCV_DATA_START = 0x10000000
 
 # The compiler for assembly files, along with its flags
 RISCV_CC = riscv64-unknown-elf-gcc
-RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32 -Wall -Wextra -std=c99 \
+RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32 -Wall -Wextra -std=c11 \
 			   -pedantic -g -Werror=implicit-function-declaration
 RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
 RISCV_LDFLAGS = -Wl,--section=.text=$(RISCV_TEXT_START) \
@@ -202,7 +202,7 @@ endif
 
 # The compiler for the simulator, along with its flags
 SIM_CC = gcc
-SIM_CFLAGS = -Wall -Wextra -std=gnu99 -pedantic -g \
+SIM_CFLAGS = -Wall -Wextra -std=gnu11 -pedantic -g \
 			 -Werror=implicit-function-declaration
 SIM_INC_FLAGS = -I $(447INCLUDE_DIR)
 
