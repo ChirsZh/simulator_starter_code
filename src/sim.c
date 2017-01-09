@@ -52,8 +52,8 @@ void process_instruction(cpu_state_t *cpu_state)
     int32_t itype_imm = ((int32_t)instr) >> 20;
 
     // Decode the instruction as an R-type instruction
+    rtype_funct7_t rtype_funct7 = (instr >> 25) & 0x7F;
     rtype_int_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
-    rtype_arith_funct7_t rtype_funct7 = (instr >> 25) & 0x7F;
 
     // Decode the 12-bit function code for system instructions
     sys_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
@@ -62,36 +62,35 @@ void process_instruction(cpu_state_t *cpu_state)
     {
         // General R-Type arithmetic operation
         case OP_OP:
-            switch (rtype_funct3)
+            switch (rtype_funct7)
             {
-                // 3-bit function code for either add or substract
-                case FUNCT3_ADD_SUB:
-                    switch (rtype_funct7)
+                // 7-bit function code for a general R-type integer operation
+                case FUNCT7_INT:
+                    switch (rtype_funct3)
                     {
-                        // 7-bit function code for ADD
-                        case FUNCT7_ADD:
+                        case FUNCT3_ADD:
                             if (rd != 0) {
                                 cpu_state->regs[rd] = cpu_state->regs[rs1]
                                                       + cpu_state->regs[rs2];
                             }
                             cpu_state->pc = cpu_state->pc + sizeof(instr);
                             break;
-
                         default:
                             fprintf(stderr, "Encountered unknown/unimplemented "
-                                    "7-bit rtype function code 0x%02x. Ending "
-                                    "Simulation.\n", rtype_funct7);
+                                    "3-bit rtype function code 0x%01x. Halting "
+                                    "simulation.\n",
+                                    rtype_funct3);
                             cpu_state->halted = true;
                             break;
                     }
                     break;
 
-                default:
-                    fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
-                            "rtype function code 0x%01x. Ending Simulation.\n",
-                            rtype_funct3);
-                    cpu_state->halted = true;
-                    break;
+                    default:
+                        fprintf(stderr, "Encountered unknown/unimplemented "
+                                "7-bit rtype function code 0x%02x. Halting "
+                                "simulation.\n", rtype_funct7);
+                        cpu_state->halted = true;
+                        break;
             }
             break;
 

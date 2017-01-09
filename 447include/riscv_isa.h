@@ -86,20 +86,33 @@ typedef enum riscv_itype_funct3 {
     FUNCT3_SRLI_SRAI        = 0x5,
 } itype_int_funct3_t;
 
+// 7-bit function codes for different classes of R-type instructions
+typedef enum riscv_rtype_funct7 {
+    FUNCT7_INT              = 0x00,
+    FUNCT7_ALT_INT          = 0x20,
+    FUNCT7_MUL              = 0x01,
+} rtype_funct7_t;
+
 // 3-bit function codes for integer R-type instructions
-typedef enum riscv_rtype_funct3 {
-    FUNCT3_ADD_SUB          = 0x0,
+typedef enum riscv_rtype_int_funct3 {
+    FUNCT3_ADD              = 0x0,
     FUNCT3_SLL              = 0x1,
     FUNCT3_SLT              = 0x2,
     FUNCT3_SLTU             = 0x3,
     FUNCT3_XOR              = 0x4,
-    FUNCT3_SRL_SRA          = 0x5,
+    FUNCT3_SRL              = 0x5,
     FUNCT3_OR               = 0x6,
     FUNCT3_AND              = 0x7,
 } rtype_int_funct3_t;
 
+// 3-bit function codes for alternate integer R-type instructions
+typedef enum riscv_rtype_alt_int_funct3 {
+    FUNCT3_SUB              = 0x0,
+    FUNCT3_SRA              = 0x5,
+} rtype_alt_int_funct3_t;
+
 // 3-bit function codes for multiply R-type instructions
-typedef enum rtype_mul_funct3 {
+typedef enum riscv_rtype_mul_funct3 {
     FUNCT3_MUL              = 0x0,
     FUNCT3_MULH             = 0x1,
     FUNCT3_MULHSU           = 0x2,
@@ -115,19 +128,6 @@ typedef enum riscv_itype_funct7 {
     FUNCT7_SRLI             = 0x00,
     FUNCT7_SRAI             = 0x20,
 } itype_funct7_t;
-
-// 7-bit function codes for add/sub/mul (arithmetic) R-type instructions
-typedef enum riscv_rtype_funct7 {
-    FUNCT7_ADD              = 0x00,
-    FUNCT7_SUB              = 0x20,
-    FUNCT7_MUL_DIV          = 0x01,
-} rtype_arith_funct7_t;
-
-// 7-bit function codes for srl/sra R-type instructions
-typedef enum rtype_shift_funct7 {
-    FUNCT7_SRL              = 0x00,
-    FUNCT7_SRA              = 0x20,
-} rtype_shift_funct7_t;
 
 // 12-bit function codes for special system instructions (R-type)
 typedef enum rsicv_sys_funct12 {
