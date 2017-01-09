@@ -132,9 +132,9 @@ typedef enum riscv_itype_funct7 {
     FUNCT7_SRAI             = 0x20,
 } itype_funct7_t;
 
-// 12-bit function codes for special system instructions (R-type)
+// 12-bit function codes for special system instructions (I-type)
 typedef enum rsicv_sys_funct12 {
     FUNCT12_ECALL           = 0x000,
-} sys_funct12_t;
+} itype_funct12_t;
 
 #endif /* RISCV_ISA_H_ */

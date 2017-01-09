@@ -56,7 +56,7 @@ void process_instruction(cpu_state_t *cpu_state)
     rtype_int_funct3_t rtype_funct3 = (instr >> 12) & 0x7;
 
     // Decode the 12-bit function code for system instructions
-    sys_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
+    itype_funct12_t sys_funct12 = (instr >> 20) & 0xFFF;
 
     switch (opcode)
     {
