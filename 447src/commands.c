@@ -211,7 +211,7 @@ void command_go(cpu_state_t *cpu_state, char *args[], int num_args)
                                         string_len("Hex Value"))
 #define REG_UINT_COL_LEN        max(INT32_MAX_DIGITS + string_len("()"), \
                                         string_len("Uint Value"))
-#define REG_INT_COL_LEN         max(INT32_MAX_DIGITS + string_len("()"), \
+#define REG_INT_COL_LEN         max(INT32_MAX_DIGITS + string_len("()") + 1, \
                                         string_len("Int Value"))
 
 // Structure representing the naming information about a register
@@ -293,7 +293,7 @@ static void print_register_header(FILE* file)
             "ABI Name", (int)REG_HEX_COL_LEN, "Hex Value",
             (int)REG_UINT_COL_LEN, "Uint Value", (int)REG_INT_COL_LEN,
             "Int Value");
-    print_separator('-', line_width, file);
+    print_separator('-', line_width-1, file);
     return;
 }
 
