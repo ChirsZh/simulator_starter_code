@@ -16,6 +16,9 @@ output/
 !*.S
 *.disassembly.s
 
+# Allow for register dump files, used to verify the results of tests
+!*.reg
+
 # Allow for Makefiles
 !*Makefile
 
