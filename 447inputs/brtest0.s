@@ -24,8 +24,8 @@ label2:
     ecall                           # Terminate simulation (should not reach here)
 
 label3:
-    addi    x7,   x7,    0x337       # x7 = x7 + 0x337
+    addi    x7,   x7,    0x337      # x7 = x7 + 0x337
 
 label4:
-    addi    x7,   x7,    0x70d       # x7 = x7 + 0x70d
+    addi    x7,   x7,    0x70d      # x7 = x7 + 0x70d
     ecall                           # Terminate simulation (should reach here)

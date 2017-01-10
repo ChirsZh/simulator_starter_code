@@ -15,16 +15,16 @@ data_end:                       # Symbol representing the end of .data
     .text                       # Declare the code to be in the .text segment
     .global main                # Make main visible to the linker
 main:
-    addi    x5,  zero, 0x7fe    # x5 = 0x7de
+    addi    x5,  zero, 0x7de    # x5 = 0x7de
     addi    x6,  zero, 0x5ca    # x6 = 0x5ca
     addi    x7,  zero, 0x33f    # x7 = 0x33f
     lui     x8,  0xd            # x8 = 0xd000
     addi    x8,  x8,   -1282    # x8 = x8 + 0xfffffafe (x8 = 0xcafe)
 
     sb      x5,  0(gp)          # *(gp + 0) = x5
-    sb      x6,  1(gp)          # *(gp + 0) = x6
-    sb      x7,  6(gp)          # *(gp + 0) = x7
-    sb      x8,  7(gp)          # *(gp + 0) = x8
+    sb      x6,  1(gp)          # *(gp + 1) = x6
+    sb      x7,  6(gp)          # *(gp + 6) = x7
+    sb      x8,  7(gp)          # *(gp + 7) = x8
 
     lbu     x9,  0(gp)          # x9 = zero_extend(*gp + 0)
     lbu     x10, 1(gp)          # x10 = zero_extend(*gp + 0)
@@ -33,7 +33,7 @@ main:
 
     addi    gp,  gp,   4        # gp (x3) = gp + 4
     sh      x5,  0(gp)          # *(gp + 0) = x5
-    sh      x6,  2(gp)          # *(gp + 2) = x6
+    sh      x8,  2(gp)          # *(gp + 2) = x6
     sh      x7,  4(gp)          # *(gp + 4) = x7
     sh      x8,  6(gp)          # *(gp + 6) = x8
 

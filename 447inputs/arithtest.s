@@ -20,10 +20,10 @@ main:
     xori    x10, x2,  255       # x10 = x2 ^ 255
     srli    x11, x6,  5         # x11 = x6 >> 5 (logical)
     srai    x12, x6,  4         # x12 = x6 >> 4 (arithmetic)
-    and     x13, x11, x5        # x13 = x11 & x5
-    andi    x14, x4,  100       # x14 = x4 & 100
+    and     x13, x11, x7        # x13 = x11 & x7
+    andi    x14, x5,  100       # x14 = x5 & 100
     sub     x15, x0,  x10       # x15 = -x10
-    lui     x17, 100            # x17 = 100 << 12
+    lui     x16, 100            # x16 = 100 << 12
 
     addi    x10, x0, 0xa        # x10 (a0) = 0xa
     ecall                       # Terminate the simulation by passing 0xa to
