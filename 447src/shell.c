@@ -21,32 +21,35 @@
  *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
-#include <stdlib.h>
-#include <stdio.h>          // Printf, fgets, and related functions
-#include <stdint.h>         // Fixed-size integral types
+#include <stdlib.h>             // C standard library
+#include <stdio.h>              // Printf, fgets, and related functions
+#include <stdint.h>             // Fixed-size integral types
 
-#include <assert.h>         // Assert macro
-#include <string.h>         // String manipulation functions and memset
-#include <errno.h>          // Error codes and perror
-#include <signal.h>         // Signal numbers and sigaction function
+#include <assert.h>             // Assert macro
+#include <string.h>             // String manipulation functions and memset
+#include <errno.h>              // Error codes and perror
+#include <signal.h>             // Signal numbers and sigaction function
 
-#include "sim.h"            // Interface to the core simulator, cpu_state_t
-#include "memory_shell.h"   // Interface to the processor memory
-#include "commands.h"       // Interface to the shell commands
+#include "sim.h"                // Interface to the core simulator, cpu_state_t
+#include "memory_shell.h"       // Interface to the processor memory
+#include "commands.h"           // Interface to the shell commands
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
  *----------------------------------------------------------------------------*/
 
 // The expected number of command line arguments, including the program name
-#define NUM_CMDLINE_ARGS    2
+#define NUM_CMDLINE_ARGS        2
 
 // The maximum line length the user can type in for a command
-#define COMMAND_MAX_LEN     100
+#define COMMAND_MAX_LEN         100
 
 /* The maximum number of arguments that can be parsed from user input. This more
  * than the max possible, so too many arguments can be detected. */
-#define COMMAND_MAX_ARGS    4
+#define COMMAND_MAX_ARGS        4
+
+// Indicates that a SIGINT signal was recieved by the program
+volatile bool SIGINT_RECEIVED   = false;
 
 /*----------------------------------------------------------------------------
  * Command Line Parsing
@@ -92,11 +95,13 @@ static int parse_arguments(int argc, char *argv[], char **program_path)
  * sigint_handler
  *
  * This function handles CTRL-C keystrokes from the user. Its purpose is to
- * prevent the program from being terminated when a CTRL-C is typed.
+ * prevent the program from being terminated when a CTRL-C is typed, and to
+ * indicate to any running `go` command to stop.
  **/
 void sigint_handler(int signum)
 {
     (void)signum;       // Silence the compiler
+    SIGINT_RECEIVED = true;
     return;
 }
 

@@ -174,11 +174,19 @@ void command_go(cpu_state_t *cpu_state, char *args[], int num_args)
         return;
     }
 
-    // Run the simulator until the processor is halted
-    while (!cpu_state->halted)
+    /* Run the simulator until the processor is halted or the user tells us to
+     * stop with a keyboard interrupt (SIGINT). */
+    SIGINT_RECEIVED = false;
+    while (!cpu_state->halted && !SIGINT_RECEIVED)
     {
         run_simulator(cpu_state);
     }
+
+    // Tell the user if they interrupted execution, and reset the received flag
+    if (SIGINT_RECEIVED) {
+        fprintf(stdout, "\nExecution interrupted by the user, stopping.\n");
+    }
+    SIGINT_RECEIVED = false;
 
     return;
 }
