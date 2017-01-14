@@ -30,6 +30,9 @@
 #include <errno.h>              // Error codes and perror
 #include <signal.h>             // Signal numbers and sigaction function
 
+#include <readline/readline.h>  // Interface to the readline library
+#include <readline/history.h>   // Interface to history for the readline library
+
 #include "sim.h"                // Interface to the core simulator, cpu_state_t
 #include "memory_shell.h"       // Interface to the processor memory
 #include "commands.h"           // Interface to the shell commands
@@ -47,6 +50,10 @@
 /* The maximum number of arguments that can be parsed from user input. This more
  * than the max possible, so too many arguments can be detected. */
 #define COMMAND_MAX_ARGS        4
+
+// The readline history file name, and the maximum number of lines for it
+#define HISTORY_MAX_LINES       100
+static const char *HISTORY_FILE = ".riscv_sim_history";
 
 // Indicates that a SIGINT signal was recieved by the program
 volatile bool SIGINT_RECEIVED   = false;
@@ -88,7 +95,7 @@ static int parse_arguments(int argc, char *argv[], char **program_path)
 }
 
 /*----------------------------------------------------------------------------
- * Signal Handling
+ * Signal Handling and Readline Setup
  *----------------------------------------------------------------------------*/
 
 /**
@@ -123,6 +130,61 @@ static void setup_signals()
     return;
 }
 
+/**
+ * setup_readline
+ *
+ * Sets up the readline library, reading the readline history file. This loads
+ * the previously executed commands from other simulator invocations, so that
+ * the user can access them inside the shell.
+ **/
+static int setup_readline(const char *history_file)
+{
+    int rc = read_history(history_file);
+    if (rc != 0 && errno != ENOENT) {
+        rc = -errno;
+        fprintf(stderr, "Error: %s: Unable to open readline history file: "
+                "%s.\n", history_file, strerror(errno));
+    }
+    return rc;
+}
+
+/**
+ * cleanup_readline
+ *
+ * Cleans up the readline library, appending the history list of command
+ * executed during this session to the history file. The file is truncated to a
+ * maximum number.
+ **/
+static int cleanup_readline(const char *history_file, int max_history_lines)
+{
+    // Open the history file in append mode, creating it if it doesn't exist
+    FILE *history = fopen(history_file, "a");
+    if (history == NULL) {
+        int rc = -errno;
+        fprintf(stderr, "Error: %s: Unable to open history file in append "
+                "mode: %s.\n", history_file, strerror(errno));
+        return rc;
+    }
+    fclose(history);
+
+    // Append the most recent history elements to the history file
+    int rc = append_history(max_history_lines, history_file);
+    if (rc != 0) {
+        rc = -errno;
+        fprintf(stderr, "Error: %s: Unable to append history list to readline "
+                "history file: %s.\n", history_file, strerror(errno));
+        return rc;
+    }
+
+    // Truncate the history file to the max number of lines
+    rc = history_truncate_file(history_file, max_history_lines);
+    if (rc != 0) {
+        rc = -errno;
+        fprintf(stderr, "Error: %s: Unable to truncate readline history file: "
+                "%s.\n", history_file, strerror(errno));
+    }
+    return rc;
+}
 
 /*----------------------------------------------------------------------------
  * Simulator REPL
@@ -281,7 +343,8 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
         return false;
     }
 
-    // Otherwise, identify the command based on its short alias or long form
+    /* Otherwise, identify the command based on its short alias or long form.
+     * If the command is valid, then add it to readline's history. */
     bool quit;
     if (process_long_command(cpu_state, command, args, num_args, &quit)) {
         return quit;
@@ -303,38 +366,21 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
  **/
 static void simulator_repl(cpu_state_t *cpu_state)
 {
-    // Initialize the buffer and buffer size value for getline
-    char *line = NULL;
-    size_t buf_size = 0;
-
     // Continuously process user commands until a quit or EOF
     while (true)
     {
-        // Print the command prompt for the user
-        fprintf(stdout, "RISC-V Sim> ");
-        fflush(stdout);
-
-        /* Read the next line from the user, only terminating on an EOF
-         * character or an error that isn't EINTR. */
-        int rc = getline(&line, &buf_size, stdin);
-        if (rc < 0 && feof(stdin)) {
+        /* Read the next line from the user, terminating on an EOF, and add it
+         * to readline's history if it's not an EOF. */
+        char *line = readline("RISC-V Sim> ");
+        if (line == NULL) {
             fprintf(stdout, "\n");
             break;
-        } else if (rc < 0 && errno != EINTR) {
-            perror("\nError: Unable to read line of user input");
-            break;
-        } else if (rc < 0) {
-            fprintf(stdout, "\n");
-            clearerr(stdin);
-            continue;
         }
-
-        // Strip the newline character from the input
-        int newline_index = strcspn(line, "\r\n");
-        line[newline_index] = '\0';
+        add_history(line);
 
         // Process the user's command, stop if the user requested quit
         bool quit = process_command(cpu_state, line);
+        free(line);
         if (quit) {
             break;
         }
@@ -371,7 +417,15 @@ int main(int argc, char *argv[])
     // Setup the signal handling for the program
     setup_signals();
 
+    // Setup the readline library
+    rc = setup_readline(HISTORY_FILE);
+    if (rc < 0) {
+        return -rc;
+    }
+
     // The REPL loop for the simulator, wait for and read user commands
     simulator_repl(&cpu_state);
-    return 0;
+
+    // Cleanup the readline library
+    return -cleanup_readline(HISTORY_FILE, HISTORY_MAX_LINES);
 }
