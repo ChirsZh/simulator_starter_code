@@ -214,7 +214,7 @@ void command_go(cpu_state_t *cpu_state, char *args[], int num_args)
  * in the, which is a max between a value and its column title. */
 #define ISA_NAME_COL_LEN        max(ISA_NAME_MAX_LEN, string_len("ISA Name"))
 #define ABI_NAME_COL_LEN        max(ABI_NAME_MAX_LEN + string_len("()"), \
-                                        string_len("ABI NAME"))
+                                        string_len("ABI Name"))
 #define REG_HEX_COL_LEN         max(INT32_MAX_HEX_DIGITS + string_len("0x"), \
                                         string_len("Hex Value"))
 #define REG_UINT_COL_LEN        max(INT32_MAX_DIGITS + string_len("()"), \
