@@ -208,6 +208,9 @@ SIM_CFLAGS = -Wall -Wextra -std=gnu11 -pedantic -g \
 			 -Werror=implicit-function-declaration
 SIM_INC_FLAGS = -I $(447INCLUDE_DIR)
 
+# The flags for linking against the readline library
+LIBREADLINE_FLAGS = -l readline
+
 # The directory for starter code files provided by the 18-447 staff, and all
 # the *.c and *.h files in it, and the include directory for header files
 447SRC_DIR = 447src
@@ -226,9 +229,10 @@ SIM_EXECUTABLE = riscv-sim
 build: $(SIM_EXECUTABLE)
 
 # Compile the simulator into an executable
-$(SIM_EXECUTABLE): $(SRC) $(447SRC)
+$(SIM_EXECUTABLE): $(SRC) $(447SRC) | build-check-readline
 	@printf "Compiling the simulator into an executable...\n"
-	@$(SIM_CC) $(SIM_CFLAGS) $(SIM_INC_FLAGS) $(filter %.c,$^) -o $@
+	@$(SIM_CC) $(SIM_CFLAGS) $(SIM_INC_FLAGS) $(filter %.c,$^) -o $@ \
+			$(LIBREADLINE_FLAGS)
 	@printf "Compilation of the simulator has completed. The simulator can be "
 	@printf "found at $u$@$n.\n"
 
@@ -236,6 +240,14 @@ $(SIM_EXECUTABLE): $(SRC) $(447SRC)
 build-clean:
 	@printf "Cleaning up the simulator files...\n"
 	@rm -f $(SIM_EXECUTABLE)
+
+# Checks that the readline library is installed on the system
+build-check-readline:
+ifeq ($(shell ldconfig -p | grep "libreadline\.so"),)
+	@printf "$rError: $ulibreadline.so$n$r: Readline library was not found on "
+	@printf "in your system.$n\n"
+	@exit 1
+endif
 
 ################################################################################
 # Run the Simulator
