@@ -139,8 +139,8 @@ void process_instruction(cpu_state_t *cpu_state)
             break;
 
         default:
-            fprintf(stderr, "Encountered unknown/unimplemented opcode 0x%02x. "
-                    "Ending Simulation.\n", opcode);
+            fprintf(stderr, "Encountered unknown opcode 0x%02x. Halting "
+                    "simulation.\n", opcode);
             cpu_state->halted = true;
             break;
     }

@@ -382,4 +382,4 @@ help:
 	@printf "\tmake run TEST=inputs/mytest.S\n"
 	@printf "\tmake verify TESTS=inputs/mytest.s\n"
 	@printf "\tmake verify TESTS=\"inputs/mytest1.s inputs/mytest2.s\"\n"
-	@printf "\tmake verify TESTS=447inputs/*.s\n"
+	@printf "\tmake verify TESTS=\"447inputs/*.s 447inputs/*.S\"\n"
