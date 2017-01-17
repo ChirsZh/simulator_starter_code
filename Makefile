@@ -19,7 +19,7 @@
 ################################################################################
 
 # The variables that control which assembly file tests are run.
-DEFAULT_TEST = 447inputs/additest.s
+DEFAULT_TEST = 447inputs/additest.S
 TEST ?= $(DEFAULT_TEST)
 TESTS ?= $(DEFAULT_TEST)
 
@@ -380,6 +380,6 @@ help:
 	@printf "\tmake build\n"
 	@printf "\tmake assemble TEST=inputs/mytest.S\n"
 	@printf "\tmake run TEST=inputs/mytest.S\n"
-	@printf "\tmake verify TESTS=inputs/mytest.s\n"
-	@printf "\tmake verify TESTS=\"inputs/mytest1.s inputs/mytest2.s\"\n"
-	@printf "\tmake verify TESTS=\"447inputs/*.s 447inputs/*.S\"\n"
+	@printf "\tmake verify TESTS=inputs/mytest.S\n"
+	@printf "\tmake verify TESTS=\"inputs/mytest1.S inputs/mytest2.S\"\n"
+	@printf "\tmake verify TESTS=447inputs/*.S\n"
