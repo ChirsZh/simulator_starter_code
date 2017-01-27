@@ -142,7 +142,7 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the C test program with the startup file to create an ELF file
-%.$(ELF_EXTENSION): %.c $(RISCV_STARTUP_FILE) | assemble-check-compiler \
+%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c | assemble-check-compiler \
 		assemble-check-test
 	@printf "Assembling test $u$<$n into hex files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $^ -o $@
