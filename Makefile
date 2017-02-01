@@ -260,7 +260,7 @@ endif
 ################################################################################
 
 # These targets don't correspond to actual files
-.PHONY: run
+.PHONY: run run-veryclean
 
 # Run the simulator with the specified test
 run: $(SIM_EXECUTABLE) $(TEST) | assemble check-test-defined
@@ -276,7 +276,8 @@ run-veryclean:
 
 # Always run the simulator to generate the given test, because the specified
 # test can change
-.PHONY: verify verify-single $(SIM_REGDUMP) verify-clean
+.PHONY: verify verify-single $(SIM_REGDUMP) verify-clean \
+		verify-check-ref-regdump
 
 # The script used to verify, and the options for it
 VERIFY_SCRIPT = sdiff
