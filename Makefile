@@ -264,6 +264,7 @@ endif
 
 # Run the simulator with the specified test
 run: $(SIM_EXECUTABLE) $(TEST) | assemble check-test-defined
+	@printf "Running test $u$(TEST)$n...\n"
 	@./$(SIM_EXECUTABLE) $(TEST)
 
 # Cleanup the history file kept around by the simulator's readline
