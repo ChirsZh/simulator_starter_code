@@ -18,6 +18,9 @@
 # General Targets and Variables
 ################################################################################
 
+# Set the shell to bash for when the Makefile runs shell commands.
+SHELL = /bin/bash -o pipefail
+
 # Terminal color and modifier attributes
 # Return to the normal terminal colors
 n := $(shell tput sgr0)
