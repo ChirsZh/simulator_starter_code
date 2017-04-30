@@ -36,42 +36,39 @@
  * Internal Definitions
  *----------------------------------------------------------------------------*/
 
-// The length of a line in a hex file, including the newline character
-#define MEM_FILE_LINE_LEN           (8 + 1)
-
 // The user text memory region, containing the user program
 static const mem_region_t USER_TEXT_REGION = {
     .base_addr = USER_TEXT_START,
     .max_size = USER_DATA_START - USER_TEXT_START,
-    .hex_extension = ".text.hex",
+    .extension = ".text.bin",
 };
 
 // The user data memory region, containing user global variables
 static const mem_region_t USER_DATA_REGION = {
     .base_addr = USER_DATA_START,
     .max_size = STACK_START - USER_DATA_START,
-    .hex_extension = ".data.hex"
+    .extension = ".data.bin"
 };
 
-// The stack memory region, conatining local values in the program
+// The stack memory region, containing local values in the program
 static const mem_region_t STACK_REGION = {
     .base_addr = STACK_END - STACK_SIZE,
     .max_size = STACK_SIZE,
-    .hex_extension = NULL,
+    .extension = NULL,
 };
 
 // The kernel text region, containing kernel code
 static const mem_region_t KERNEL_TEXT_REGION = {
     .base_addr = KERNEL_TEXT_START,
     .max_size = KERNEL_DATA_START - KERNEL_TEXT_START,
-    .hex_extension = ".ktext.hex",
+    .extension = ".ktext.bin",
 };
 
 // The kernel data region, containing kernel global variables
 static const mem_region_t KERNEL_DATA_REGION = {
     .base_addr = KERNEL_DATA_START,
     .max_size = UINT32_MAX - KERNEL_DATA_START,
-    .hex_extension = ".kdata.hex",
+    .extension = ".kdata.bin",
 };
 
 // An array of all the memory regions, and the number of memory regions
@@ -155,55 +152,6 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
  *----------------------------------------------------------------------------*/
 
 /**
- * load_file
- *
- * Loads the given hex file into the specified memory region, allocating the
- * amount of memory needed. The hex file is parsed as an ASCII text file, with
- * one 32-bit hexadecimal value per line.
- **/
-static int load_hex_file(mem_region_t *mem_region, FILE *hex_file,
-        const char *hex_path)
-{
-    // Initialize the loop variables
-    char *line = NULL;
-    size_t buf_size = 0;
-    size_t line_num = 0;
-
-    // Read each line of the file, parse it as hex, and load it into memory
-    ssize_t rc = getline(&line, &buf_size, hex_file);
-    while (rc >= 0)
-    {
-        // Strip the newline character from the file's line
-        size_t newline_index = strcspn(line, "\r\n");
-        line[newline_index] = '\0';
-
-        // Parse the line as a 32-bit unsigned hexadecimal integer
-        uint32_t value;
-        rc = parse_uint32_hex(line, &value);
-        if (rc < 0) {
-            fprintf(stderr, "Error: %s: Line %zu: Unable to parse '%s' as a "
-                    "32-bit unsigned hexadecimal integer.\n", hex_path,
-                    line_num, line);
-            break;
-        }
-
-        // Write the value to memory, and increment the offset into memory
-        size_t offset = line_num * sizeof(value);
-        mem_write_word(&mem_region->mem[offset], value);
-
-        // Get the next line of the file
-        rc = getline(&line, &buf_size, hex_file);
-        line_num += 1;
-    }
-
-    // Free the line buffer allocated by getline
-    if (line != NULL) {
-        free(line);
-    }
-    return (feof(hex_file)) ? 0 : rc;
-}
-
-/**
  * malloc_mem_region
  *
  * Allocates the memory for the given region, which will have mem_region->size
@@ -222,45 +170,57 @@ static void malloc_mem_region(mem_region_t *mem_region)
 /**
  * load_mem_region
  *
- * Loads the memory region from its corresponding hex file. The size of this
- * file cannot exceed the max_size for the memory region.
+ * Loads the memory region from its corresponding data (binary) file. The size
+ * of this file cannot exceed the max_size for the memory region.
  **/
-static int load_mem_region(mem_region_t *mem_region, char *hex_path)
+static int load_mem_region(mem_region_t *mem_region, char *data_path)
 {
-    // Try to open the hex file
-    FILE *hex_file = fopen(hex_path, "r");
-    if (hex_file == NULL) {
+    // Try to open the data file
+    FILE *data_file = fopen(data_path, "r");
+    if (data_file == NULL) {
         int rc = -errno;
-        fprintf(stderr, "Error: %s: Unable to open file: %s.\n", hex_path,
+        fprintf(stderr, "Error: %s: Unable to open file: %s.\n", data_path,
                 strerror(errno));
         return rc;
     }
 
-    /* Determine the size of the memory region in the file in bytes, accounting
-     * for the fact that hex file is an ASCII text file. */
-    fseek(hex_file, 0, SEEK_END);
-    size_t file_size = ftell(hex_file);
-    rewind(hex_file);
-    size_t num_lines = file_size / MEM_FILE_LINE_LEN;
-    mem_region->size = num_lines * sizeof(uint32_t);
+    // Determine the size of the memory region in the file.
+    fseek(data_file, 0, SEEK_END);
+    mem_region->size = ftell(data_file);
+    rewind(data_file);
+    if (mem_region->size == 0) {
+        return 0;
+    }
 
     // Allocate memory for the region only if the size does not exceed the max
     if (mem_region->size > mem_region->max_size) {
         fprintf(stderr, "Error: %s: File is too large for memory region.\n",
-                hex_path);
+                data_path);
+        fclose(data_file);
         return -EFBIG;
+    } else if (mem_region->size % sizeof(uint32_t) != 0) {
+        fprintf(stderr, "Error: %s: File size is not aligned to 4 bytes.\n.",
+                data_path);
+        fclose(data_file);
+        return -EINVAL;
     }
     malloc_mem_region(mem_region);
 
-    // Try to parse and load the file into memory
-    int rc = load_hex_file(mem_region, hex_file, hex_path);
-    if (rc < 0) {
+    // Since the data file is binary, load it directly into memory
+    int rc = 0;
+    size_t bytes_read = fread(mem_region->mem, mem_region->size, 1, data_file);
+    if (bytes_read != 1) {
+        assert(ferror(data_file) || !feof(data_file));
+        rc = -errno;
+        fprintf(stderr, "Error: %s: Unable to read memory section file: %s.\n",
+                data_path, strerror(errno));
+
         free(mem_region->mem);
         mem_region->mem = NULL;
     }
 
-    // Close the hex file
-    fclose(hex_file);
+    // Close the data file
+    fclose(data_file);
     return rc;
 }
 
@@ -291,8 +251,8 @@ static char *join_strings(const char *string1, const char *string2)
  *
  * Initializes the memory subsystem part of the CPU state. This loads the memory
  * regions from the specified program into the CPU memory, and initializes them
- * to the values specified in the respective hex files. Program name should be
- * the path to the executable file.
+ * to the values specified in the respective data files. Program name should be
+ * the path to the executable file (it has no extension).
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
@@ -303,7 +263,7 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
     memory->num_mem_regions = array_len(MEM_REGIONS);
     memset(memory->mem_regions, 0, sizeof(memory->mem_regions));
 
-    // Initialize each memory region, loading data from the associated hex file
+    // Initialize each memory region, loading data from the associated data file
     int rc = 0;
     for (int i = 0; i < memory->num_mem_regions; i++)
     {
@@ -311,19 +271,19 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
         mem_region_t *mem_region = &memory->mem_regions[i];
         memcpy(mem_region, MEM_REGIONS[i], sizeof(*MEM_REGIONS[i]));
 
-        /* If the memory region doesn't have a hex file, we only allocate it. In
-         * this case, the size of the memory region is max_size. */
-        if (mem_region->hex_extension == NULL) {
+        /* If the memory region doesn't have a data file, we only allocate it.
+         * In this case, the size of the memory region is max_size. */
+        if (mem_region->extension == NULL) {
             mem_region->size = mem_region->max_size;
             malloc_mem_region(mem_region);
             continue;
         }
 
-        /* Otherwise, combine the program path and hex extension to get the path
-         * to the hex file, load it, then free the buffer. */
-        char *hex_path = join_strings(program_path, mem_region->hex_extension);
-        rc = load_mem_region(mem_region, hex_path);
-        free(hex_path);
+        /* Otherwise, combine the program path and extension to get the path
+         * to the data file, load it, then free the buffer. */
+        char *data_path = join_strings(program_path, mem_region->extension);
+        rc = load_mem_region(mem_region, data_path);
+        free(data_path);
 
         // Free the other memory regions if we failed to load this one
         if (rc < 0) {

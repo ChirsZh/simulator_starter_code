@@ -43,7 +43,7 @@ typedef struct mem_region {
     uint32_t max_size;          // Maximum permitted size for the memory region
     uint32_t size;              // Size of the memory region in bytes
     uint8_t *mem;               // Actual memory buffer for the region
-    const char *hex_extension;  // File extension for the hex file the region
+    const char *extension;      // File extension for the region's data file
 } mem_region_t;
 
 // The representation for all the memory in the processor

@@ -37,8 +37,8 @@
  *
  * Initializes the memory subsystem part of the CPU state. This loads the memory
  * regions from the specified program into the CPU memory, and initializes them
- * to the values specified in the respective hex files. Program path can either
- * be a relative or absolute path to the program file.
+ * to the values specified in the respective data files. Program path can either
+ * be a relative or absolute path to the executable file (it has no extension).
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path);
 

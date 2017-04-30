@@ -62,8 +62,7 @@ endif
 
 # These targets don't correspond to actual files
 .PHONY: assemble assemble-veryclean assemble-check-test assemble-check-objcopy \
-		assemble-check-objdump assemble-check-hex-compiler \
-		assemble-check-compiler
+		assemble-check-objdump assemble-check-compiler
 
 # Prevent make from automatically deleting intermediate files generated.
 # Instead, we do this manually. This prevents the commands from being echoed.
@@ -92,11 +91,6 @@ RISCV_OBJCOPY_FLAGS = -O binary
 RISCV_OBJDUMP = riscv64-unknown-elf-objdump
 RISCV_OBJDUMP_FLAGS = -d
 
-# The compiler for hex files, which convert copied binary to ASCII hex files,
-# where there is one word per line.
-HEX_CC = hexdump
-HEX_CFLAGS = -v -e '1/4 "%08x" "\n"'
-
 # The runtime environment directory, which has the startup file for C programs
 447_RUNTIME_DIR = 447runtime
 RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
@@ -104,26 +98,20 @@ RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
 # The file extensions for all files generated, including intermediate ones
 ELF_EXTENSION = elf
 BINARY_EXTENSION = bin
-HEX_EXTENSION = hex
 DISAS_EXTENSION = disassembly.s
 
-# The hex files generated when the program is assembled. There's one for each
+# The binary files generated when the program is assembled. There's one for each
 # assembled segment: user and kernel text and data sections.
 TEST_NAME = $(basename $(TEST))
-HEX_SECTIONS = $(addsuffix .$(HEX_EXTENSION),text data ktext kdata)
-TEST_HEX = $(addprefix $(TEST_NAME).,$(HEX_SECTIONS))
+BINARY_SECTIONS = $(addsuffix .$(BINARY_EXTENSION),text data ktext kdata)
+TEST_BIN = $(addprefix $(TEST_NAME).,$(BINARY_SECTIONS))
 
 # The ELF and disassembly files generated when the test is assembled
 TEST_EXECUTABLE = $(addsuffix .$(ELF_EXTENSION), $(TEST_NAME))
 TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION), $(TEST_NAME))
 
 # Assemble the program specified by the user on the command line
-assemble: $(TEST) $(TEST_HEX) $(TEST_DISASSEMBLY) | check-test-defined
-
-# Convert a binary file into an ASCII hex file, with one 4-byte word per line
-%.$(HEX_EXTENSION): %.$(BINARY_EXTENSION) | assemble-check-hex-compiler
-	@$(HEX_CC) $(HEX_CFLAGS) $^ > $@
-	@rm -f $^
+assemble: $(TEST) $(TEST_BIN) $(TEST_DISASSEMBLY) | check-test-defined
 
 # Extract the given section from the program ELF file, generating a binary
 $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
@@ -138,29 +126,29 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 
 # Compile the assembly test program with a *.s extension to create an ELF file
 %.$(ELF_EXTENSION): %.s | assemble-check-compiler assemble-check-test
-	@printf "Assembling test $u$<$n into hex files...\n"
+	@printf "Assembling test $u$<$n into binary files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the assembly test program with a *.S extension to create an ELF file
 %.$(ELF_EXTENSION): %.S | assemble-check-compiler assemble-check-test
-	@printf "Assembling test $u$<$n into hex files...\n"
+	@printf "Assembling test $u$<$n into binary files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the C test program with the startup file to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c | assemble-check-compiler \
 		assemble-check-test
-	@printf "Assembling test $u$<$n into hex files...\n"
+	@printf "Assembling test $u$<$n into binary files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $^ -o $@
 
 # Checks that the given test exists. This is used when the test doesn't have
 # a known extension, and suppresses the 'no rule to make...' error message
 $(TEST): assemble-check-test
 
-# Clean up all the hex files in project directories
+# Clean up all the binary files in project directories
 assemble-veryclean:
-	@printf "Cleaning up all assembled hex files in the project directory...\n"
-	@rm -f $$(find -name '*.$(HEX_EXTENSION)' -o -name '*.$(BINARY_EXTENSION)' \
-			-o -name '*.$(ELF_EXTENSION)' -o -name '*.$(DISAS_EXTENSION)')
+	@printf "Cleaning up assembled binary files in the project directory...\n"
+	@rm -f $$(find -name '*.$(BINARY_EXTENSION)' -o -name '*.$(ELF_EXTENSION)' \
+		-o -name '*.$(DISAS_EXTENSION)')
 
 # Check that the RISC-V compiler exists
 assemble-check-compiler:
@@ -193,14 +181,6 @@ ifeq ($(shell which $(RISCV_OBJDUMP) 2> /dev/null),)
 	@exit 1
 endif
 
-# Check that the hex compiler exists (converts binary to ASCII hex)
-assemble-check-hex-compiler:
-ifeq ($(shell which $(HEX_CC) 2> /dev/null),)
-	@printf "$rError: $u$(HEX_CC)$n$r: Hex dump utility was not found in your "
-	@printf "PATH.\n"
-	@exit 1
-endif
-
 ################################################################################
 # Compile the Simulator
 ################################################################################
@@ -211,7 +191,7 @@ endif
 # The compiler for the simulator, along with its flags
 SIM_CC = gcc
 SIM_CFLAGS = -Wall -Wextra -std=gnu11 -pedantic -g \
-			 -Werror=implicit-function-declaration
+	-Werror=implicit-function-declaration
 SIM_INC_FLAGS = -I $(447INCLUDE_DIR)
 
 # The flags for linking against the readline library
@@ -352,9 +332,9 @@ help:
 	@printf "\t    $u$(SIM_EXECUTABLE)$n.\n"
 	@printf "\n"
 	@printf "\t$bassemble$n\n"
-	@printf "\t    Assembles the specified $bTEST$n program into hex files\n"
-	@printf "\t    for each code section. The hex files are placed in the\n"
-	@printf "\t    test's directory under $u<test_name>.<section>.hex$n.\n"
+	@printf "\t    Assembles the specified $bTEST$n program into binary files\n"
+	@printf "\t    for each code section. The binary files are placed in the\n"
+	@printf "\t    test's directory under $u<test_name>.<section>.bin$n.\n"
 	@printf "\t    A dissabmely of the compiled test is created at\n"
 	@printf "\t    $u<test_name>.$(DISAS_EXTENSION)$n.\n"
 	@printf "\n"
@@ -373,7 +353,7 @@ help:
 	@printf "\n"
 	@printf "\t$bveryclean$n\n"
 	@printf "\t    Takes the same steps as the $bclean$n target and also\n"
-	@printf "\t    cleans up all hex files and disassembly generated from\n"
+	@printf "\t    cleans up all binary files and disassembly generated from\n"
 	@printf "\t    assembling the tests in the project directory.\n"
 	@printf "\n"
 	@printf "$bVariables:$n\n"
