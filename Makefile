@@ -92,7 +92,7 @@ RISCV_OBJCOPY_FLAGS = -O binary
 
 # The objdump utility for ELF files, along with its flags
 RISCV_OBJDUMP = riscv64-unknown-elf-objdump
-RISCV_OBJDUMP_FLAGS = -d
+RISCV_OBJDUMP_FLAGS = -d -M numeric,no-aliases
 
 # The runtime environment directory, which has the startup file for C programs
 447_RUNTIME_DIR = 447runtime
@@ -123,7 +123,6 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 # Generate a disassembly of the compiled program for debugging proposes
 %.$(DISAS_EXTENSION): %.$(ELF_EXTENSION) | assemble-check-objdump
 	@$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_FLAGS) $^ > $@
-	@rm -f $^
 	@printf "Assembly of the test has completed. A disassembly of the test can "
 	@printf "be found at $u$*.$(DISAS_EXTENSION)$n.\n"
 
