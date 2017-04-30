@@ -7,7 +7,7 @@
 # the simulator.
 #
 # Authors:
-# 	- 2016: Brandon Perez
+#	- 2016: Brandon Perez
 
 ################################################################################
 #                           DO NOT MODIFY THIS FILE!                           #

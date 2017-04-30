@@ -10,8 +10,6 @@ int fib(int i) {
   }
 }
 
-
 int main() {
   return fib(10);
 }
-

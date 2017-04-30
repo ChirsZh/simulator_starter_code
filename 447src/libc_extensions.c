@@ -208,4 +208,3 @@ void snprintf_wrapper(const char *filename, int line, const char *function_name,
 
     return;
 }
-
