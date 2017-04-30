@@ -1,16 +1,16 @@
 Current CPU State and Register Values:
 --------------------------------------
-Instruction Count    = 4069
-Program Counter (PC) = 0x0040000c
+Instruction Count    = 4070
+Program Counter (PC) = 0x00400010
 
 ISA Name ABI Name   Hex Value  Uint Value   Int Value
 ---------------------------------------------------------
 x0       (zero)   = 0x00000000 (0)          (0)
 x1       (ra)     = 0x00400004 (4194308)    (4194308)
-x2       (sp)     = 0x7ff00000 (2146435072) (2146435072)
-x3       (gp)     = 0x10000000 (268435456)  (268435456)
+x2       (sp)     = 0x00000059 (89)         (89)
+x3       (gp)     = 0x00000000 (0)          (0)
 x4       (tp)     = 0x00000000 (0)          (0)
-x5       (t0)     = 0x00000059 (89)         (89)
+x5       (t0)     = 0x00000000 (0)          (0)
 x6       (t1)     = 0x00000000 (0)          (0)
 x7       (t2)     = 0x00000000 (0)          (0)
 x8       (s0/fp)  = 0x00000000 (0)          (0)
