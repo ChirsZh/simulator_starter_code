@@ -26,8 +26,9 @@
     .global _start          // Make _start visible to the linker
 _start:
     call    main            // Call the user's program
-    addi    t0, a0, 0       // Put main's return value in t0 (x5).
+    addi    x2, a0, 0       // Put the return value's lower 32-bits in x2 (sp)
+    addi    x3, a1, 0       // Put the return value's upper 32-bits in x3 (gp)
 
     addi    a0, zero, 0xa   // a0 (x10) = 0xa
-    ecall                   // Terminate the program by doing a syscall. The return
-                            // value a0 (x10) must be 0xa
+    ecall                   // Terminate the program by doing a syscall. The
+                            // return value a0 (x10) must be 0xa
