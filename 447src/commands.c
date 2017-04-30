@@ -795,7 +795,7 @@ void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
     // Print help message for the quit and help commands
     print_help("q[uit]", "Quit the simulator. Can also be done with an EOF "
             "(CTRL-D).");
-    print_help("help /?", "Display this help message.");
+    print_help("h[elp]|?", "Display this help message.");
 
     return;
 }
