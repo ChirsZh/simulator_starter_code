@@ -8,7 +8,7 @@
 # perform a less than or equal to branch, you can reverse the operands of a
 # a BGE instruction.
 
-    .text                           # Declare the code to be in the .text segment
+    .text                           # Declare the code to be in .text section
     .global main                    # Make main visible to the linker
 main:
     addi    a0,   zero,   0xa       # a0 (x10) = 0xa
@@ -50,7 +50,7 @@ label6:                             # Should reach here (7.)
 
 label7:                             # Should not reach here
     addi    x5,   x5,     200       # x5 = x5 + 200
-    ecall                           # Terminate simulation (should not reach here)
+    ecall                           # Terminate simulation (should not reach)
 
 label8:                             # Should reach here (8.)
     addi    x5,   x5,     215       # x5 = x5 + 215
@@ -58,7 +58,7 @@ label8:                             # Should reach here (8.)
 
 label9:                             # Should not reach here
     addi    x5,   x5,     1         # x5 = x5 + 1
-    ecall                           # Terminate simulation (should not reach here)
+    ecall                           # Terminate simulation (should not reach)
 
 label10:                            # Should reach here (9.)
     addi    x5,   x5,     447       # x5 = x5 + 447
@@ -66,7 +66,7 @@ label10:                            # Should reach here (9.)
 
 label11:                            # Should not reach here
     addi    x5,   x5,     400       # x5 = x5 + 400
-    ecall                           # Terminate simulation (should not reach here)
+    ecall                           # Terminate simulation (should not reach)
 
 label12:                            # Should reach here (10.)
     add     x5,   x5,     ra        # x5 = x5 + ra (x1)

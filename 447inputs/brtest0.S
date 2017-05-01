@@ -5,7 +5,7 @@
 # This is a very basic branch test, that only tests unconditional jumps, and
 # branches that are trivially true or false.
 
-    .text                           # Declare the code to be in the .text segment
+    .text                           # Declare the code to be in .text section
     .global main                    # Make main visible to the linker
 main:
     addi    a0,   zero,  0xa        # a0 (x10) = 0xa
@@ -21,7 +21,7 @@ label1:
 label2:
     beq     zero, zero,  label4     # If (0 == 0) goto label4
     addi    x7,   x7,    0x347      # x7 = x7 + 0x347
-    ecall                           # Terminate simulation (should not reach here)
+    ecall                           # Terminate simulation (should not reach)
 
 label3:
     addi    x7,   x7,    0x337      # x7 = x7 + 0x337

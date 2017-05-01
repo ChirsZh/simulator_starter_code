@@ -4,20 +4,20 @@
  * Basic Memory Test
  *
  * This performs a very basic test of the load and store instructions, checking
- * if word-wise loads and stroes work. This test also demonstrates how to declare
- * global variables in assembly that go into the .data section and how to interact
- * with it.
+ * if word-wise loads and stroes work. This test also demonstrates how to
+ * declare global variables in assembly that go into the .data section and how
+ * to interact with it.
  **/
 
 /**
- * The simulator will allocate as many bytes as are declared for .data section, so
- * you must explicitly specify the size of the .data section as done below. At
- * program start, the simulator will set the value of the global pointer to the
- * gp (x1) register, which is the start of the .data section.
+ * The simulator will allocate as many bytes as are declared for .data section,
+ * so you must explicitly specify the size of the .data section as done below.
+ * At program start, the simulator will set the value of the global pointer to
+ * the gp (x1) register, which is the start of the .data section.
  *
  * The .space directive will allocate uninitialzed memory for a memory segment.
- * The .word, .halfword, .bytes, .asciiz will allocate memory for specific values.
- * See the GNU Assembler (GAS) guide for a complete description.
+ * The .word, .halfword, .bytes, .asciiz will allocate memory for specific
+ * values.  See the GNU Assembler (GAS) guide for a complete description.
  **/
 
 // The size of the data section accessed
