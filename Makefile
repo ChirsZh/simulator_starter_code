@@ -84,7 +84,7 @@ RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32 -march=RV32IM -Wall \
 		-Wextra  -std=c11 -pedantic -g -Werror=implicit-function-declaration
 RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
 RISCV_LDFLAGS = -Wl,--section=.text=$(RISCV_TEXT_START) \
-				-Wl,--section=.data=$(RISCV_DATA_START)
+		-Wl,--section=.data=$(RISCV_DATA_START)
 
 # The objcopy utility for ELF files, along with its flags
 RISCV_OBJCOPY = riscv64-unknown-elf-objcopy
@@ -150,7 +150,7 @@ $(TEST): assemble-check-test
 assemble-veryclean:
 	@printf "Cleaning up assembled binary files in the project directory...\n"
 	@rm -f $$(find -name '*.$(BINARY_EXTENSION)' -o -name '*.$(ELF_EXTENSION)' \
-		-o -name '*.$(DISAS_EXTENSION)')
+			-o -name '*.$(DISAS_EXTENSION)')
 
 # Check that the RISC-V compiler exists
 assemble-check-compiler:
@@ -193,7 +193,7 @@ endif
 # The compiler for the simulator, along with its flags
 SIM_CC = gcc
 SIM_CFLAGS = -Wall -Wextra -std=gnu11 -pedantic -g \
-	-Werror=implicit-function-declaration
+		-Werror=implicit-function-declaration
 SIM_INC_FLAGS = -I $(447INCLUDE_DIR)
 
 # The flags for linking against the readline library
@@ -204,7 +204,7 @@ LIBREADLINE_FLAGS = -l readline
 447SRC_DIR = 447src
 447INCLUDE_DIR = 447include
 447SRC = $(shell find $(447SRC_DIR) $(447INCLUDE_DIR) -type f -name '*.c' \
-		   -o -name '*.h')
+		-o -name '*.h')
 
 # The directory for student source files, and *.c and *.h files in it
 SRC_DIR = src
