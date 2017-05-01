@@ -280,7 +280,7 @@ verify: | check-tests-defined
 	done
 
 # Verify the simulator's register dump for a single test
-verify-single: $(SIM_REGDUMP) $(REF_REGDUMP) | verify-check-ref-regdump
+verify-single: $(SIM_REGDUMP) $(REF_REGDUMP) | assemble verify-check-ref-regdump
 	@printf "\n"
 	@if $(VERIFY_SCRIPT) $(VERIFY_OPTIONS) $^ &> /dev/null; then \
 		printf "$gCorrect! The simulator register dump matches the "; \
@@ -293,7 +293,7 @@ verify-single: $(SIM_REGDUMP) $(REF_REGDUMP) | verify-check-ref-regdump
 	fi
 
 # Run the simulator with the given test, generating a register dump
-$(SIM_REGDUMP): $(SIM_EXECUTABLE) $(TEST) assemble
+$(SIM_REGDUMP): $(TEST_BIN) $(SIM_EXECUTABLE) $(TEST)
 	@printf "Simulating test $u$(TEST)$n...\n"
 	@printf "go\nrdump $@\n" | ./$(SIM_EXECUTABLE) $(TEST)
 
