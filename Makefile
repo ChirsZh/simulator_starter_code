@@ -71,7 +71,7 @@ endif
 # Instead, we do this manually. This prevents the commands from being echoed.
 .SECONDARY:
 
-# The name of the entrypoint for assembly tests, which matches the typical main
+# The name of the entry point for assembly tests, which matches the typical main
 RISCV_ENTRY_POINT = main
 
 # The addresses of the data and text sections in the program
@@ -273,7 +273,7 @@ REF_REGDUMP = $(basename $(TEST)).reg
 SIM_REGDUMP = simulation.reg
 
 # Verify that the simulator's register dump for the given tests(s) matches the
-# refernce register dump for each one.
+# reference register dump for each one.
 verify: | check-tests-defined
 	@for test in $(TESTS); do \
 		make verify-single TEST=$${test}; \
