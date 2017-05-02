@@ -68,7 +68,6 @@ endif
 		assemble-check-objdump assemble-check-compiler
 
 # Prevent make from automatically deleting the generated intermediate ELF file.
-# Instead, this is done manually, which prevents the commands from being echoed.
 .SECONDARY:
 
 # The name of the entry point for assembly tests, which matches the typical main
