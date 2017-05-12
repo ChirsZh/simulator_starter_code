@@ -287,7 +287,7 @@ verify-single: $(SIM_REGDUMP) $(REF_REGDUMP) | assemble verify-check-ref-regdump
 		printf "$gCorrect! The simulator register dump matches the "; \
 		printf "reference.$n\n"; \
 	else \
-		printf "$u$(SIM_REGDUMP):$n\t\t\t\t\t$u$(REF_REGDUMP):$n\n"; \
+		printf "\n%-67s\t%s\n\n" "$u$(SIM_REGDUMP)$n" "$u$(REF_REGDUMP)$n"; \
 		$(VERIFY_SCRIPT) $(VERIFY_OPTIONS) $^; \
 		printf "$rIncorrect! The simulator register dump does not match the "; \
 		printf "reference.$n\n"; \
