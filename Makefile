@@ -278,7 +278,8 @@ SIM_REGDUMP = simulation.reg
 verify: | check-tests-defined
 	@for test in $(TESTS); do \
 		make verify-single TEST=$${test}; \
-	done
+	done; \
+	exit 0
 
 # Verify the simulator's register dump for a single test
 verify-single: $(SIM_REGDUMP) $(REF_REGDUMP) | assemble verify-check-ref-regdump
@@ -291,6 +292,7 @@ verify-single: $(SIM_REGDUMP) $(REF_REGDUMP) | assemble verify-check-ref-regdump
 		$(VERIFY_SCRIPT) $(VERIFY_OPTIONS) $^; \
 		printf "$rIncorrect! The simulator register dump does not match the "; \
 		printf "reference.$n\n"; \
+		exit 1; \
 	fi
 
 # Run the simulator with the given test, generating a register dump
