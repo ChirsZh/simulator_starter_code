@@ -140,7 +140,7 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 # Compile the C test program with the startup file to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c | assemble-check-compiler \
 		assemble-check-test
-	@printf "Assembling test $u$<$n into binary files...\n"
+	@printf "Assembling test $u$(word 2,$^)$n into binary files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $^ -o $@
 
 # Checks that the given test exists. This is used when the test doesn't have
