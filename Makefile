@@ -64,8 +64,9 @@ endif
 ################################################################################
 
 # These targets don't correspond to actual files
-.PHONY: assemble assemble-veryclean assemble-check-test assemble-check-objcopy \
-		assemble-check-objdump assemble-check-compiler
+.PHONY: assemble assemble-veryclean assemble-check-test \
+		assemble-check-extension assemble-check-objcopy assemble-check-objdump \
+		assemble-check-compiler
 
 # Prevent make from automatically deleting the generated intermediate ELF file.
 .SECONDARY:
@@ -113,7 +114,8 @@ TEST_EXECUTABLE = $(addsuffix .$(ELF_EXTENSION), $(TEST_NAME))
 TEST_DISASSEMBLY = $(addsuffix .$(DISAS_EXTENSION), $(TEST_NAME))
 
 # Assemble the program specified by the user on the command line
-assemble: $(TEST) $(TEST_BIN) $(TEST_DISASSEMBLY) | check-test-defined
+assemble: $(TEST) $(TEST_BIN) $(TEST_DISASSEMBLY) | check-test-defined \
+		assemble-check-extension
 
 # Extract the given section from the program ELF file, generating a binary
 $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
@@ -124,11 +126,6 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	@$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_FLAGS) $^ > $@
 	@printf "Assembly of the test has completed. A disassembly of the test can "
 	@printf "be found at $u$*.$(DISAS_EXTENSION)$n.\n"
-
-# Compile the assembly test program with a *.s extension to create an ELF file
-%.$(ELF_EXTENSION): %.s | assemble-check-compiler assemble-check-test
-	@printf "Assembling test $u$<$n into binary files...\n"
-	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the assembly test program with a *.S extension to create an ELF file
 %.$(ELF_EXTENSION): %.S | assemble-check-compiler assemble-check-test
@@ -143,7 +140,7 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 
 # Checks that the given test exists. This is used when the test doesn't have
 # a known extension, and suppresses the 'no rule to make...' error message
-$(TEST): assemble-check-test
+$(TEST): | assemble-check-extension assemble-check-test
 
 # Clean up all the binary files in project directories
 assemble-veryclean:
@@ -163,6 +160,14 @@ endif
 assemble-check-test:
 ifeq ($(wildcard $(TEST)),)
 	@printf "$rError: $u$(TEST)$n$r: RISC-V test file does not exist.$n\n"
+	@exit 1
+endif
+
+# Check that the specified test file exists
+assemble-check-extension:
+ifeq ($(filter %.c %.S,$(TEST)),)
+	@printf "$rError: $u$(TEST)$n$r: RISC-V test file does not have a .c or .S "
+	@printf "extension.$n\n"
 	@exit 1
 endif
 
