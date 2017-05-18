@@ -199,12 +199,12 @@ endif
 447SRC_DIR = 447src
 447INCLUDE_DIR = 447include
 447SRC = $(shell find -L $(447SRC_DIR) $(447INCLUDE_DIR) -type f -name '*.c' \
-		-o -name '*.h')
+		-o -name '*.h' | sort)
 
 # The directory for student source files, and *.c and *.h files in it
 SRC_DIR = src
-SRC = $(shell find -L $(SRC_DIR) -type f -name '*.c' -o -name '*.h')
-SRC_SUBDIRS = $(shell find -L $(SRC_DIR) -type d)
+SRC = $(shell find -L $(SRC_DIR) -type f -name '*.c' -o -name '*.h' | sort)
+SRC_SUBDIRS = $(shell find -L $(SRC_DIR) -type d | sort)
 
 # The compiler for the simulator, along with its flags
 SIM_CC = gcc
