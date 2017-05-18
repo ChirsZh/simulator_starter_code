@@ -86,6 +86,11 @@ RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
 RISCV_LDFLAGS = -Wl,--section=.text=$(RISCV_TEXT_START) \
 		-Wl,--section=.data=$(RISCV_DATA_START)
 
+# If a C benchmark is being compiled, do so at the highest optimization level.
+ifeq ($(dir $(TEST)),benchmarks/)
+    RISCV_CFLAGS += -O3
+endif
+
 # The objcopy utility for ELF files, along with its flags
 RISCV_OBJCOPY = riscv64-unknown-elf-objcopy
 RISCV_OBJCOPY_FLAGS = -O binary
