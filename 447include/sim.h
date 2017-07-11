@@ -34,7 +34,7 @@
 // A structure representing all of the state in a processor.
 typedef struct cpu_state {
     bool halted;                        // Indicates if the CPU is halted
-    int instr_count;                    // Number of simulated instructions
+    int cycle;                          // Number of processor cycles
     uint32_t pc;                        // Current program counter
     char *program;                      // Name of the currently loaded program
     memory_t memory;                    // Processor memory regions

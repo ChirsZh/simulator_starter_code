@@ -108,7 +108,7 @@ static void close_dump_file(FILE *dump_file)
 static void run_simulator(cpu_state_t *cpu_state)
 {
     process_instruction(cpu_state);
-    cpu_state->instr_count += 1;
+    cpu_state->cycle += 1;
     return;
 }
 
@@ -347,7 +347,7 @@ static void print_cpu_state(const cpu_state_t *cpu_state, FILE* file)
 {
     ssize_t width = fprintf(file, "Current CPU State and Register Values:\n");
     print_separator('-', width-1, file);
-    fprintf(file, "%-20s = %d\n", "Instruction Count", cpu_state->instr_count);
+    fprintf(file, "%-20s = %d\n", "Cycle", cpu_state->cycle);
     fprintf(file, "%-20s = 0x%08x\n", "Program Counter (PC)", cpu_state->pc);
     return;
 }
@@ -430,9 +430,12 @@ void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args)
         return;
     }
 
-    // Print out the current CPU state, and the header for the registers
-    print_cpu_state(cpu_state, dump_file);
-    fprintf(dump_file, "\n");
+    /* Print out the current CPU state, and the header for the registers.
+     * The current CPU state is not printed to dump files. */
+    if (dump_file == stdout) {
+        print_cpu_state(cpu_state, dump_file);
+        fprintf(dump_file, "\n");
+    }
     print_register_header(dump_file);
 
     // Print out all of the general purpose register values
@@ -615,7 +618,7 @@ void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
 int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 {
     // Clear out the CPU state, and initialize the CPU state fields
-    cpu_state->instr_count = 0;
+    cpu_state->cycle = 0;
     memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
 
     // Strip the extension from the program path, if there is one
