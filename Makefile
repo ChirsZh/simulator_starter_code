@@ -88,7 +88,7 @@ RISCV_LDFLAGS = -Wl,--section=.text=$(RISCV_TEXT_START) \
 
 # If a C benchmark is being compiled, do so at the highest optimization level.
 ifeq ($(dir $(TEST)),benchmarks/)
-    RISCV_CFLAGS += -O3
+    RISCV_CFLAGS += -O3 -fno-inline
 endif
 
 # The objcopy utility for ELF files, along with its flags
