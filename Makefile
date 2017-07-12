@@ -319,7 +319,7 @@ autograde:
 	done
 
 # Run the simulator with the given test, generating a register dump
-$(SIM_REGDUMP): $(TEST_BIN) $(SIM_EXECUTABLE) $(TEST)
+$(SIM_REGDUMP): $(TEST_BIN) $(SIM_EXECUTABLE) $(TEST) | assemble
 	@printf "Simulating test $u$(TEST)$n...\n"
 	@printf "go\nrdump $@\n" | ./$(SIM_EXECUTABLE) $(TEST)
 
