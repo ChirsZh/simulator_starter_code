@@ -20,7 +20,11 @@ output/
 simulation.reg
 
 # Allow for Makefiles
-!*Makefile
+!**/Makefile
+!*.mk
 
 # Allow for gitignore files
 !.gitignore
+
+# Allow for the license file
+!LICENSE
