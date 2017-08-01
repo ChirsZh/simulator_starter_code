@@ -37,19 +37,19 @@
 // Forward declaration of the CPU state struct
 struct cpu_state;
 
-// The representation of a region/segment in memory
-typedef struct mem_region {
-    uint32_t base_addr;         // Base address of the memory region
-    uint32_t max_size;          // Maximum permitted size for the memory region
-    uint32_t size;              // Size of the memory region in bytes
-    uint8_t *mem;               // Actual memory buffer for the region
-    const char *extension;      // File extension for the region's data file
-} mem_region_t;
+// The representation of a segment in memory
+typedef struct {
+    uint32_t base_addr;         // Base address of the memory segment
+    uint32_t max_size;          // Maximum permitted size for the memory segment
+    uint32_t size;              // Size of the memory segment in bytes
+    uint8_t *mem;               // Actual memory buffer for the segment
+    const char *extension;      // File extension for the segment's data file
+} mem_segment_t;
 
 // The representation for all the memory in the processor
 typedef struct memory {
-    int num_mem_regions;                        // Number of memory regions
-    mem_region_t mem_regions[NUM_MEM_REGIONS];  // Memory regions in the CPU
+    int num_segments;                         // Number of memory segments
+    mem_segment_t segments[NUM_MEM_REGIONS];  // Memory segments in the CPU
 } memory_t;
 
 /*----------------------------------------------------------------------------

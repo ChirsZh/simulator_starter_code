@@ -36,43 +36,43 @@
  * Internal Definitions
  *----------------------------------------------------------------------------*/
 
-// The user text memory region, containing the user program
-static const mem_region_t USER_TEXT_REGION = {
+// The user text memory segment, containing the user program
+static const mem_segment_t USER_TEXT_REGION = {
     .base_addr = USER_TEXT_START,
     .max_size = USER_DATA_START - USER_TEXT_START,
     .extension = ".text.bin",
 };
 
-// The user data memory region, containing user global variables
-static const mem_region_t USER_DATA_REGION = {
+// The user data memory segment, containing user global variables
+static const mem_segment_t USER_DATA_REGION = {
     .base_addr = USER_DATA_START,
     .max_size = STACK_START - USER_DATA_START,
     .extension = ".data.bin"
 };
 
-// The stack memory region, containing local values in the program
-static const mem_region_t STACK_REGION = {
+// The stack memory segment, containing local values in the program
+static const mem_segment_t STACK_REGION = {
     .base_addr = STACK_END - STACK_SIZE,
     .max_size = STACK_SIZE,
     .extension = NULL,
 };
 
-// The kernel text region, containing kernel code
-static const mem_region_t KERNEL_TEXT_REGION = {
+// The kernel text segment, containing kernel code
+static const mem_segment_t KERNEL_TEXT_REGION = {
     .base_addr = KERNEL_TEXT_START,
     .max_size = KERNEL_DATA_START - KERNEL_TEXT_START,
     .extension = ".ktext.bin",
 };
 
-// The kernel data region, containing kernel global variables
-static const mem_region_t KERNEL_DATA_REGION = {
+// The kernel data segment, containing kernel global variables
+static const mem_segment_t KERNEL_DATA_REGION = {
     .base_addr = KERNEL_DATA_START,
     .max_size = UINT32_MAX - KERNEL_DATA_START,
     .extension = ".kdata.bin",
 };
 
-// An array of all the memory regions, and the number of memory regions
-static const mem_region_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
+// An array of all the memory segments, and the number of memory segments
+static const mem_segment_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
     &USER_TEXT_REGION, &USER_DATA_REGION, &STACK_REGION, &KERNEL_TEXT_REGION,
     &KERNEL_DATA_REGION,
 };
@@ -102,7 +102,7 @@ static uint32_t mem_read_word(const uint8_t *mem_addr)
  *----------------------------------------------------------------------------*/
 
 /**
- * mem_write32
+ * mem_read32
  *
  * Reads the value at the specified address in the processor's memory. The
  * function ensures that the value is written in little-endian order. If the
@@ -152,28 +152,29 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
  *----------------------------------------------------------------------------*/
 
 /**
- * malloc_mem_region
+ * malloc_mem_segment
  *
- * Allocates the memory for the given region, which will have mem_region->size
+ * Allocates the memory for the given segment, which will have segment->size
  * bytes in it. Exits on error
  **/
-static void malloc_mem_region(mem_region_t *mem_region)
+static void malloc_mem_segment(mem_segment_t *segment)
 {
-    mem_region->mem = malloc(mem_region->size * sizeof(mem_region->mem[0]));
-    if (mem_region->mem == NULL) {
-        fprintf(stderr, "Error: Unable to allocate processor memory region.\n");
+    segment->mem = malloc(segment->size * sizeof(segment->mem[0]));
+    if (segment->mem == NULL) {
+        fprintf(stderr, "Error: Unable to allocate memory for processor memory "
+                "segment.\n");
         exit(ENOMEM);
     }
     return;
 }
 
 /**
- * load_mem_region
+ * load_mem_segment
  *
- * Loads the memory region from its corresponding data (binary) file. The size
- * of this file cannot exceed the max_size for the memory region.
+ * Loads the memory segment from its corresponding data (binary) file. The size
+ * of this file cannot exceed the max_size for the memory segment.
  **/
-static int load_mem_region(mem_region_t *mem_region, char *data_path)
+static int load_mem_segment(mem_segment_t *segment, char *data_path)
 {
     // Try to open the data file
     FILE *data_file = fopen(data_path, "r");
@@ -184,39 +185,39 @@ static int load_mem_region(mem_region_t *mem_region, char *data_path)
         return rc;
     }
 
-    // Determine the size of the memory region in the file.
+    // Determine the size of the memory segment in the file.
     fseek(data_file, 0, SEEK_END);
-    mem_region->size = ftell(data_file);
+    segment->size = ftell(data_file);
     rewind(data_file);
-    if (mem_region->size == 0) {
+    if (segment->size == 0) {
         return 0;
     }
 
-    // Allocate memory for the region only if the size does not exceed the max
-    if (mem_region->size > mem_region->max_size) {
-        fprintf(stderr, "Error: %s: File is too large for memory region.\n",
+    // Allocate memory for the segment only if the size does not exceed the max
+    if (segment->size > segment->max_size) {
+        fprintf(stderr, "Error: %s: File is too large for memory segment.\n",
                 data_path);
         fclose(data_file);
         return -EFBIG;
-    } else if (mem_region->size % sizeof(uint32_t) != 0) {
+    } else if (segment->size % sizeof(uint32_t) != 0) {
         fprintf(stderr, "Error: %s: File size is not aligned to 4 bytes.\n.",
                 data_path);
         fclose(data_file);
         return -EINVAL;
     }
-    malloc_mem_region(mem_region);
+    malloc_mem_segment(segment);
 
     // Since the data file is binary, load it directly into memory
     int rc = 0;
-    size_t bytes_read = fread(mem_region->mem, mem_region->size, 1, data_file);
-    if (bytes_read != 1) {
+    size_t elems_read = fread(segment->mem, segment->size, 1, data_file);
+    if (elems_read != 1) {
         assert(ferror(data_file) || !feof(data_file));
         rc = -errno;
         fprintf(stderr, "Error: %s: Unable to read memory section file: %s.\n",
                 data_path, strerror(errno));
 
-        free(mem_region->mem);
-        mem_region->mem = NULL;
+        free(segment->mem);
+        segment->mem = NULL;
     }
 
     // Close the data file
@@ -250,42 +251,42 @@ static char *join_strings(const char *string1, const char *string2)
  * mem_load_program
  *
  * Initializes the memory subsystem part of the CPU state. This loads the memory
- * regions from the specified program into the CPU memory, and initializes them
+ * segments from the specified program into the CPU memory, and initializes them
  * to the values specified in the respective data files. Program name should be
  * the path to the executable file (it has no extension).
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
-    assert(array_len(cpu_state->memory.mem_regions) == array_len(MEM_REGIONS));
+    assert(array_len(cpu_state->memory.segments) == array_len(MEM_REGIONS));
 
-    // Set the number of memory regions, and zero out the mem regions array
+    // Set the number of memory segments, and zero out the mem segments array
     memory_t *memory = &cpu_state->memory;
-    memory->num_mem_regions = array_len(MEM_REGIONS);
-    memset(memory->mem_regions, 0, sizeof(memory->mem_regions));
+    memory->num_segments = array_len(MEM_REGIONS);
+    memset(memory->segments, 0, sizeof(memory->segments));
 
-    // Initialize each memory region, loading data from the associated data file
+    // Initialize each memory segment, loading data from the associated file
     int rc = 0;
-    for (int i = 0; i < memory->num_mem_regions; i++)
+    for (int i = 0; i < memory->num_segments; i++)
     {
-        // Copy the default values for the memory region in
-        mem_region_t *mem_region = &memory->mem_regions[i];
-        memcpy(mem_region, MEM_REGIONS[i], sizeof(*MEM_REGIONS[i]));
+        // Copy the default values for the memory segment in
+        mem_segment_t *segment = &memory->segments[i];
+        memcpy(segment, MEM_REGIONS[i], sizeof(*MEM_REGIONS[i]));
 
-        /* If the memory region doesn't have a data file, we only allocate it.
-         * In this case, the size of the memory region is max_size. */
-        if (mem_region->extension == NULL) {
-            mem_region->size = mem_region->max_size;
-            malloc_mem_region(mem_region);
+        /* If the memory segment doesn't have a data file, we only allocate it.
+         * In this case, the size of the memory segment is max_size. */
+        if (segment->extension == NULL) {
+            segment->size = segment->max_size;
+            malloc_mem_segment(segment);
             continue;
         }
 
         /* Otherwise, combine the program path and extension to get the path
          * to the data file, load it, then free the buffer. */
-        char *data_path = join_strings(program_path, mem_region->extension);
-        rc = load_mem_region(mem_region, data_path);
+        char *data_path = join_strings(program_path, segment->extension);
+        rc = load_mem_segment(segment, data_path);
         free(data_path);
 
-        // Free the other memory regions if we failed to load this one
+        // Free the other memory segments if we failed to load this one
         if (rc < 0) {
             mem_unload_program(cpu_state);
             break;
@@ -305,17 +306,17 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
  * mem_unload_program
  *
  * Unloads a program previously loaded by mem_load_program. This cleans up and
- * frees the allocated memory for the processor's memory region.
+ * frees the allocated memory for the processor's memory segment.
  **/
 void mem_unload_program(struct cpu_state *cpu_state)
 {
-    // Free each of the memory regions, if it has an allocated memory region
+    // Free each of the memory segments, if it has an allocated memory segment
     memory_t *memory = &cpu_state->memory;
-    for (int i = 0; i < memory->num_mem_regions; i++)
+    for (int i = 0; i < memory->num_segments; i++)
     {
-        mem_region_t *mem_region = &memory->mem_regions[i];
-        if (mem_region->mem != NULL) {
-            free(mem_region->mem);
+        mem_segment_t *segment = &memory->segments[i];
+        if (segment->mem != NULL) {
+            free(segment->mem);
         }
     }
 
@@ -333,14 +334,14 @@ bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
 {
     assert(start_addr < end_addr);
 
-    /* Iterate over the memory regions, checking if the range is completely
-     * contained in any region. */
-    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
+    /* Iterate over the memory segments, checking if the range is completely
+     * contained in any segment. */
+    for (int i = 0; i < cpu_state->memory.num_segments; i++)
     {
-        const mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
-        uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
+        const mem_segment_t *segment = &cpu_state->memory.segments[i];
+        uint32_t segment_end_addr = segment->base_addr + segment->size;
 
-        if (mem_region->base_addr <= start_addr && end_addr < region_end_addr) {
+        if (segment->base_addr <= start_addr && end_addr < segment_end_addr) {
             return true;
         }
     }
@@ -356,15 +357,15 @@ bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
  **/
 uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
 {
-    // Iterate over the memory regions, checking if the address lies in them
-    for (int i = 0; i < cpu_state->memory.num_mem_regions; i++)
+    // Iterate over the memory segments, checking if the address lies in them
+    for (int i = 0; i < cpu_state->memory.num_segments; i++)
     {
-        const mem_region_t *mem_region = &cpu_state->memory.mem_regions[i];
-        uint32_t region_end_addr = mem_region->base_addr + mem_region->size;
+        const mem_segment_t *segment = &cpu_state->memory.segments[i];
+        uint32_t segment_end_addr = segment->base_addr + segment->size;
 
-        if (mem_region->base_addr <= addr && addr < region_end_addr) {
-            uint32_t offset = addr - mem_region->base_addr;
-            return &mem_region->mem[offset];
+        if (segment->base_addr <= addr && addr < segment_end_addr) {
+            uint32_t offset = addr - segment->base_addr;
+            return &segment->mem[offset];
         }
     }
 

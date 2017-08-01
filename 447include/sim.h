@@ -37,7 +37,7 @@ typedef struct cpu_state {
     int cycle;                          // Number of processor cycles
     uint32_t pc;                        // Current program counter
     char *program;                      // Name of the currently loaded program
-    memory_t memory;                    // Processor memory regions
+    memory_t memory;                    // Processor memory segments
     uint32_t regs[RISCV_NUM_REGS];      // CPU register file
 } cpu_state_t;
 

@@ -36,7 +36,7 @@
  * mem_load_program
  *
  * Initializes the memory subsystem part of the CPU state. This loads the memory
- * regions from the specified program into the CPU memory, and initializes them
+ * segments from the specified program into the CPU memory, and initializes them
  * to the values specified in the respective data files. Program path can either
  * be a relative or absolute path to the executable file (it has no extension).
  **/
@@ -46,7 +46,7 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path);
  * mem_unload_program
  *
  * Unloads a program previously loaded by mem_load_program. This cleans up and
- * frees the allocated memory for the processor's memory region.
+ * frees the allocated memory for the processor's memory segments.
  **/
 void mem_unload_program(cpu_state_t *cpu_state);
 
