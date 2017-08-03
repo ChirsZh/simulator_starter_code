@@ -97,10 +97,10 @@ static void close_dump_file(FILE *dump_file)
  *----------------------------------------------------------------------------*/
 
 // The maximum number of arguments that can be specified to the step command
-#define STEP_MAX_NUM_ARGS       1
+static const int STEP_MAX_NUM_ARGS      = 1;
 
 // The expected number of arguments for the go command
-#define GO_NUM_ARGS             0
+static const int GO_NUM_ARGS            = 0;
 
 /**
  * Run the simulator for a single cycle, incrementing the instruction count.
@@ -197,31 +197,32 @@ void command_go(cpu_state_t *cpu_state, char *args[], int num_args)
  *----------------------------------------------------------------------------*/
 
 // The minimum and maximum expected number of arguments for the reg command
-#define REG_MIN_NUM_ARGS        1
-#define REG_MAX_NUM_ARGS        2
+static const int REG_MIN_NUM_ARGS       = 1;
+static const int REG_MAX_NUM_ARGS       = 2;
 
 // The maximum expected number of arguments for the rdump command
-#define RDUMP_MAX_NUM_ARGS      1
+static const int RDUMP_MAX_NUM_ARGS     = 1;
 
 // The maximum length of an ISA and ABI alias name for a register
-#define ISA_NAME_MAX_LEN        3
-#define ABI_NAME_MAX_LEN        5
+#define ISA_NAME_MAX_LEN                3
+#define ABI_NAME_MAX_LEN                5
 
 // The maximum number of hexadecimal and decimal digits for a 32-bit integer
-#define INT32_MAX_DIGITS        10
-#define INT32_MAX_HEX_DIGITS    (2 * sizeof(uint32_t))
+#define INT32_MAX_DIGITS                10
+#define INT32_MAX_HEX_DIGITS            (2 * sizeof(uint32_t))
 
 /* Define the format for a register dump line. This is the width of each column
  * in the, which is a max between a value and its column title. */
-#define ISA_NAME_COL_LEN        max(ISA_NAME_MAX_LEN, string_len("ISA Name"))
-#define ABI_NAME_COL_LEN        max(ABI_NAME_MAX_LEN + string_len("()"), \
-                                        string_len("ABI Name"))
-#define REG_HEX_COL_LEN         max(INT32_MAX_HEX_DIGITS + string_len("0x"), \
-                                        string_len("Hex Value"))
-#define REG_UINT_COL_LEN        max(INT32_MAX_DIGITS + string_len("()"), \
-                                        string_len("Uint Value"))
-#define REG_INT_COL_LEN         max(INT32_MAX_DIGITS + string_len("()") + 1, \
-                                        string_len("Int Value"))
+static const size_t ISA_NAME_COL_LEN    = max(ISA_NAME_MAX_LEN,
+        string_len("ISA Name"));
+static const size_t ABI_NAME_COL_LEN    = max(ABI_NAME_MAX_LEN +
+        string_len("()"), string_len("ABI Name"));
+static const size_t REG_HEX_COL_LEN     = max(INT32_MAX_HEX_DIGITS +
+        string_len("0x"), string_len("Hex Value"));
+static const size_t REG_UINT_COL_LEN    = max(INT32_MAX_DIGITS +
+        string_len("()"), string_len("Uint Value"));
+static const size_t REG_INT_COL_LEN     = max(INT32_MAX_DIGITS +
+        string_len("()") + 1, string_len("Int Value"));
 
 /**
  * Tries to find the register with a matching ISA name or ABI alias from the
@@ -406,12 +407,12 @@ void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args)
  *----------------------------------------------------------------------------*/
 
 // The minimum and maximum expected number of arguments for the memory command
-#define MEMORY_MIN_NUM_ARGS     1
-#define MEMORY_MAX_NUM_ARGS     2
+static const int MEMORY_MIN_NUM_ARGS    = 1;
+static const int MEMORY_MAX_NUM_ARGS    = 2;
 
 // The maximum expected number of arguments for the mdump command
-#define MDUMP_MIN_NUM_ARGS      2
-#define MDUMP_MAX_NUM_ARGS      3
+static const int MDUMP_MIN_NUM_ARGS     = 2;
+static const int MDUMP_MAX_NUM_ARGS     = 3;
 
 /**
  * Prints out the header lines for a memory dump to the given file. This
@@ -559,8 +560,8 @@ void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
  *----------------------------------------------------------------------------*/
 
 // The expected number of arguments for the load and restart commands
-#define LOAD_NUM_ARGS           1
-#define RESTART_NUM_ARGS        0
+static const int LOAD_NUM_ARGS          = 1;
+static const int RESTART_NUM_ARGS       = 0;
 
 /**
  * Initializes the CPU state.
@@ -664,7 +665,7 @@ void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
  *----------------------------------------------------------------------------*/
 
 // The expected number of arguments for the quit command
-#define QUIT_NUM_ARGS           0
+static const int QUIT_NUM_ARGS          = 0;
 
 /**
  * Quits the simulator.
@@ -690,7 +691,7 @@ bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
  *----------------------------------------------------------------------------*/
 
 // The expected number of arguments for the help command
-#define HELP_NUM_ARGS           0
+static const int HELP_NUM_ARGS          = 0;
 
 /**
  * Prints out the header lines for the help message for the RISC-V simulator.

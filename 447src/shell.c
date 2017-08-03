@@ -49,21 +49,21 @@
  *----------------------------------------------------------------------------*/
 
 // The expected number of command line arguments, including the program name
-#define NUM_CMDLINE_ARGS        2
+static const int NUM_CMDLINE_ARGS       = 2;
 
 // The maximum line length the user can type in for a command
-#define COMMAND_MAX_LEN         100
+static const int COMMAND_MAX_LEN        = 100;
 
 /* The maximum number of arguments that can be parsed from user input. This more
  * than the max possible, so too many arguments can be detected. */
-#define COMMAND_MAX_ARGS        4
+static const int COMMAND_MAX_ARGS       = 4;
 
 // The readline history file name, and the maximum number of lines for it
-#define HISTORY_MAX_LINES       100
-static const char *HISTORY_FILE = ".riscv_sim_history";
+static const int HISTORY_MAX_LINES      = 100;
+static const char *HISTORY_FILE         = ".riscv_sim_history";
 
 // Indicates that a SIGINT signal was received by the program
-volatile bool SIGINT_RECEIVED   = false;
+volatile bool SIGINT_RECEIVED           = false;
 
 /*----------------------------------------------------------------------------
  * Command Line Parsing
