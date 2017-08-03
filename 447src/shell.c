@@ -341,6 +341,8 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
         return quit;
     } else {
         fprintf(stderr, "Error: Invalid command '%s' specified.\n", command);
+        fprintf(stdout, "To see a complete listing of commands, type '?' or "
+                "'help'.\n");
         return false;
     }
 }

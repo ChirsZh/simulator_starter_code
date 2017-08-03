@@ -695,7 +695,7 @@ bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
  **/
 static void print_help_header()
 {
-    ssize_t line_width = fprintf(stdout, "RISC-V Simulator Help:\n");
+    ssize_t line_width = fprintf(stdout, "\nRISC-V Simulator Help:\n");
     print_separator('-', line_width-1, stdout);
     return;
 }
@@ -730,8 +730,8 @@ void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
 
     // Print the header and help message for the simulator commands
     print_help_header();
-    print_help("s[tep] [cycles]", "Run the command for one or the specified "
-            "number of cycles.");
+    print_help("s[tep] [cycles]", "Run the processor for one or the specified "
+            "number of cycles, or until it is halted.");
     print_help("go", "Run the simulator until the processor is halted.");
 
     // Print help messages for register commands
@@ -757,6 +757,7 @@ void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
     print_help("q[uit]", "Quit the simulator. Can also be done with an EOF "
             "(CTRL-D).");
     print_help("h[elp]|?", "Display this help message.");
+    fprintf(stdout, "\n");
 
     return;
 }
