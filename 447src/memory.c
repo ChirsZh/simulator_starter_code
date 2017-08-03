@@ -124,6 +124,14 @@ static uint32_t mem_read_word(const uint8_t *mem_addr)
  **/
 uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 {
+    // Make sure the address is aligned
+    if (addr % sizeof(uint32_t) != 0) {
+        fprintf(stderr, "Encountered an unaligned memory address 0x%08x. "
+                "Halting simulation.\n", addr);
+        cpu_state->halted = true;
+        return 0;
+    }
+
     // Try to find the specified address
     uint8_t *mem_addr = mem_find_address(cpu_state, addr);
     if (mem_addr == NULL) {
@@ -141,7 +149,8 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
  *
  * The function ensures that the value is written in little-endian order to the
  * address. If the address is invalid or it is not aligned to a 4-byte boundary,
- * then this function will mark the CPU as halted.
+ * then this function will mark the CPU as halted, and no update to memory
+ * happens.
  *
  * Inputs:
  *  - cpu_state     The CPU state structure for the processor.
@@ -155,6 +164,14 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
  **/
 void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 {
+    // Make sure the address is aligned
+    if (addr % sizeof(uint32_t) != 0) {
+        fprintf(stderr, "Encountered an unaligned memory address 0x%08x. "
+                "Halting simulation.\n", addr);
+        cpu_state->halted = true;
+        return;
+    }
+
     // Try to find the specified address
     uint8_t *mem_addr = mem_find_address(cpu_state, addr);
     if (mem_addr == NULL) {

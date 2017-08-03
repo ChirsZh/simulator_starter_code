@@ -84,7 +84,8 @@ uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
  *
  * The function ensures that the value is written in little-endian order to the
  * address. If the address is invalid or it is not aligned to a 4-byte boundary,
- * then this function will mark the CPU as halted.
+ * then this function will mark the CPU as halted, and no update to memory
+ * happens.
  *
  * Inputs:
  *  - cpu_state     The CPU state structure for the processor.
