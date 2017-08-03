@@ -26,7 +26,7 @@
 #include <stdint.h>                     // Fixed-size integral types
 
 // Local Includes
-#include "riscv_abi.h"                  // RISC-V ABI, the number of registers
+#include "riscv_isa.h"                  // RISC-V ISA, the number of registers
 #include "memory.h"                     // Interface to the processor memory
 
 /*----------------------------------------------------------------------------
@@ -40,7 +40,7 @@ typedef struct cpu_state {
     uint32_t pc;                        // Current program counter
     char *program;                      // Name of the currently loaded program
     memory_t memory;                    // Processor memory segments
-    uint32_t regs[RISCV_NUM_REGS];      // CPU register file
+    uint32_t registers[RISCV_NUM_REGS]; // CPU register file
 } cpu_state_t;
 
 /*----------------------------------------------------------------------------

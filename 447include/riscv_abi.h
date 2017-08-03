@@ -29,9 +29,6 @@
  * Definitions
  *----------------------------------------------------------------------------*/
 
-// The number of registers in the register file
-#define RISCV_NUM_REGS      32
-
 // The starting addresses of the user's data and text segments
 #define USER_TEXT_START     0x00400000
 #define USER_DATA_START     0x10000000
@@ -50,7 +47,7 @@
 #define ECALL_ARG_HALT      0xa
 
 // Aliases for the register in the application binary interface (ABI)
-typedef enum riscv_abi_reg {
+typedef enum {
     REG_ZERO    = 0,        // Zero register, hardwired to 0
     REG_RA      = 1,        // Return address register (caller-saved)
     REG_SP      = 2,        // Stack pointer register (callee-saved)
@@ -83,6 +80,6 @@ typedef enum riscv_abi_reg {
     REG_T4      = 29,       // Temporary register 4 (caller-saved)
     REG_T5      = 30,       // Temporary register 5 (caller-saved)
     REG_T6      = 31,       // Temporary register 6 (caller-saved)
-} abi_reg_t;
+} riscv_reg_t;
 
 #endif /* RISCV_ABI_H_ */

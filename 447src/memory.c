@@ -32,6 +32,7 @@
 // 18-447 Simulator Includes
 #include <sim.h>                    // Interface to the core simulator
 #include <riscv_abi.h>              // ABI registers and memory segments
+#include <register_file.h>          // Interface to the register file
 #include <memory.h>                 // This file's interface to core simulator
 
 // Local Includes
@@ -329,8 +330,8 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
     /* Point the PC to the user text segment, the stack pointer (x2) to the
      * stack segment, and the global pointer (x3) to the user data segment. */
     cpu_state->pc = USER_TEXT_START;
-    cpu_state->regs[REG_SP] = STACK_END;
-    cpu_state->regs[REG_GP] = USER_DATA_START;
+    register_write(cpu_state, REG_SP, STACK_END);
+    register_write(cpu_state, REG_GP, USER_DATA_START);
 
     return rc;
 }

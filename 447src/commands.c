@@ -34,6 +34,7 @@
 
 // 18-447 Simulator Includes
 #include <sim.h>                    // Definition of cpu_state_t
+#include <register_file.h>          // Interface to the register file
 
 // Local Includes
 #include "memory_shell.h"           // Interface to the processor memory
@@ -262,13 +263,14 @@ static void print_register_header(FILE* file)
 /**
  * Prints out the information for a given register on one line to the file.
  **/
-static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
+static void print_register(cpu_state_t *cpu_state, riscv_reg_t reg_num,
+        FILE *file)
 {
     assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
 
     // Get the register value, and its register name struct
     const register_name_t *reg_name = &RISCV_REGISTER_NAMES[reg_num];
-    uint32_t reg_value = cpu_state->regs[reg_num];
+    uint32_t reg_value = register_read(cpu_state, reg_num);
 
     // Format the ABI alias name for the register surrounded with parenthesis
     char abi_name[ABI_NAME_COL_LEN+1];
@@ -311,7 +313,7 @@ static void print_cpu_state(const cpu_state_t *cpu_state, FILE* file)
 void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     assert(REG_MAX_NUM_ARGS - REG_MIN_NUM_ARGS == 1);
-    assert(array_len(cpu_state->regs) == array_len(RISCV_REGISTER_NAMES));
+    assert(array_len(cpu_state->registers) == array_len(RISCV_REGISTER_NAMES));
 
     // Check that the appropriate number of arguments was specified
     if (num_args < REG_MIN_NUM_ARGS) {
@@ -331,7 +333,7 @@ void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
     }
 
     // If we couldn't parse the given register, or it is out of range, stop
-    if (reg_num < 0 || reg_num >= (int)array_len(cpu_state->regs)) {
+    if (reg_num < 0 || reg_num >= (int)array_len(cpu_state->registers)) {
         fprintf(stderr, "Error: reg: Invalid register '%s' specified.\n",
                 reg_string);
         return;
@@ -354,7 +356,7 @@ void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
     }
 
     // Update the register with the new value
-    cpu_state->regs[reg_num] = (uint32_t)reg_value;
+    register_write(cpu_state, (riscv_reg_t)reg_num, reg_value);
     return;
 }
 
@@ -389,7 +391,7 @@ void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args)
     print_register_header(dump_file);
 
     // Print out all of the general purpose register values
-    for (int i = 0; i < (int)array_len(cpu_state->regs); i++)
+    for (int i = 0; i < (int)array_len(cpu_state->registers); i++)
     {
         print_register(cpu_state, i, dump_file);
     }
@@ -571,7 +573,7 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 {
     // Clear out the CPU state, and initialize the CPU state fields
     cpu_state->cycle = 0;
-    memset(cpu_state->regs, 0, sizeof(cpu_state->regs));
+    memset(cpu_state->registers, 0, sizeof(cpu_state->registers));
 
     // Strip the extension from the program path, if there is one
     char *extension_start = strrchr(program_path, '.');

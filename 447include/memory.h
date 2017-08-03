@@ -11,7 +11,10 @@
  * functions.
  *
  * Specifically, this file contains the interface that is only used by the core
- * simulator, and definitions required to define the CPU state.
+ * simulator, and definitions required to define the CPU state. The RISC-V
+ * simulator uses a segmented memory model, dividing memory into 5 separate
+ * segments. There are segments for the user data and text, kernel data and
+ * text, and a stack segment that is shared between the user and kernel space.
  *
  * Authors:
  *  - 2016 - 2017: Brandon Perez

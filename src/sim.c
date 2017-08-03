@@ -26,10 +26,11 @@
 #include <stdbool.h>            // Boolean type and definitions
 
 // 18-447 Simulator Includes
-#include <memory.h>             // Interface to the processor memory
 #include <riscv_isa.h>          // Definition of RISC-V opcodes
 #include <riscv_abi.h>          // ABI registers and definitions
 #include <sim.h>                // Definitions for the simulator
+#include <memory.h>             // Interface to the processor memory
+#include <register_file.h>      // Interface to the register file
 
 /**
  * Simulates a single cycle on the CPU, updating the CPU's state as needed.
@@ -55,9 +56,9 @@ void process_instruction(cpu_state_t *cpu_state)
 
     // Decode the opcode and registers from the instruction
     opcode_t opcode = instr & 0x7F;
-    uint32_t rs1 = (instr >> 15) & 0x1F;
-    uint32_t rs2 = (instr >> 20) & 0x1F;
-    uint32_t rd = (instr >> 7) & 0x1F;
+    riscv_reg_t rs1 = (instr >> 15) & 0x1F;
+    riscv_reg_t rs2 = (instr >> 20) & 0x1F;
+    riscv_reg_t rd = (instr >> 7) & 0x1F;
 
     /* Decode the instruction as an I-type instruction, sign extending the
      * immediate value. */
@@ -74,88 +75,97 @@ void process_instruction(cpu_state_t *cpu_state)
     switch (opcode)
     {
         // General R-Type arithmetic operation
-        case OP_OP:
+        case OP_OP: {
             switch (rtype_funct7)
             {
                 // 7-bit function code for a general R-type integer operation
                 case FUNCT7_INT:
                     switch (rtype_funct3)
                     {
-                        case FUNCT3_ADD:
-                            if (rd != 0) {
-                                cpu_state->regs[rd] = cpu_state->regs[rs1]
-                                                      + cpu_state->regs[rs2];
-                            }
+                        case FUNCT3_ADD: {
+                            uint32_t sum = register_read(cpu_state, rs1) +
+                                    register_read(cpu_state, rs2);
+                            register_write(cpu_state, rd, sum);
                             cpu_state->pc = cpu_state->pc + sizeof(instr);
                             break;
-                        default:
+                        }
+
+                        default: {
                             fprintf(stderr, "Encountered unknown/unimplemented "
                                     "3-bit rtype function code 0x%01x. Halting "
                                     "simulation.\n",
                                     rtype_funct3);
                             cpu_state->halted = true;
                             break;
+                        }
                     }
                     break;
 
-                    default:
+                    default: {
                         fprintf(stderr, "Encountered unknown/unimplemented "
                                 "7-bit rtype function code 0x%02x. Halting "
                                 "simulation.\n", rtype_funct7);
                         cpu_state->halted = true;
                         break;
+                    }
             }
             break;
+        }
 
         // General I-type arithmetic operation
-        case OP_IMM:
+        case OP_IMM: {
             switch (itype_funct3)
             {
                 // 3-bit function code for ADDI
-                case FUNCT3_ADDI:
-                    if (rd != 0) {
-                        cpu_state->regs[rd] = cpu_state->regs[rs1] +
-                                              itype_imm;
-                    }
+                case FUNCT3_ADDI: {
+                    uint32_t sum = register_read(cpu_state, rs1) + itype_imm;
+                    register_write(cpu_state, rd, sum);
                     cpu_state->pc = cpu_state->pc + sizeof(instr);
                     break;
+                }
 
-                default:
+                default: {
                     fprintf(stderr, "Encountered unknown/unimplemented 3-bit "
                             "itype function code 0x%01x. Halting simulation.\n",
                             rtype_funct3);
                     cpu_state->halted = true;
                     break;
+                }
             }
             break;
+        }
 
         // General system operation
-        case OP_SYSTEM:
+        case OP_SYSTEM: {
             switch (sys_funct12)
             {
                 // 12-bit function code for ECALL
-                case FUNCT12_ECALL:
-                    if (cpu_state->regs[REG_A0] == ECALL_ARG_HALT) {
+                case FUNCT12_ECALL: {
+                    if (register_read(cpu_state, REG_A0) == ECALL_ARG_HALT) {
                         fprintf(stdout, "ECALL invoked with halt argument, "
                                 "halting the simulator.\n");
                         cpu_state->halted = true;
                     }
                     break;
+                }
 
-                default:
+                default: {
                     fprintf(stderr, "Encountered unknown/unimplemented 12-bit "
                             "system function code 0x%03x. Halting "
                             "simulation.\n", sys_funct12);
                     cpu_state->halted = true;
                     break;
+                }
             }
             break;
+        }
 
-        default:
+        default: {
             fprintf(stderr, "Encountered unknown opcode 0x%02x. Halting "
                     "simulation.\n", opcode);
             cpu_state->halted = true;
             break;
+        }
     }
 
     return;
