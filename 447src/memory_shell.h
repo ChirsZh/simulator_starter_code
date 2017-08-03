@@ -25,53 +25,54 @@
 #ifndef MEMORY_SHELL_H_
 #define MEMORY_SHELL_H_
 
+// Standard Includes
 #include <stdbool.h>            // Boolean type and definitions
 #include <stdint.h>             // Fixed-size integral types
+
+// 18-447 Simulator Includes
+#include <sim.h>                // Definition of cpu_state_t
 
 /*----------------------------------------------------------------------------
  * Interface
  *----------------------------------------------------------------------------*/
 
 /**
- * mem_load_program
+ * Initializes the memory subsystem part of the CPU state.
  *
- * Initializes the memory subsystem part of the CPU state. This loads the memory
- * segments from the specified program into the CPU memory, and initializes them
- * to the values specified in the respective data files. Program path can either
- * be a relative or absolute path to the executable file (it has no extension).
+ * This loads the memory segments from the specified program into the CPU
+ * memory, and initializes them to the values specified in their respective data
+ * files. Program name should be the path to the executable file (it has no
+ * extension).
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path);
 
 /**
- * mem_unload_program
+ * Unloads a program previously loaded by mem_load_program.
  *
- * Unloads a program previously loaded by mem_load_program. This cleans up and
- * frees the allocated memory for the processor's memory segments.
+ * This cleans up and frees the allocated memory for the processor's memory
+ * segments.
  **/
 void mem_unload_program(cpu_state_t *cpu_state);
 
 /**
- * mem_range_valid
- *
  * Checks if the given memory range from start to end (inclusive) is valid.
+ *
  * Namely, this means that all addresses between start and end are valid.
  **/
 bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
         uint32_t end_addr);
 
 /**
- * mem_find_address
+ * Find the address in memory that corresponds to the address in the simulator.
  *
- * Find the address on the host machine that corresponds to the address in the
- * simulator. If no such address exists, return NULL.
+ * If the specified address is invalid, then NULL is returned.
  **/
 uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr);
 
 /**
- * mem_write_word
+ * Writes the specified value out to the given address in little endian order.
  *
- * Writes the specified word value to the given memory location. The given
- * address must be a valid memory location in the processor.
+ * The address must be aligned on a 4-byte boundary.
  **/
 void mem_write_word(uint8_t *mem_addr, uint32_t value);
 

@@ -7,7 +7,7 @@
 # the simulator.
 #
 # Authors:
-#	- 2016: Brandon Perez
+#	- 2016 - 2017: Brandon Perez
 
 ################################################################################
 #                           DO NOT MODIFY THIS FILE!                           #
@@ -257,7 +257,7 @@ run-veryclean:
 	@rm -f .riscv_sim_history
 
 ################################################################################
-# Verify Simulator
+# Verify the Simulator
 ################################################################################
 
 # These targets don't correspond to actual files
@@ -303,7 +303,7 @@ verify: $(SIM_REGDUMP) $(REF_REGDUMP) | assemble verify-check-ref-regdump \
 		exit 1; \
 	fi
 
-# Run verifications on the specified series of tests. If left unspecified, then
+# Run verification on the specified series of tests. If left unspecified, then
 # this defaults to the public tests students are required to pass for this lab.
 autograde:
 	@printf "%-30s %s\n" "Test" "Result"

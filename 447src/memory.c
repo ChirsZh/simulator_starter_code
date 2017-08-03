@@ -18,19 +18,25 @@
  *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
+// Standard Includes
 #include <stdlib.h>                 // Malloc and related functions
 #include <stdio.h>                  // Printf and related functions
 #include <stdint.h>                 // Fixed-size integral types
+#include <stdbool.h>                // Definition of the boolean type
 
+// Standard Includes
 #include <assert.h>                 // Assert macro
 #include <errno.h>                  // Error codes and perror
 #include <string.h>                 // String manipulation functions and memset
 
-#include "sim.h"                    // Interface to the core simulator
-#include "riscv_abi.h"              // ABI registers and memory segments
+// 18-447 Simulator Includes
+#include <sim.h>                    // Interface to the core simulator
+#include <riscv_abi.h>              // ABI registers and memory segments
+#include <memory.h>                 // This file's interface to core simulator
+
+// Local Includes
 #include "libc_extensions.h"        // Various utilities
-#include "memory.h"                 // This file's interface to core simulator
-#include "memory_shell.h"           // This file's itnerface to the shell
+#include "memory_shell.h"           // This file's interface to the shell
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -82,8 +88,6 @@ static const mem_segment_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
  *----------------------------------------------------------------------------*/
 
 /**
- * mem_read_word
- *
  * Reads the specified value out from the given address in little endian order.
  * The address must be aligned on a 4-byte boundary
  **/
@@ -102,12 +106,21 @@ static uint32_t mem_read_word(const uint8_t *mem_addr)
  *----------------------------------------------------------------------------*/
 
 /**
- * mem_read32
+ * Reads the value at the specified address in the processor's memory.
  *
- * Reads the value at the specified address in the processor's memory. The
- * function ensures that the value is written in little-endian order. If the
- * address is unaligned or invalid, this function will stop the simulator on an
- * exception.
+ * This function ensures that the value is read in little-endian order from the
+ * address. If the address is invalid or it is not aligned to a 4-byte boundary,
+ * then this function will mark the CPU as halted, and print out an error
+ * message.
+ *
+ * Inputs:
+ *  - cpu_state     The CPU state structure for the processor.
+ *  - addr          The address from which to read the value.
+ *
+ * Outputs:
+ *  - cpu_state     If the address is misaligned or invalid, the halted field
+ *                  will be set to true.
+ *  - return        The value at the given address in the CPU's memory.
  **/
 uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 {
@@ -124,12 +137,21 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
 }
 
 /**
- * mem_write32
- *
  * Writes the specified value to the given address in the processor's memory.
- * The function ensures that the value is written in little-endian order. If the
- * address is unaligned or invalid, this function will stop the simulator on an
- * exception.
+ *
+ * The function ensures that the value is written in little-endian order to the
+ * address. If the address is invalid or it is not aligned to a 4-byte boundary,
+ * then this function will mark the CPU as halted.
+ *
+ * Inputs:
+ *  - cpu_state     The CPU state structure for the processor.
+ *  - addr          The address to which to write the value.
+ *  - value         The value to write to the given address.
+ *
+ * Outputs:
+ *  - cpu_state     If the address is misaligned or invalid, the halted field
+ *                  will be set to true. The processor memory is also
+ *                  appropriately updated.
  **/
 void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
 {
@@ -152,8 +174,6 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
  *----------------------------------------------------------------------------*/
 
 /**
- * malloc_mem_segment
- *
  * Allocates the memory for the given segment, which will have segment->size
  * bytes in it. Exits on error
  **/
@@ -169,8 +189,6 @@ static void malloc_mem_segment(mem_segment_t *segment)
 }
 
 /**
- * load_mem_segment
- *
  * Loads the memory segment from its corresponding data (binary) file. The size
  * of this file cannot exceed the max_size for the memory segment.
  **/
@@ -226,8 +244,6 @@ static int load_mem_segment(mem_segment_t *segment, char *data_path)
 }
 
 /**
- * join_strings
- *
  * Joins the two given strings into a new string. The new string is allocated by
  * malloc, and must be freed by the caller. Exits on error.
  **/
@@ -248,12 +264,12 @@ static char *join_strings(const char *string1, const char *string2)
 }
 
 /**
- * mem_load_program
+ * Initializes the memory subsystem part of the CPU state.
  *
- * Initializes the memory subsystem part of the CPU state. This loads the memory
- * segments from the specified program into the CPU memory, and initializes them
- * to the values specified in the respective data files. Program name should be
- * the path to the executable file (it has no extension).
+ * This loads the memory segments from the specified program into the CPU
+ * memory, and initializes them to the values specified in their respective data
+ * files. Program name should be the path to the executable file (it has no
+ * extension).
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
@@ -303,10 +319,10 @@ int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 }
 
 /**
- * mem_unload_program
+ * Unloads a program previously loaded by mem_load_program.
  *
- * Unloads a program previously loaded by mem_load_program. This cleans up and
- * frees the allocated memory for the processor's memory segment.
+ * This cleans up and frees the allocated memory for the processor's memory
+ * segments.
  **/
 void mem_unload_program(struct cpu_state *cpu_state)
 {
@@ -324,9 +340,8 @@ void mem_unload_program(struct cpu_state *cpu_state)
 }
 
 /**
- * mem_range_valid
- *
  * Checks if the given memory range from start to end (inclusive) is valid.
+ *
  * Namely, this means that all addresses between start and end are valid.
  **/
 bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
@@ -350,10 +365,9 @@ bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
 }
 
 /**
- * mem_find_address
+ * Find the address in memory that corresponds to the address in the simulator.
  *
- * Find the address on the host machine that corresponds to the address in the
- * simulator. If no such address exists, return NULL.
+ * If the specified address is invalid, then NULL is returned.
  **/
 uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
 {
@@ -373,9 +387,8 @@ uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
 }
 
 /**
- * mem_write_word
+ * Writes the specified value out to the given address in little endian order.
  *
- * Writes the spcified value out to the given address in little endian order.
  * The address must be aligned on a 4-byte boundary.
  **/
 void mem_write_word(uint8_t *mem_addr, uint32_t value)

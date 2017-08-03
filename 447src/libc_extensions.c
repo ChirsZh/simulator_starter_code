@@ -21,16 +21,19 @@
  *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
+// Standard Includes
 #include <stdlib.h>             // Exit, strtol functions
 #include <stdio.h>              // snprintf function
 #include <stdarg.h>             // Variable argument list functions and list
 #include <stdint.h>             // Fixed-size integral types
 
+// Standard Includes
 #include <assert.h>             // Assert macro
 #include <string.h>             // Strerror function
 #include <limits.h>             // Limits for integer types
 #include <errno.h>              // Error codes and perror
 
+// Local Includes
 #include "libc_extensions.h"    // Our interface
 
 /*----------------------------------------------------------------------------
@@ -38,8 +41,6 @@
  *----------------------------------------------------------------------------*/
 
 /**
- * parse_long
- *
  * Attempts to parse the given string as a integer with the given base. If
  * successful, the value pointer is updated with the string's value.
  **/
@@ -63,11 +64,11 @@ static int parse_long(const char *string, int base, long *val)
 }
 
 /**
- * parse_int
- *
  * Attempts to parse the given string as a signed decimal integer.
+ *
  * If successful, the value pointer is updated with the integer value of the
- * string.
+ * string. Otherwise, a negative error code is returned, and the value of the
+ * value pointer is not set.
  **/
 int parse_int(const char *string, int *val)
 {
@@ -86,11 +87,11 @@ int parse_int(const char *string, int *val)
 }
 
 /**
- * parse_uint32_hex
- *
  * Attempts to parse the given string as a 32-bit unsigned hexadecimal integer.
+ *
  * If successful, the value pointer is updated with the integer value of the
- * string.
+ * string. Otherwise, a negative error code is returned, and the value of the
+ * value pointer is not set.
  **/
 int parse_uint32_hex(const char *string, uint32_t *val)
 {
@@ -109,12 +110,12 @@ int parse_uint32_hex(const char *string, uint32_t *val)
 }
 
 /**
- * parse_int32
+ * Attempts to parse the given string as a 32-bit integral value.
  *
- * Attempts to parse the given string as a 32-bit value. The string can be
- * either a signed decimal integer or signed or unsigned hexadecimal integer.
- * If successful, the value pointer is updated with the integer value of the
- * string.
+ * The string can be either a signed decimal integer or signed or unsigned
+ * hexadecimal integer. If successful, the value pointer is updated with the
+ * integer value of the string. Otherwise, a negative error code is returned,
+ * and the value of the value pointer is not set.
  **/
 int parse_int32(const char *string, int32_t *val)
 {
@@ -148,10 +149,10 @@ int parse_int32(const char *string, int32_t *val)
  *----------------------------------------------------------------------------*/
 
 /**
- * get_byte
+ * Gets the specified byte from the specified value.
  *
- * Gets the specified byte from the specified value, where the byte must be
- * between 0 and 3.
+ * Byte must be a valid byte index within a 32-bit integer, which means it must
+ * be between 0 and 3.
  **/
 uint8_t get_byte(uint32_t value, int byte)
 {
@@ -161,10 +162,11 @@ uint8_t get_byte(uint32_t value, int byte)
 }
 
 /**
- * set_byte
- *
  * Creates a new 32-bit value where the specified value is the specified byte of
  * the 32-bit value, and all other bytes in the word are 0.
+ *
+ * Byte must be a valid byte index within a 32-bit integer, which means it must
+ * be between 0 and 3.
  **/
 uint32_t set_byte(uint8_t value, int byte)
 {
@@ -178,12 +180,12 @@ uint32_t set_byte(uint8_t value, int byte)
  *----------------------------------------------------------------------------*/
 
 /**
- * snprintf_wrapper
+ * A wrapper around libc's snprintf that provides sanity checks.
  *
- * A wrapper around libc's snprintf that checks for errors and verifies that all
- * arguments were able to be formatted into the string. If either of these are
- * not the case, it prints out an error message with the supplied call site
- * information, and exits.
+ * The wrapper checks for errors and verifies that all arguments were able to be
+ * formatted into the string. If either of these are not the case, then it
+ * prints out an error message with the supplied call site information, and
+ * exits.
  **/
 void snprintf_wrapper(const char *filename, int line, const char *function_name,
         char *str, size_t size, const char *format, ...)

@@ -21,19 +21,32 @@
  *  You may edit this file and add or change any files in the src directory.  *
  *----------------------------------------------------------------------------*/
 
-#include <stdio.h>          // Printf and related functions
+// Standard Includes
+#include <stdio.h>              // Printf and related functions
+#include <stdbool.h>            // Boolean type and definitions
 
-#include "memory.h"         // Interface to the processor memory
-#include "riscv_isa.h"      // Definition of RISC-V opcodes
-#include "riscv_abi.h"      // ABI registers and definitions
-#include "sim.h"            // Defintions for the simulator
+// 18-447 Simulator Includes
+#include <memory.h>             // Interface to the processor memory
+#include <riscv_isa.h>          // Definition of RISC-V opcodes
+#include <riscv_abi.h>          // ABI registers and definitions
+#include <sim.h>                // Definitions for the simulator
 
 /**
- * process_instruction
+ * Simulates a single cycle on the CPU, updating the CPU's state as needed.
  *
- * This is the core part of the simulator. This simulates one instruction, the
- * one currently pointed to by the PC, and updates the next PC state
- * appropiately.
+ * This is the core part of the simulator. This simulates the current
+ * instruction pointed to by the PC. This performs the necessary actions for the
+ * instruction, and updates the CPU state appropriately.
+ *
+ * You implement this function.
+ *
+ * Inputs:
+ *  - cpu_state     The current state of the CPU being simulated.
+ *
+ * Outputs:
+ *  - cpu_state     The next state of the CPU being simulated. This function
+ *                  updates the fields of the state as needed by the current
+ *                  instruction to simulate it.
  **/
 void process_instruction(cpu_state_t *cpu_state)
 {

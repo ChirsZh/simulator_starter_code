@@ -21,21 +21,28 @@
  *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
+// Standard Includes
 #include <stdlib.h>             // C standard library
 #include <stdio.h>              // Printf, fgets, and related functions
 #include <stdint.h>             // Fixed-size integral types
+#include <stdbool.h>            // Definition of the boolean type
 
+// Standard Includes
 #include <assert.h>             // Assert macro
 #include <string.h>             // String manipulation functions and memset
 #include <errno.h>              // Error codes and perror
 #include <signal.h>             // Signal numbers and sigaction function
 
+// Readline Includes
 #include <readline/readline.h>  // Interface to the readline library
 #include <readline/history.h>   // Interface to history for the readline library
 
-#include "sim.h"                // Interface to the core simulator, cpu_state_t
-#include "memory_shell.h"       // Interface to the processor memory
+// 18-447 Simulator Includes
+#include <sim.h>                // Interface to the core simulator, cpu_state_t
+
+// Local Includes
 #include "commands.h"           // Interface to the shell commands
+#include "memory_shell.h"       // Interface to the processor memory
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -55,7 +62,7 @@
 #define HISTORY_MAX_LINES       100
 static const char *HISTORY_FILE = ".riscv_sim_history";
 
-// Indicates that a SIGINT signal was recieved by the program
+// Indicates that a SIGINT signal was received by the program
 volatile bool SIGINT_RECEIVED   = false;
 
 /*----------------------------------------------------------------------------
@@ -63,8 +70,6 @@ volatile bool SIGINT_RECEIVED   = false;
  *----------------------------------------------------------------------------*/
 
 /**
- * print_usage
- *
  * Prints the usage message for the program.
  **/
 static void print_usage()
@@ -75,8 +80,6 @@ static void print_usage()
 }
 
 /**
- * parse_arguments
- *
  * Parses the command-line arguments to the program, which only consist of an
  * optional path to the program to run.
  **/
@@ -99,13 +102,11 @@ static int parse_arguments(int argc, char *argv[], char **program_path)
  *----------------------------------------------------------------------------*/
 
 /**
- * sigint_handler
- *
  * This function handles CTRL-C keystrokes from the user. Its purpose is to
  * prevent the program from being terminated when a CTRL-C is typed, and to
  * indicate to any running `go` command to stop.
  **/
-void sigint_handler(int signum)
+static void sigint_handler(int signum)
 {
     (void)signum;       // Silence the compiler
     SIGINT_RECEIVED = true;
@@ -113,8 +114,6 @@ void sigint_handler(int signum)
 }
 
 /**
- * setup_signals
- *
  * Setups up the signal handling for the simulator, which is simply handling
  * SIGINT's from CTRL-C keystrokes from the user.
  **/
@@ -131,8 +130,6 @@ static void setup_signals()
 }
 
 /**
- * setup_readline
- *
  * Sets up the readline library, reading the readline history file. This loads
  * the previously executed commands from other simulator invocations, so that
  * the user can access them inside the shell.
@@ -149,8 +146,6 @@ static int setup_readline(const char *history_file)
 }
 
 /**
- * cleanup_readline
- *
  * Cleans up the readline library, appending the history list of command
  * executed during this session to the history file. The file is truncated to a
  * maximum number.
@@ -191,8 +186,6 @@ static int cleanup_readline(const char *history_file, int max_history_lines)
  *----------------------------------------------------------------------------*/
 
 /**
- * process_long_command
- *
  * Attempts to parse and process the command as one of its string variants.
  * If the command matches one of the simulator's commands, it is executed.
  * Returns true if the string matched a command. Sets the quit boolean pointer
@@ -204,7 +197,7 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
     // Assume the command is not quit
     *quit = false;
 
-    // Run the appropiate command based on what the user specified
+    // Run the appropriate command based on what the user specified
     if (strcmp(command, "step") == 0) {
         command_step(cpu_state, args, num_args);
     } else if (strcmp(command, "go") == 0) {
@@ -233,8 +226,6 @@ static bool process_long_command(cpu_state_t *cpu_state, const char *command,
 }
 
 /**
- * process_short_command
- *
  * Attempts to parse and process the command as one of its single character
  * variants. If the command matches one of the simulator's commands, it is
  * executed. Returns true if the string matched a command. Sets the quit boolean
@@ -254,7 +245,7 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
         return false;
     }
 
-    // Based on the first character, run the appropiate command
+    // Based on the first character, run the appropriate command
     switch (command[0]) {
         case 's':
             command_step(cpu_state, args, num_args);
@@ -286,11 +277,10 @@ static bool process_short_command(cpu_state_t *cpu_state, const char *command,
 }
 
 /**
- * Splits the user input command string into a command and argument list.
- *
- * The command returned is a typical null-terminated string, while the argument
- * list is terminated by a NULL pointer. The length of the argument list is
- * returned returned.
+ * Splits the user input command string into a command and argument list. The
+ * command returned is a typical null-terminated string, while the argument list
+ * is terminated by a NULL pointer. The length of the argument list is returned
+ * returned.
  **/
 static int split_command(char *command_string, char **command,
         char *args[COMMAND_MAX_ARGS+1])
@@ -325,15 +315,13 @@ static int split_command(char *command_string, char **command,
 }
 
 /**
- * process_command
- *
  * Attempts to parse and process the command specified by the user as either the
  * long form of the command, a string), or the short form, a single character.
  * Returns true if the quit command was specified.
  **/
 static bool process_command(cpu_state_t *cpu_state, char *command_string)
 {
-    // Seperate the command string into the command and a list of arguments
+    // Separate the command string into the command and a list of arguments
     char *command;
     char *args[COMMAND_MAX_ARGS+1];
     int num_args = split_command(command_string, &command, args);
@@ -358,8 +346,6 @@ static bool process_command(cpu_state_t *cpu_state, char *command_string)
 }
 
 /**
- * simulator_repl
- *
  * The read-eval-print loop (REPL) for the simulator. Continuously waits for
  * user input, and performs the specified command, until the user specifies quit
  * or sends an EOF character.
@@ -390,10 +376,10 @@ static void simulator_repl(cpu_state_t *cpu_state)
 }
 
 /**
- * main
+ * The main method for the simulator.
  *
- * The main method for the simulator. This parses the command line arguments,
- * initializes the CPU and starts up the REPL for the simulator.
+ * This parses the command line arguments, initializes the CPU and starts up the
+ * REPL for the simulator.
  **/
 int main(int argc, char *argv[])
 {

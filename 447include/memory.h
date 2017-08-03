@@ -25,7 +25,11 @@
 #ifndef MEMORY_H_
 #define MEMORY_H_
 
+// Standard Includes
 #include <stdint.h>             // Fixed-size integral types
+
+// Local Includes
+#include "riscv_abi.h"          // Definition of the number of memory regions
 
 /*----------------------------------------------------------------------------
  * Definitions
@@ -57,20 +61,40 @@ typedef struct memory {
  *----------------------------------------------------------------------------*/
 
 /**
- * mem_write32
+ * Reads the value at the specified address in the processor's memory.
  *
- * Reads the value at the specified address in the processor's memory. The
- * function ensures that the value is written in little-endian order. If the
- * address is invalid, this function will mark the CPU as halted.
+ * This function ensures that the value is read in little-endian order from the
+ * address. If the address is invalid or it is not aligned to a 4-byte boundary,
+ * then this function will mark the CPU as halted, and print out an error
+ * message.
+ *
+ * Inputs:
+ *  - cpu_state     The CPU state structure for the processor.
+ *  - addr          The address from which to read the value.
+ *
+ * Outputs:
+ *  - cpu_state     If the address is misaligned or invalid, the halted field
+ *                  will be set to true.
+ *  - return        The value at the given address in the CPU's memory.
  **/
 uint32_t mem_read32(struct cpu_state *cpu_state, uint32_t addr);
 
 /**
- * mem_write32
- *
  * Writes the specified value to the given address in the processor's memory.
- * The function ensures that the value is written in little-endian order. If the
- * address is invalid, this function will mark the CPU as halted.
+ *
+ * The function ensures that the value is written in little-endian order to the
+ * address. If the address is invalid or it is not aligned to a 4-byte boundary,
+ * then this function will mark the CPU as halted.
+ *
+ * Inputs:
+ *  - cpu_state     The CPU state structure for the processor.
+ *  - addr          The address to which to write the value.
+ *  - value         The value to write to the given address.
+ *
+ * Outputs:
+ *  - cpu_state     If the address is misaligned or invalid, the halted field
+ *                  will be set to true. The processor memory is also
+ *                  appropriately updated.
  **/
 void mem_write32(struct cpu_state *cpu_state, uint32_t addr, uint32_t value);
 

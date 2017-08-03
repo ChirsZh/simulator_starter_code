@@ -21,9 +21,11 @@
 #ifndef SIM_H_
 #define SIM_H_
 
+// Standard Includes
 #include <stdbool.h>                    // Boolean type and definitions
 #include <stdint.h>                     // Fixed-size integral types
 
+// Local Includes
 #include "riscv_abi.h"                  // RISC-V ABI, the number of registers
 #include "memory.h"                     // Interface to the processor memory
 
@@ -46,13 +48,21 @@ typedef struct cpu_state {
  *----------------------------------------------------------------------------*/
 
 /**
- * process_instruction
+ * Simulates a single cycle on the CPU, updating the CPU's state as needed.
  *
- * The core part of the simulator. Simulates a single cycle on the CPU,
- * simulating the current instruction pointed to by the PC. Updates the CPU
- * state appropriately.
+ * This is the core part of the simulator. This simulates the current
+ * instruction pointed to by the PC. This performs the necessary actions for the
+ * instruction, and updates the CPU state appropriately.
  *
  * You implement this function.
+ *
+ * Inputs:
+ *  - cpu_state     The current state of the CPU being simulated.
+ *
+ * Outputs:
+ *  - cpu_state     The next state of the CPU being simulated. This function
+ *                  updates the fields of the state as needed by the current
+ *                  instruction to simulate it.
  **/
 void process_instruction(cpu_state_t *cpu_state);
 

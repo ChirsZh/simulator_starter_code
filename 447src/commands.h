@@ -23,13 +23,17 @@
 #ifndef COMMANDS_H_
 #define COMMANDS_H_
 
-#include "sim.h"            // Definition of cpu_state_t
+// Standard Includes
+#include <stdbool.h>            // Definition of the boolean type
+
+// 18-447 Simulator Includes
+#include <sim.h>                // Definition of cpu_state_t
 
 /*----------------------------------------------------------------------------
  * Definitions
  *----------------------------------------------------------------------------*/
 
-// Indicates that a SIGINT signal was recieved by the program
+// Indicates that a SIGINT signal was received by the program
 volatile bool SIGINT_RECEIVED;
 
 /*----------------------------------------------------------------------------
@@ -37,10 +41,11 @@ volatile bool SIGINT_RECEIVED;
  *----------------------------------------------------------------------------*/
 
 /**
- * init_cpu_state
+ * Initializes the CPU state.
  *
- * Initializes the CPU state, and loads the specified program into the
- * processor's memory.
+ * This loads the specified program into the processor's memory, clearing out
+ * any prior loaded program. Additionally, the register values are reset to
+ * their proper starting values.
  **/
 int init_cpu_state(cpu_state_t *cpu_state, char *program_path);
 
@@ -49,83 +54,82 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path);
  *----------------------------------------------------------------------------*/
 
 /**
- * command_step
+ * Runs the simulator for a specified number of cycles or until a halt.
  *
- * Runs a the simulator for a specified number of cycles or until the processor
- * is halted. The user can optionally specify the number of cycles, otherwise
- * the default is one.
+ * The user can optionally specify the number of cycles. Otherwise, the default
+ * is to run the processor one cycle. If the processor is halted before the
+ * number of steps is reached, then simulation stops.
  **/
 void command_step(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_go
- *
  * Runs the simulator until program completion or an exception is encountered.
+ *
+ * In the case of an infinite running program because of a bug in the
+ * implementation, the user can interrupt execution with a keyboard interrupt.
  **/
 void command_go(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_reg
+ * Display the value of the specified register to the user.
  *
- * Display the value of the specified register to the user. The user can
- * optionally specify a value to update the register's value instead.
+ * The user can optionally specify a value, in which case, the command
+ * updates the register's value instead of reading it.
  **/
 void command_reg(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_mem
+ * Displays the value of the specified memory address to the user.
  *
- * Displays the value of the specified memory address to the user. The user can
- * optionally specify a value to update the memory locations value instead.
+ * The user can optionally specify a value, in which case, the command updates
+ * the memory location's value instead of reading it.
  **/
 void command_mem(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * comand_rdump
+ * Displays the value of all the CPU registers, along with other information.
  *
- * Displays the value of all registers in the system, along with the number of
- * instructions executed so far. The user can optionally specify a file to dump
- * the values to.
+ * The PC value and number of instructions executed so far are also displayed
+ * with the register values. The user can optionally specify a file to which to
+ * dump the register values.
  **/
 void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_mdump
+ * Displays the values of a range of memory locations in the system.
  *
- * Displays the values of a range of memory locations in the system. The user
- * can optionally specify a file to dump the memory values to.
+ * The user can optionally specify a file to which to dump the memory values.
  **/
 void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_restart
+ * Resets the processor and restarts the currently loaded program.
  *
- * Resets the processor and restarts the currently loaded program from its first
- * instruction.
+ * The program is naturally started again from its first instruction, with all
+ * register and memory values reset to their starting values.
  **/
 void command_restart(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_load
+ * Loads a new program into the processor's memory to be executed.
  *
- * Resets the processor and loads a new program into the processor, replacing
- * the currently executing program. The execution starts from the beginning of
- * the loaded program.
+ * This resets the processor and loads a new program into the processor,
+ * replacing the currently executing program. The execution starts from the
+ * beginning of the loaded program, with all memory and register values at their
+ * proper starting values.
  **/
 void command_load(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_quit
- *
  * Quits the simulator.
  **/
 bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
- * command_help
+ * Displays a help message to the user.
  *
- * Displays a help message to the user, explaining the commands in for the
- * simulator and how to use them.
+ * The message explains the commands available in the simulator and how to use
+ * them.
  **/
 void command_help(cpu_state_t *cpu_state, char *args[], int num_args);
 

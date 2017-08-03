@@ -21,15 +21,21 @@
  *          You should only add or change files in the src directory!         *
  *----------------------------------------------------------------------------*/
 
+// Standard Includes
 #include <stdlib.h>             // Malloc and related functions
 #include <stdio.h>              // Printf and related functions
+#include <stdbool.h>            // Definition of the boolean type
 #include <stdint.h>             // Fixed-size integral types
 
+// Standard Includes
 #include <limits.h>             // Limits for integer types
 #include <assert.h>             // Assert macro
 #include <errno.h>              // Error codes and perror
 
-#include "sim.h"                // Definition of cpu_state_t
+// 18-447 Simulator Includes
+#include <sim.h>                // Definition of cpu_state_t
+
+// Local Includes
 #include "memory_shell.h"       // Interface to the processor memory
 #include "libc_extensions.h"    // Parsing functions, array_len, Snprintf
 #include "commands.h"           // This file's interface
@@ -39,10 +45,8 @@
  *----------------------------------------------------------------------------*/
 
 /**
- * print_separator
- *
  * Prints a line of line_width separators to the given file. This is used in the
- * dump commands to seperate headers from values.
+ * dump commands to separate headers from values.
  **/
 static void print_separator(char separator, ssize_t line_width, FILE* file)
 {
@@ -54,8 +58,6 @@ static void print_separator(char separator, ssize_t line_width, FILE* file)
 }
 
 /**
- * open_dump_file
- *
  * Opens the dump file if it was specified by the user, otherwise defaults to
  * stdout. Returns NULL on error.
  **/
@@ -77,8 +79,6 @@ static FILE *open_dump_file(char *args[], int num_args,
 }
 
 /**
- * close_dump_file
- *
  * Closes a previously opened dump file. If the dump file is stdout, then
  * nothing is done.
  **/
@@ -101,8 +101,6 @@ static void close_dump_file(FILE *dump_file)
 #define GO_NUM_ARGS             0
 
 /**
- * run_simulator
- *
  * Run the simulator for a single cycle, incrementing the instruction count.
  **/
 static void run_simulator(cpu_state_t *cpu_state)
@@ -113,15 +111,15 @@ static void run_simulator(cpu_state_t *cpu_state)
 }
 
 /**
- * command_step
+ * Runs the simulator for a specified number of cycles or until a halt.
  *
- * Runs a the simulator for a specified number of cycles or until the processor
- * is halted. The user can optionally specify the number of cycles, otherwise
- * the default is one.
+ * The user can optionally specify the number of cycles. Otherwise, the default
+ * is to run the processor one cycle. If the processor is halted before the
+ * number of steps is reached, then simulation stops.
  **/
 void command_step(cpu_state_t *cpu_state, char *args[], int num_args)
 {
-    // Check that the appropiate number of arguments was specified
+    // Check that the appropriate number of arguments was specified
     if (num_args > STEP_MAX_NUM_ARGS) {
         fprintf(stderr, "Error: Too many arguments specified to 'step' "
                 "command.\n");
@@ -152,16 +150,17 @@ void command_step(cpu_state_t *cpu_state, char *args[], int num_args)
 }
 
 /**
- * command_go
- *
  * Runs the simulator until program completion or an exception is encountered.
+ *
+ * In the case of an infinite running program because of a bug in the
+ * implementation, the user can interrupt execution with a keyboard interrupt.
  **/
 void command_go(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Silence unused variable warnings from the compiler
     (void)args;
 
-    // Check that the appropiate number of arguments was specified
+    // Check that the appropriate number of arguments was specified
     if (num_args != GO_NUM_ARGS) {
         fprintf(stderr, "Error: Improper number of arguments specified to "
                 "'go' command.\n");
@@ -265,8 +264,6 @@ static const register_name_t RISCV_REGISTER_NAMES[RISCV_NUM_REGS] = {
 };
 
 /**
- * find_register
- *
  * Tries to find the register with a matching ISA name or ABI alias from the
  * available registers. Returns a register number [0..31] on success, or a
  * negative number on failure.
@@ -289,8 +286,6 @@ static int find_register(const char *reg_name)
 }
 
 /**
- * print_register_header
- *
  * Prints out the header lines for a register dump to the given file. This
  * contains the titles for each column of a line of register output.
  **/
@@ -306,8 +301,6 @@ static void print_register_header(FILE* file)
 }
 
 /**
- * print_register
- *
  * Prints out the information for a given register on one line to the file.
  **/
 static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
@@ -339,8 +332,6 @@ static void print_register(cpu_state_t *cpu_state, int reg_num, FILE *file)
 }
 
 /**
- * print_cpu_state
- *
  * Prints out information about the current CPU state to the file.
  **/
 static void print_cpu_state(const cpu_state_t *cpu_state, FILE* file)
@@ -353,10 +344,10 @@ static void print_cpu_state(const cpu_state_t *cpu_state, FILE* file)
 }
 
 /**
- * command_reg
+ * Display the value of the specified register to the user.
  *
- * Display the value of the specified register to the user. The user can
- * optionally specify a value to update the register's value instead.
+ * The user can optionally specify a value, in which case, the command
+ * updates the register's value instead of reading it.
  **/
 void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
 {
@@ -409,11 +400,11 @@ void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
 }
 
 /**
- * comand_rdump
+ * Displays the value of all the CPU registers, along with other information.
  *
- * Displays the value of all registers in the system, along with the number of
- * instructions executed so far. The user can optionally specify a file to dump
- * the values to.
+ * The PC value and number of instructions executed so far are also displayed
+ * with the register values. The user can optionally specify a file to which to
+ * dump the register values.
  **/
 void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args)
 {
@@ -461,6 +452,10 @@ void command_rdump(cpu_state_t *cpu_state, char *args[], int num_args)
 #define MDUMP_MIN_NUM_ARGS      2
 #define MDUMP_MAX_NUM_ARGS      3
 
+/**
+ * Prints out the header lines for a memory dump to the given file. This
+ * contains the titles for each column of a line of the memory dump.
+ **/
 static void print_memory_header(FILE* file)
 {
     ssize_t line_width = fprintf(file, "%-10s  %-4s %-4s %-4s %-4s\n",
@@ -470,10 +465,8 @@ static void print_memory_header(FILE* file)
 }
 
 /**
- * print_memory
- *
  * Prints out information for the given address on one line to the file. The
- * memory is printed out in little-endian order
+ * memory is printed out in little-endian order.
  **/
 static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
 {
@@ -483,10 +476,10 @@ static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
 }
 
 /**
- * command_mem
+ * Displays the value of the specified memory address to the user.
  *
- * Displays the value of the specified memory address to the user. The user can
- * optionally specify a value to update the memory locations value instead.
+ * The user can optionally specify a value, in which case, the command updates
+ * the memory location's value instead of reading it.
  **/
 void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
 {
@@ -537,10 +530,9 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
 }
 
 /**
- * command_mdump
+ * Displays the values of a range of memory locations in the system.
  *
- * Displays the values of a range of memory locations in the system. The user
- * can optionally specify a file to dump the memory values to.
+ * The user can optionally specify a file to which to dump the memory values.
  **/
 void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
 {
@@ -610,10 +602,11 @@ void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
 #define RESTART_NUM_ARGS        0
 
 /**
- * init_cpu_state
+ * Initializes the CPU state.
  *
- * Initializes the CPU state, and loads the specified program into the
- * processor's memory.
+ * This loads the specified program into the processor's memory, clearing out
+ * any prior loaded program. Additionally, the register values are reset to
+ * their proper starting values.
  **/
 int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 {
@@ -642,17 +635,17 @@ int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 }
 
 /**
- * command_restart
+ * Resets the processor and restarts the currently loaded program.
  *
- * Resets the processor and restarts the currently loaded program from its first
- * instruction.
+ * The program is naturally started again from its first instruction, with all
+ * register and memory values reset to their starting values.
  **/
 void command_restart(cpu_state_t *cpu_state, char *args[], int num_args)
 {
     // Silence unused variable warnings from the compiler
     (void)args;
 
-    // Check that the appropiate nubmer of arguments was specified
+    // Check that the appropriate number of arguments was specified
     if (num_args != RESTART_NUM_ARGS) {
         fprintf(stderr, "Error: restart: Improper number of arguments "
                 "specified.\n");
@@ -674,11 +667,12 @@ void command_restart(cpu_state_t *cpu_state, char *args[], int num_args)
 }
 
 /**
- * command_load
+ * Loads a new program into the processor's memory to be executed.
  *
- * Resets the processor and loads a new program into the processor, replacing
- * the currently executing program. The execution starts from the beginning of
- * the loaded program.
+ * This resets the processor and loads a new program into the processor,
+ * replacing the currently executing program. The execution starts from the
+ * beginning of the loaded program, with all memory and register values at their
+ * proper starting values.
  **/
 void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
 {
@@ -712,8 +706,6 @@ void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
 #define QUIT_NUM_ARGS           0
 
 /**
- * command_quit
- *
  * Quits the simulator.
  **/
 bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
@@ -739,6 +731,9 @@ bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args)
 // The expected number of arguments for the help command
 #define HELP_NUM_ARGS           0
 
+/**
+ * Prints out the header lines for the help message for the RISC-V simulator.
+ **/
 static void print_help_header()
 {
     ssize_t line_width = fprintf(stdout, "RISC-V Simulator Help:\n");
@@ -746,16 +741,20 @@ static void print_help_header()
     return;
 }
 
+/**
+ * Prints out the help message for the specified command, giving its usage and
+ * the description for how the command is used.
+ **/
 static void print_help(const char *cmd_usage, const char *help_message)
 {
     fprintf(stdout, "%-37s - %s\n", cmd_usage, help_message);
 }
 
 /**
- * command_help
+ * Displays a help message to the user.
  *
- * Displays a help message to the user, explaining the commands in for the
- * simulator and how to use them.
+ * The message explains the commands available in the simulator and how to use
+ * them.
  **/
 void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
 {
@@ -789,7 +788,7 @@ void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
             "from start to end (inclusive), optionally dumping it to the "
             "file.");
 
-    // Print help messages for the load and restart commmands
+    // Print help messages for the load and restart commands
     print_help("restart", "Reset the processor and restart the program from "
             "the beginning.");
     print_help("load <program>", "Reset the processor and load the new program "
