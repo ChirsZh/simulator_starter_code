@@ -75,7 +75,7 @@ volatile bool SIGINT_RECEIVED   = false;
 static void print_usage()
 {
     fprintf(stdout, "Usage: riscv-sim <program>\n");
-    fprintf(stdout, "Example: riscv-sim 447inputs/additest.s\n");
+    fprintf(stdout, "Example: riscv-sim 447inputs/additest.S\n");
     return;
 }
 
