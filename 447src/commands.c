@@ -93,7 +93,7 @@ static void close_dump_file(FILE *dump_file)
 }
 
 /*----------------------------------------------------------------------------
- * Step and Go Commands
+ * Verbose, Step, and Go Commands
  *----------------------------------------------------------------------------*/
 
 // The maximum number of arguments that can be specified to the step command
@@ -107,8 +107,14 @@ static const int GO_NUM_ARGS            = 0;
  **/
 static void run_simulator(cpu_state_t *cpu_state)
 {
+    // Run the simulator for a cycle, then the increment instruction count
     process_instruction(cpu_state);
     cpu_state->cycle += 1;
+
+    // If the user has activated verbose mode, then perform a register dump
+    if (cpu_state->verbose_mode) {
+        command_rdump(cpu_state, NULL, 0);
+    }
     return;
 }
 
@@ -663,11 +669,38 @@ void command_load(cpu_state_t *cpu_state, char *args[], int num_args)
 }
 
 /*----------------------------------------------------------------------------
- * Quit Command
+ * Verbose and Quit Commands
  *----------------------------------------------------------------------------*/
+
+// The expected number of arguments for the verbose command
+static const int VERBOSE_NUM_ARGS       = 0;
 
 // The expected number of arguments for the quit command
 static const int QUIT_NUM_ARGS          = 0;
+
+/**
+ * Toggles verbose mode for the simulator.
+ *
+ * If verbose mode is active, then the simulator performs a register dump after
+ * every cycle that the CPU runs. This can be useful to do a cycle-by-cycle
+ * diff between a reference implementation and this implementation.
+ **/
+void command_verbose(cpu_state_t *cpu_state, char *args[], int num_args)
+{
+    // Silence unused variable warnings from the compiler
+    (void)args;
+
+    // Check that the appropriate number of arguments was specified
+    if (num_args != VERBOSE_NUM_ARGS) {
+        fprintf(stderr, "Error: Improper number of arguments specified to "
+                "'verbose' command.\n");
+        return;
+    }
+
+    // Toggle the verbose mode for the processor
+    cpu_state->verbose_mode = !cpu_state->verbose_mode;
+    return;
+}
 
 /**
  * Quits the simulator.
@@ -758,7 +791,9 @@ void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
     print_help("load <program>", "Reset the processor and load the new program "
             "into memory for execution.");
 
-    // Print help message for the quit and help commands
+    // Print help message for the verbose, quit, and help commands
+    print_help("v[erbose]", "Toggles verbose mode for the simulator. When "
+            "active, the simulator dumps the registers after each cycle.");
     print_help("q[uit]", "Quit the simulator. Can also be done with an EOF "
             "(CTRL-D).");
     print_help("h[elp]|?", "Display this help message.");

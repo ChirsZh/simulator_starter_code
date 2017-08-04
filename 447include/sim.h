@@ -35,6 +35,7 @@
 
 // A structure representing all of the state in a processor.
 typedef struct cpu_state {
+    bool verbose_mode;                  // Indicates if verbose mode is active
     bool halted;                        // Indicates if the CPU is halted
     int cycle;                          // Number of processor cycles
     uint32_t pc;                        // Current program counter

@@ -121,6 +121,15 @@ void command_restart(cpu_state_t *cpu_state, char *args[], int num_args);
 void command_load(cpu_state_t *cpu_state, char *args[], int num_args);
 
 /**
+ * Toggles verbose mode for the simulator.
+ *
+ * If verbose mode is active, then the simulator performs a register dump after
+ * every cycle that the CPU runs. This can be useful to do a cycle-by-cycle
+ * diff between a reference implementation and this implementation.
+ **/
+void command_verbose(cpu_state_t *cpu_state, char *args[], int num_args);
+
+/**
  * Quits the simulator.
  **/
 bool command_quit(cpu_state_t *cpu_state, char *args[], int num_args);
