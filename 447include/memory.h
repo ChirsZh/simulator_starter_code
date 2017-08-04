@@ -38,9 +38,6 @@
  * Definitions
  *----------------------------------------------------------------------------*/
 
-// The number of memory segments in the processor
-#define NUM_MEM_REGIONS         5
-
 // Forward declaration of the CPU state struct
 struct cpu_state;
 
@@ -55,8 +52,8 @@ typedef struct {
 
 // The representation for all the memory in the processor
 typedef struct memory {
-    int num_segments;                         // Number of memory segments
-    mem_segment_t segments[NUM_MEM_REGIONS];  // Memory segments in the CPU
+    int num_segments;           // Number of memory segments
+    mem_segment_t *segments;    // Memory segments in the CPU
 } memory_t;
 
 /*----------------------------------------------------------------------------

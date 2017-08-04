@@ -32,19 +32,6 @@
  * Definitions
  *----------------------------------------------------------------------------*/
 
-// The starting addresses of the user's data and text segments
-#define USER_TEXT_START                 0x00400000
-#define USER_DATA_START                 0x10000000
-
-// The starting and ending addresses of the stack segment, and its size
-#define STACK_END                       0x7ff00000
-#define STACK_SIZE                      (1 * 1024 * 1024)
-#define STACK_START                     (STACK_END - STACK_SIZE)
-
-// The starting addresses and sizes of the kernel's data, and text segments
-#define KERNEL_TEXT_START               0x80000000
-#define KERNEL_DATA_START               0x90000000
-
 /* The value that must be passed in register a0 (x10) to the ECALL instruction
  * to halt the processor and stop the simulator. */
 static const uint32_t ECALL_ARG_HALT    = 0xa;

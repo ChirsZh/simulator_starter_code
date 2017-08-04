@@ -26,7 +26,8 @@ typedef struct register_name {
     const char *abi_name;       // The ABI name for a register (sp, t0, etc.)
 } register_name_t;
 
-// An array of all the naming information for a register, and its ABI aliases
+// An array of all the naming information for each register, and its ABI aliases
+__attribute__((unused))
 static const register_name_t RISCV_REGISTER_NAMES[RISCV_NUM_REGS] = {
     { .isa_name = "x0",  .abi_name = "zero", },
     { .isa_name = "x1",  .abi_name = "ra", },

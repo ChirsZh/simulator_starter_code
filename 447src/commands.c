@@ -572,6 +572,8 @@ static const int RESTART_NUM_ARGS       = 0;
  **/
 int init_cpu_state(cpu_state_t *cpu_state, char *program_path)
 {
+    assert(cpu_state->memory.segments != NULL);
+
     // Clear out the CPU state, and initialize the CPU state fields
     cpu_state->cycle = 0;
     memset(cpu_state->registers, 0, sizeof(cpu_state->registers));

@@ -37,52 +37,8 @@
 
 // Local Includes
 #include "libc_extensions.h"        // Various utilities
+#include "memory_segments.h"        // Definition of memory segment constants
 #include "memory_shell.h"           // This file's interface to the shell
-
-/*----------------------------------------------------------------------------
- * Internal Definitions
- *----------------------------------------------------------------------------*/
-
-// The user text memory segment, containing the user program
-static const mem_segment_t USER_TEXT_REGION = {
-    .base_addr = USER_TEXT_START,
-    .max_size = USER_DATA_START - USER_TEXT_START,
-    .extension = ".text.bin",
-};
-
-// The user data memory segment, containing user global variables
-static const mem_segment_t USER_DATA_REGION = {
-    .base_addr = USER_DATA_START,
-    .max_size = STACK_START - USER_DATA_START,
-    .extension = ".data.bin"
-};
-
-// The stack memory segment, containing local values in the program
-static const mem_segment_t STACK_REGION = {
-    .base_addr = STACK_END - STACK_SIZE,
-    .max_size = STACK_SIZE,
-    .extension = NULL,
-};
-
-// The kernel text segment, containing kernel code
-static const mem_segment_t KERNEL_TEXT_REGION = {
-    .base_addr = KERNEL_TEXT_START,
-    .max_size = KERNEL_DATA_START - KERNEL_TEXT_START,
-    .extension = ".ktext.bin",
-};
-
-// The kernel data segment, containing kernel global variables
-static const mem_segment_t KERNEL_DATA_REGION = {
-    .base_addr = KERNEL_DATA_START,
-    .max_size = UINT32_MAX - KERNEL_DATA_START,
-    .extension = ".kdata.bin",
-};
-
-// An array of all the memory segments, and the number of memory segments
-static const mem_segment_t *const MEM_REGIONS[NUM_MEM_REGIONS] = {
-    &USER_TEXT_REGION, &USER_DATA_REGION, &STACK_REGION, &KERNEL_TEXT_REGION,
-    &KERNEL_DATA_REGION,
-};
 
 /*----------------------------------------------------------------------------
  * Shared Helper Functions
@@ -254,6 +210,7 @@ static int load_mem_segment(mem_segment_t *segment, char *data_path)
 
         free(segment->mem);
         segment->mem = NULL;
+        segment->size = 0;
     }
 
     // Close the data file
@@ -291,23 +248,13 @@ static char *join_strings(const char *string1, const char *string2)
  **/
 int mem_load_program(cpu_state_t *cpu_state, const char *program_path)
 {
-    assert(array_len(cpu_state->memory.segments) == array_len(MEM_REGIONS));
-
-    // Set the number of memory segments, and zero out the mem segments array
-    memory_t *memory = &cpu_state->memory;
-    memory->num_segments = array_len(MEM_REGIONS);
-    memset(memory->segments, 0, sizeof(memory->segments));
-
     // Initialize each memory segment, loading data from the associated file
     int rc = 0;
-    for (int i = 0; i < memory->num_segments; i++)
+    for (int i = 0; i < cpu_state->memory.num_segments; i++)
     {
-        // Copy the default values for the memory segment in
-        mem_segment_t *segment = &memory->segments[i];
-        memcpy(segment, MEM_REGIONS[i], sizeof(*MEM_REGIONS[i]));
-
         /* If the memory segment doesn't have a data file, we only allocate it.
          * In this case, the size of the memory segment is max_size. */
+        mem_segment_t *segment = &cpu_state->memory.segments[i];
         if (segment->extension == NULL) {
             segment->size = segment->max_size;
             malloc_mem_segment(segment);
@@ -351,6 +298,8 @@ void mem_unload_program(struct cpu_state *cpu_state)
         mem_segment_t *segment = &memory->segments[i];
         if (segment->mem != NULL) {
             free(segment->mem);
+            segment->mem = NULL;
+            segment->size = 0;
         }
     }
 

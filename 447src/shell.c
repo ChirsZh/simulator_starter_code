@@ -41,8 +41,10 @@
 #include <sim.h>                // Interface to the core simulator, cpu_state_t
 
 // Local Includes
+#include "libc_extensions.h"    // The array_len function
 #include "commands.h"           // Interface to the shell commands
 #include "memory_shell.h"       // Interface to the processor memory
+#include "memory_segments.h"    // Definition of memory segments array
 
 /*----------------------------------------------------------------------------
  * Internal Definitions
@@ -392,9 +394,13 @@ int main(int argc, char *argv[])
         return -rc;
     }
 
-    // Initialize the CPU state, loading the program if specified
+    // Instantiate a CPU state, zero it out, and setup the memory segments
     cpu_state_t cpu_state;
     memset(&cpu_state, 0, sizeof(cpu_state));
+    cpu_state.memory.num_segments = array_len(MEMORY_SEGMENTS);
+    cpu_state.memory.segments = MEMORY_SEGMENTS;
+
+    // Initialize the CPU state, and load the program
     rc = init_cpu_state(&cpu_state, program_path);
     if (rc < 0) {
         fprintf(stderr, "Failed to load the first program. Not starting the "
