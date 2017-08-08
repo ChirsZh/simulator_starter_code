@@ -23,6 +23,9 @@ simulation.reg
 !**/Makefile
 !*.mk
 
+# Allow for linker scripts
+!*.ld
+
 # Allow for gitignore files
 !.gitignore
 

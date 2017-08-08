@@ -67,17 +67,18 @@ endif
 # The name of the entry point for assembly tests, which matches the typical main
 RISCV_ENTRY_POINT = main
 
-# The addresses of the data and text sections in the program
-RISCV_TEXT_START = 0x00400000
-RISCV_DATA_START = 0x10000000
+# The runtime environment directory, which has the startup file for C programs
+# and the linker script used to layout the test programs.
+447_RUNTIME_DIR = 447runtime
+RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
+RISCV_LINKER_SCRIPT = $(447_RUNTIME_DIR)/test_program.ld
 
 # The compiler for assembly files, along with its flags
 RISCV_CC = riscv64-unknown-elf-gcc
 RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32 -march=RV32IM -Wall \
 		-Wextra  -std=c11 -pedantic -g -Werror=implicit-function-declaration
 RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
-RISCV_LDFLAGS = -Wl,--section=.text=$(RISCV_TEXT_START) \
-		-Wl,--section=.data=$(RISCV_DATA_START)
+RISCV_LDFLAGS = -Wl,-T$(RISCV_LINKER_SCRIPT)
 
 # If a C benchmark is being compiled, do so at the highest optimization level.
 ifeq ($(dir $(TEST)),benchmarks/)
@@ -91,10 +92,6 @@ RISCV_OBJCOPY_FLAGS = -O binary
 # The objdump utility for ELF files, along with its flags
 RISCV_OBJDUMP = riscv64-unknown-elf-objdump
 RISCV_OBJDUMP_FLAGS = -d -M numeric,no-aliases
-
-# The runtime environment directory, which has the startup file for C programs
-447_RUNTIME_DIR = 447runtime
-RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
 
 # The file extensions for all files generated, including intermediate ones
 ELF_EXTENSION = elf
@@ -126,15 +123,16 @@ $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	@printf "be found at $u$*.$(DISAS_EXTENSION)$n.\n"
 
 # Compile the assembly test program with a *.S extension to create an ELF file
-%.$(ELF_EXTENSION): %.S | assemble-check-compiler assemble-check-test
+%.$(ELF_EXTENSION): %.S $(RISCV_LINKER_SCRIPT) | assemble-check-compiler \
+		assemble-check-test
 	@printf "Assembling test $u$<$n into binary files...\n"
 	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
 
 # Compile the C test program with the startup file to create an ELF file
-%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c | assemble-check-compiler \
-		assemble-check-test
+%.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c $(RISCV_LINKER_SCRIPT) | \
+		assemble-check-compiler assemble-check-test
 	@printf "Assembling test $u$(word 2,$^)$n into binary files...\n"
-	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $^ -o $@
+	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(wordlist 1,2,$^) -o $@
 
 # Checks that the given test exists. This is used when the test doesn't have
 # a known extension, and suppresses the 'no rule to make...' error message
