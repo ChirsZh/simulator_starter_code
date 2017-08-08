@@ -40,10 +40,10 @@
 #define KERNEL_TEXT_START               0x80000000
 #define KERNEL_DATA_START               0x90000000
 
-// An containing the metadata about all the segments in the processor's memory.
+// An array containing metadata about the segments in the processor's memory.
 __attribute__((unused))
 static mem_segment_t MEMORY_SEGMENTS[NUM_MEM_REGIONS] = {
-    // The user text memory segment, containing the user program
+    // The user text memory segment, containing user code
     {
         .base_addr = USER_TEXT_START,
         .max_size = USER_DATA_START - USER_TEXT_START,

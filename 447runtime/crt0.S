@@ -1,6 +1,11 @@
 /**
  * crt0.S
  *
+ * RISC-V 32-bit Instruction Level Simulator.
+ *
+ * ECE 18-447
+ * Carnegie Mellon University
+ *
  * The startup file for C test programs. This handles interacting with the
  * simulator environment. This calls main, then invokes `ecall` to tell the
  * simulator that the program is done.
@@ -27,7 +32,7 @@
     .text                   // Declare the code to be in the .text segment
     .global _start          // Make _start visible to the linker
 _start:
-    call    main            // Call the user's program `call` is `jal ra,offset`
+    call    main            // Call the user's program (jal ra, offset)
     addi    x2, a0, 0       // Put the return value's lower 32-bits in x2 (sp)
     addi    x3, a1, 0       // Put the return value's upper 32-bits in x3 (gp)
 
