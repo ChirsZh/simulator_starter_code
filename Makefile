@@ -116,6 +116,19 @@ assemble: $(TEST) $(TEST_BIN) $(TEST_DISASSEMBLY) | check-test-defined \
 $(TEST_NAME).%.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | assemble-check-objcopy
 	@$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .$* $^ $@
 
+# The user data section must be handled specially when extracting it from the
+# ELF file, because the .bss section is also extracted and concatenated with it.
+$(TEST_NAME).data.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | \
+		assemble-check-objcopy
+	@$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .data -j .bss \
+			--set-section-flags .bss=alloc,load,contents $^ $@
+
+# The kernel data section must also be handled specially for the same reason
+$(TEST_NAME).kdata.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | \
+		assemble-check-objcopy
+	@$(RISCV_OBJCOPY) $(RISCV_OBJCOPY_FLAGS) -j .kdata -j .kbss \
+			--set-section-flags .kbss=alloc,load,contents $^ $@
+
 # Generate a disassembly of the compiled program for debugging proposes
 %.$(DISAS_EXTENSION): %.$(ELF_EXTENSION) | assemble-check-objdump
 	@$(RISCV_OBJDUMP) $(RISCV_OBJDUMP_FLAGS) $^ > $@

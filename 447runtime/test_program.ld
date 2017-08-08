@@ -27,7 +27,7 @@ SECTIONS
         . = ALIGN(4);
     }
 
-    /* The user data section, which contain the writable user global variables.
+    /* The user data section, which contains the writable user global variables.
      * To simplify loading the program into memory for simulation, all sections
      * which contain writable global variables are packed into the .data
      * section. */
@@ -35,6 +35,14 @@ SECTIONS
     {
         *(.data .data.*)
         *(.sdata .sdata.*)
+        . = ALIGN(4);
+    }
+
+    /* The user bss section, which contains all uninitialized user global
+     * variables. These are zero-initialized. The section is placed immediately
+     * after the .data section. */
+    .bss . :
+    {
         *(.bss .bss.*)
         *(.sbss .sbss.*)
         . = ALIGN(4);
@@ -51,6 +59,15 @@ SECTIONS
     .kdata 0x90000000:
     {
         *(.kdata .kdata.*)
+        . = ALIGN(4);
+    }
+
+    /* The kernel bss section, which contains uninitialized kernel global
+     * variables. This is placed directly after the .kdata section. */
+    .kbss . :
+    {
+        *(.kbss .kbss.*)
+        *(.ksbss .ksbss.*)
         . = ALIGN(4);
     }
 }
