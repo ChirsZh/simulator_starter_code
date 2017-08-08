@@ -1,4 +1,4 @@
-# arithtest.s
+# arithtest.S
 #
 # Basic Arithmetic Instructions Test
 #

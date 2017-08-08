@@ -1,4 +1,4 @@
-# memtest1.s
+# memtest1.S
 #
 # Advanced Memory Test
 #

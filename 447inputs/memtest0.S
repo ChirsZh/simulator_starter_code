@@ -1,5 +1,5 @@
 /**
- * memtest0.s
+ * memtest0.S
  *
  * Basic Memory Test
  *
@@ -17,7 +17,7 @@
  *
  * The .space directive will allocate uninitialzed memory for a memory segment.
  * The .word, .halfword, .bytes, .asciiz will allocate memory for specific
- * values.  See the GNU Assembler (GAS) guide for a complete description.
+ * values. See the GNU Assembler (GAS) guide for a complete description.
  **/
 
 // The size of the data section accessed
@@ -25,7 +25,7 @@
 
     .data                       // Declare items to be in the .data segment
 data:                           // Symbol representing the start of .data
-    .space DATA_SEG_SIZE        // Allocate 20 bytes for the .data segment
+    .space  DATA_SEG_SIZE       // Allocate 20 bytes for the .data segment
 data_end:                       // Symbol representing the end of .data
 
     .text                       // Declare the code to be in the .text segment

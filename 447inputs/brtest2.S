@@ -1,4 +1,4 @@
-# brtest2.s
+# brtest2.S
 #
 # Advanced Branch Test
 #

@@ -1,4 +1,4 @@
-# additest.s
+# additest.S
 #
 # Addi Instruction test
 #

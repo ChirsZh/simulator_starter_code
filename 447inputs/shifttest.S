@@ -1,4 +1,4 @@
-# shifttest.s
+# shifttest.S
 #
 # Basic Shift Instructions Test
 #

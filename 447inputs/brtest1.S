@@ -1,4 +1,4 @@
-# brtest1.s
+# brtest1.S
 #
 # Basic Branch Test
 #
