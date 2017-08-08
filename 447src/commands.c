@@ -427,19 +427,25 @@ static const int MDUMP_MAX_NUM_ARGS     = 3;
 static void print_memory_header(FILE* file)
 {
     ssize_t line_width = fprintf(file, "%-10s  %-4s %-4s %-4s %-4s\n",
-            "Address", "+3", "+2", "+1", "+0");
+            "Address", "+0", "+1", "+2", "+3");
     print_separator('-', line_width-1, file);
     return;
 }
 
 /**
  * Prints out information for the given address on one line to the file. The
- * memory is printed out in little-endian order.
+ * memory is printed out in little-endian order. Exactly print_bytes bytes of
+ * the memory are displayed.
  **/
-static void print_memory(uint32_t address, uint8_t *memory, FILE* file)
+static void print_memory(uint32_t address, uint8_t *memory,
+        size_t print_bytes, FILE* file)
 {
-    fprintf(file, "0x%08x: 0x%02x 0x%02x 0x%02x 0x%02x\n", address, memory[3],
-            memory[2], memory[1], memory[0]);
+    fprintf(file, "0x%08x: ", address);
+    for (size_t i = 0; i < print_bytes; i++)
+    {
+        fprintf(file, "0x%02x ", memory[i]);
+    }
+    fprintf(file, "\n");
     return;
 }
 
@@ -479,7 +485,7 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
     // If the user didn't specify a value, then we print the value
     if (num_args == MEMORY_MIN_NUM_ARGS) {
         print_memory_header(stdout);
-        print_memory(address, memory, stdout);
+        print_memory(address, memory, sizeof(uint32_t), stdout);
         return;
     }
 
@@ -535,9 +541,9 @@ void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
     }
 
     // Check that the start address is less than the end, and the range is valid
-    if (end_addr < start_addr) {
-        fprintf(stderr, "Error: mdump: Ending address is less than start "
-                "address.\n");
+    if (!(start_addr < end_addr)) {
+        fprintf(stderr, "Error: mdump: End address is not larger than the "
+                "start address.\n");
         return;
     } else  if (!mem_range_valid(cpu_state, start_addr, end_addr)) {
         fprintf(stderr, "Error: mdump: Address range 0x%08x - 0x%08x is not "
@@ -551,7 +557,9 @@ void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
     {
         uint8_t *mem_addr = mem_find_address(cpu_state, addr);
         assert(mem_addr != NULL);
-        print_memory(addr, mem_addr, dump_file);
+
+        size_t print_bytes = min(end_addr - addr, sizeof(uint32_t));
+        print_memory(addr, mem_addr, print_bytes, dump_file);
     }
 
     // Close the dump file if was specified by the user (not stdout)
@@ -782,7 +790,7 @@ void command_help(cpu_state_t *cpu_state, char *args[], int num_args)
     print_help("m[em] <addr> [value]", "Display the memory address's value or "
             "update it with a value.");
     print_help("mdump <start> <end> [dump_file]", "Display the memory values "
-            "from start to end (inclusive), optionally dumping it to the "
+            "across the range [start, end), optionally dumping it to the "
             "file.");
 
     // Print help messages for the load and restart commands

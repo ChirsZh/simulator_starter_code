@@ -48,6 +48,12 @@
     (((x) > (y)) ? (x) : (y))
 
 /**
+ * Gets the minimum of two values, which should be of the same type.
+ **/
+#define min(x, y) \
+    (((x) < (y)) ? (x) : (y))
+
+/**
  * Gets the length of a statically allocated array.
  *
  * The result will be incorrect if array is not statically allocated (e.g. it is

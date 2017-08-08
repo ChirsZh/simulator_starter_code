@@ -307,7 +307,7 @@ void mem_unload_program(struct cpu_state *cpu_state)
 }
 
 /**
- * Checks if the given memory range from start to end (inclusive) is valid.
+ * Checks if the given memory range [start, end) is valid.
  *
  * Namely, this means that all addresses between start and end are valid.
  **/
@@ -323,7 +323,7 @@ bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
         const mem_segment_t *segment = &cpu_state->memory.segments[i];
         uint32_t segment_end_addr = segment->base_addr + segment->size;
 
-        if (segment->base_addr <= start_addr && end_addr < segment_end_addr) {
+        if (segment->base_addr <= start_addr && end_addr <= segment_end_addr) {
             return true;
         }
     }
