@@ -734,7 +734,7 @@ static const int HELP_NUM_ARGS          = 0;
 static void print_help_header()
 {
     ssize_t line_width = fprintf(stdout, "\nRISC-V Simulator Help:\n");
-    print_separator('-', line_width-1, stdout);
+    print_separator('-', line_width-2, stdout);
     return;
 }
 
