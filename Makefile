@@ -91,7 +91,8 @@ RISCV_OBJCOPY_FLAGS = -O binary
 
 # The objdump utility for ELF files, along with its flags
 RISCV_OBJDUMP = riscv64-unknown-elf-objdump
-RISCV_OBJDUMP_FLAGS = -d -M numeric,no-aliases
+RISCV_OBJDUMP_FLAGS = -d -M numeric,no-aliases $(addprefix -j ,.text .ktext \
+		.data .bss .kdata .kbss)
 
 # The file extensions for all files generated, including intermediate ones
 ELF_EXTENSION = elf
