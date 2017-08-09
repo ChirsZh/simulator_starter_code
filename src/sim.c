@@ -141,7 +141,11 @@ void process_instruction(cpu_state_t *cpu_state)
             {
                 // 12-bit function code for ECALL
                 case FUNCT12_ECALL: {
-                    if (register_read(cpu_state, REG_A0) == ECALL_ARG_HALT) {
+                    /* FIXME: To actually support syscalls, the argument
+                     * register a0 must be read from the register value, and its
+                     * value must equal 0xa to terminate simulation. */
+                    uint32_t a0_value = ECALL_ARG_HALT;
+                    if (a0_value == ECALL_ARG_HALT) {
                         fprintf(stdout, "ECALL invoked with halt argument, "
                                 "halting the simulator.\n");
                         cpu_state->halted = true;
