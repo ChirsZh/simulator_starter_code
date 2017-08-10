@@ -73,12 +73,14 @@ RISCV_ENTRY_POINT = main
 RISCV_STARTUP_FILE = $(447_RUNTIME_DIR)/crt0.S
 RISCV_LINKER_SCRIPT = $(447_RUNTIME_DIR)/test_program.ld
 
-# The compiler for assembly files, along with its flags
+# The compiler for test programs, and its flags. Even though integer
+# multiplication and floating point instructions aren't supported by the
+# processor, we can use libgcc's software implementation of these instructions.
 RISCV_CC = riscv64-unknown-elf-gcc
-RISCV_CFLAGS = -static -nostdlib -nostartfiles -m32 -march=RV32IM -Wall \
-		-Wextra  -std=c11 -pedantic -g -Werror=implicit-function-declaration
+RISCV_CFLAGS = -static -nostdlib -nostartfiles -march=rv32i -mabi=ilp32 -Wall \
+		-Wextra -std=c11 -pedantic -g -Werror=implicit-function-declaration
 RISCV_AS_LDFLAGS = -Wl,-e$(RISCV_ENTRY_POINT)
-RISCV_LDFLAGS = -Wl,-T$(RISCV_LINKER_SCRIPT)
+RISCV_LDFLAGS = -Wl,-T$(RISCV_LINKER_SCRIPT) -lgcc
 
 # If a C benchmark is being compiled, do so at the highest optimization level.
 ifeq ($(dir $(TEST)),benchmarks/)
@@ -140,13 +142,13 @@ $(TEST_NAME).kdata.$(BINARY_EXTENSION): $(TEST_EXECUTABLE) | \
 %.$(ELF_EXTENSION): %.S $(RISCV_LINKER_SCRIPT) | assemble-check-compiler \
 		assemble-check-test
 	@printf "Assembling test $u$<$n into binary files...\n"
-	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) $^ -o $@
+	@$(RISCV_CC) $(RISCV_CFLAGS) $^ $(RISCV_LDFLAGS) $(RISCV_AS_LDFLAGS) -o $@
 
 # Compile the C test program with the startup file to create an ELF file
 %.$(ELF_EXTENSION): $(RISCV_STARTUP_FILE) %.c $(RISCV_LINKER_SCRIPT) | \
 		assemble-check-compiler assemble-check-test
 	@printf "Assembling test $u$(word 2,$^)$n into binary files...\n"
-	@$(RISCV_CC) $(RISCV_CFLAGS) $(RISCV_LDFLAGS) $(wordlist 1,2,$^) -o $@
+	@$(RISCV_CC) $(RISCV_CFLAGS) $(wordlist 1,2,$^) $(RISCV_LDFLAGS) -o $@
 
 # Checks that the given test exists. This is used when the test doesn't have
 # a known extension, and suppresses the 'no rule to make...' error message
