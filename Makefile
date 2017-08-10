@@ -322,7 +322,7 @@ autograde:
 	@printf "%.0s-" {1..37}
 	@printf "\n"
 	@for test in $(TESTS); do \
-		make verify TEST=$${test} OUTPUT=$(OUTPUT) &> /dev/null; \
+		make verify TEST=$${test} &> /dev/null; \
 		if [ $$? -eq 0 ]; then \
 			printf "$g%-30s %s$n\n" "$${test}" "Passed"; \
 		else \
