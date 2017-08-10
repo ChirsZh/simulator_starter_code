@@ -289,6 +289,7 @@ SIM_REGDUMP = simulation.reg
 PUBLIC_TESTS = $(addprefix 447inputs/,additest.S addtest.S arithtest.S \
 		brtest0.S brtest1.S brtest2.S dependLow.S depend.S memtest0.S \
 		memtest1.S shifttest.S syscalltest.S fib.c)
+PUBLIC_TESTS += $(addprefix benchmarks/,fibi.c fibm.c fibr.c)
 
 # The autograde tests default to the public tests, if none were specified.
 ifeq ($(strip $(TESTS)),)
