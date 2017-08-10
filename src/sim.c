@@ -82,6 +82,7 @@ void process_instruction(cpu_state_t *cpu_state)
                 case FUNCT7_INT:
                     switch (rtype_funct3)
                     {
+                        // 3-bit function code for add
                         case FUNCT3_ADD: {
                             uint32_t sum = register_read(cpu_state, rs1) +
                                     register_read(cpu_state, rs2);

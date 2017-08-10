@@ -9,8 +9,8 @@
  * This contains the definitions for the RISC-V opcodes and function codes for
  * the instructions that must be implemented by the simulator.
  *
- * Note that the names of the enumerations are based on the names given in the
- * RISC-V 2.1 ISA manual, sections 2 and 5.
+ * Note that the names of the enumerations are based on the names given in
+ * chapter 2 of the RISC-V 2.2 ISA manual.
  *
  * Authors:
  *  - 2016 - 2017: Brandon Perez
@@ -70,7 +70,6 @@ typedef enum opcode {
 typedef enum riscv_rtype_funct7 {
     FUNCT7_INT              = 0x00,
     FUNCT7_ALT_INT          = 0x20,
-    FUNCT7_MUL              = 0x01,
 } rtype_funct7_t;
 
 // 3-bit function codes for integer R-type instructions
@@ -90,18 +89,6 @@ typedef enum riscv_rtype_alt_int_funct3 {
     FUNCT3_SUB              = 0x0,
     FUNCT3_SRA              = 0x5,
 } rtype_alt_int_funct3_t;
-
-// 3-bit function codes for multiply R-type instructions
-typedef enum riscv_rtype_mul_funct3 {
-    FUNCT3_MUL              = 0x0,
-    FUNCT3_MULH             = 0x1,
-    FUNCT3_MULHSU           = 0x2,
-    FUNCT3_MULHU            = 0x3,
-    FUNCT3_DIV              = 0x4,
-    FUNCT3_DIVU             = 0x5,
-    FUNCT3_REM              = 0x6,
-    FUNCT3_REMU             = 0x7,
-} rtype_mul_funct3_t;
 
 /*----------------------------------------------------------------------------
  * I-type Function Codes

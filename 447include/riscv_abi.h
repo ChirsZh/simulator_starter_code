@@ -11,7 +11,7 @@
  * registers, such as temporaries, the stack pointer, etc.
  *
  * Note that the names of the enumerations are based on the names and
- * assignments in the RISC-V 2.1 ISA manual, section 20.2.
+ * assignments in chapter 20 of the RISC-V 2.2 ISA manual.
  *
  * Authors:
  *  - 2016 - 2017: Brandon Perez
