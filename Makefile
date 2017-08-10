@@ -206,10 +206,10 @@ endif
 
 # The directory for starter code files provided by the 18-447 staff, and all
 # the *.c and *.h files in it, and the include directory for header files
-447SRC_DIR = 447src
-447INCLUDE_DIR = 447include
-447SRC = $(shell find -L $(447SRC_DIR) $(447INCLUDE_DIR) -type f -name '*.c' \
-		-o -name '*.h' | sort)
+447_SRC_DIR = 447src
+447_INCLUDE_DIR = 447include
+447_SRC = $(shell find -L $(447_SRC_DIR) $(447_INCLUDE_DIR) -type f \
+		-name '*.c' -o -name '*.h' | sort)
 
 # The directory for student source files, and *.c and *.h files in it
 SRC_DIR = src
@@ -220,7 +220,7 @@ SRC_SUBDIRS = $(shell find -L $(SRC_DIR) -type d | sort)
 SIM_CC = gcc
 SIM_CFLAGS = -Wall -Wextra -std=gnu11 -pedantic -g \
 		-Werror=implicit-function-declaration
-SIM_INC_FLAGS = $(addprefix -I ,$(447INCLUDE_DIR) $(SRC_SUBDIRS))
+SIM_INC_FLAGS = $(addprefix -I ,$(447_INCLUDE_DIR) $(SRC_SUBDIRS))
 
 # The flags for linking against the readline library
 LIBREADLINE_FLAGS = -l readline
@@ -232,7 +232,7 @@ SIM_EXECUTABLE = riscv-sim
 build: $(SIM_EXECUTABLE)
 
 # Compile the simulator into an executable
-$(SIM_EXECUTABLE): $(SRC) $(447SRC) | build-check-readline
+$(SIM_EXECUTABLE): $(SRC) $(447_SRC) | build-check-readline
 	@printf "Compiling the simulator into an executable...\n"
 	@$(SIM_CC) $(SIM_CFLAGS) $(SIM_INC_FLAGS) $(filter %.c,$^) -o $@ \
 			$(LIBREADLINE_FLAGS)
