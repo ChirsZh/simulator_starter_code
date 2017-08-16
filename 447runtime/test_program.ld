@@ -13,6 +13,9 @@
  * each section and also which subsections of which each section is composed.
  * The linker script is really only required for C programs, as the user can
  * manually defines sections in an assembly file.
+ *
+ * Authors:
+ *  - 2016 - 2017: Brandon Perez
  **/
 
 SECTIONS
