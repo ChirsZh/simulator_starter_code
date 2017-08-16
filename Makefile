@@ -1,10 +1,15 @@
-# 18-447 RISC-V 32-bit Simulator Makefile
+# Makefile
+#
+# RISC-V 32-bit Instruction Level Simulator
 #
 # ECE 18-447
 # Carnegie Mellon University
 #
-# This Makefile compiles the simulator and assembles test into RISC-V code for
-# the simulator.
+# This is the 18-447 Makefile.
+#
+# The Makefile implements the build system for the 18-447 labs. This file
+# handles setting up the targets for assembling RISC-V test programs, compiling
+# the simulator, running the simulator, and testing the simulator.
 #
 # Authors:
 #	- 2016 - 2017: Brandon Perez

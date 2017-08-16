@@ -1,7 +1,7 @@
 /**
  * crt0.S
  *
- * RISC-V 32-bit Instruction Level Simulator.
+ * RISC-V 32-bit Instruction Level Simulator
  *
  * ECE 18-447
  * Carnegie Mellon University
