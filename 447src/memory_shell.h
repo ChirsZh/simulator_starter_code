@@ -63,17 +63,20 @@ bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
         uint32_t end_addr);
 
 /**
- * Find the address in memory that corresponds to the address in the simulator.
+ * Finds the segment in memory that contains the given address.
  *
- * If the specified address is invalid, then NULL is returned.
+ * If the address is not contained within any segment (and is therefore
+ * invalid), then NULL is returned.
  **/
-uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr);
+mem_segment_t *mem_find_segment(const cpu_state_t *cpu_state, uint32_t addr);
 
 /**
- * Writes the specified value out to the given address in little endian order.
+ * Writes the specified value out to the given address in the segment in
+ * little-endian order.
  *
- * The address must be aligned on a 4-byte boundary.
+ * The address must lie inside the specified segment. Any parts of the word
+ * which lie outside of the segment are not written.
  **/
-void mem_write_word(uint8_t *mem_addr, uint32_t value);
+void mem_write_word(mem_segment_t *segment, uint32_t addr, uint32_t value);
 
 #endif /* MEMORY_SHELL_H_ */

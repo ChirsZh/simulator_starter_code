@@ -45,16 +45,21 @@
  *----------------------------------------------------------------------------*/
 
 /**
- * Reads the specified value out from the given address in little endian order.
- * The address must be aligned on a 4-byte boundary
+ * Reads the specified value out from the given address in the segment in
+ * little-endian order.
  **/
-static uint32_t mem_read_word(const uint8_t *mem_addr)
+static uint32_t mem_read_word(const mem_segment_t *segment, uint32_t addr)
 {
+    assert(segment->base_addr <= addr &&
+            addr < segment->base_addr + segment->size);
+
+    const uint8_t *mem_addr = &segment->mem[addr - segment->base_addr];
     uint32_t value = 0;
-    value |= set_byte(mem_addr[0], 0);
-    value |= set_byte(mem_addr[1], 1);
-    value |= set_byte(mem_addr[2], 2);
-    value |= set_byte(mem_addr[3], 3);
+    for (int i = 0; i < (int)sizeof(uint32_t); i++)
+    {
+        value |= set_byte(mem_addr[i], i);
+    }
+
     return value;
 }
 
@@ -90,15 +95,15 @@ uint32_t mem_read32(cpu_state_t *cpu_state, uint32_t addr)
     }
 
     // Try to find the specified address
-    uint8_t *mem_addr = mem_find_address(cpu_state, addr);
-    if (mem_addr == NULL) {
+    mem_segment_t *segment = mem_find_segment(cpu_state, addr);
+    if (segment == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Halting "
                 "simulation.\n", addr);
         cpu_state->halted = true;
         return 0;
     }
 
-    return mem_read_word(mem_addr);
+    return mem_read_word(segment, addr);
 }
 
 /**
@@ -130,8 +135,8 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
     }
 
     // Try to find the specified address
-    uint8_t *mem_addr = mem_find_address(cpu_state, addr);
-    if (mem_addr == NULL) {
+    mem_segment_t *segment = mem_find_segment(cpu_state, addr);
+    if (segment == NULL) {
         fprintf(stderr, "Encountered invalid memory address 0x%08x. Halting "
                 "simulation.\n", addr);
         cpu_state->halted = true;
@@ -139,7 +144,7 @@ void mem_write32(cpu_state_t *cpu_state, uint32_t addr, uint32_t value)
     }
 
     // Write the value out in little-endian order
-    mem_write_word(mem_addr, value);
+    mem_write_word(segment, addr, value);
     return;
 }
 
@@ -332,21 +337,21 @@ bool mem_range_valid(const cpu_state_t *cpu_state, uint32_t start_addr,
 }
 
 /**
- * Find the address in memory that corresponds to the address in the simulator.
+ * Finds the segment in memory that contains the given address.
  *
- * If the specified address is invalid, then NULL is returned.
+ * If the address is not contained within any segment (and is therefore
+ * invalid), then NULL is returned.
  **/
-uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
+mem_segment_t *mem_find_segment(const cpu_state_t *cpu_state, uint32_t addr)
 {
     // Iterate over the memory segments, checking if the address lies in them
     for (int i = 0; i < cpu_state->memory.num_segments; i++)
     {
-        const mem_segment_t *segment = &cpu_state->memory.segments[i];
+        mem_segment_t *segment = &cpu_state->memory.segments[i];
         uint32_t segment_end_addr = segment->base_addr + segment->size;
 
         if (segment->base_addr <= addr && addr < segment_end_addr) {
-            uint32_t offset = addr - segment->base_addr;
-            return &segment->mem[offset];
+            return segment;
         }
     }
 
@@ -354,15 +359,26 @@ uint8_t *mem_find_address(const cpu_state_t *cpu_state, uint32_t addr)
 }
 
 /**
- * Writes the specified value out to the given address in little endian order.
+ * Writes the specified value out to the given address in the segment in
+ * little-endian order.
  *
- * The address must be aligned on a 4-byte boundary.
+ * The address must lie inside the specified segment. Any parts of the word
+ * which lie outside of the segment are not written.
  **/
-void mem_write_word(uint8_t *mem_addr, uint32_t value)
+void mem_write_word(mem_segment_t *segment, uint32_t addr, uint32_t value)
 {
-    mem_addr[0] = get_byte(value, 0);
-    mem_addr[1] = get_byte(value, 1);
-    mem_addr[2] = get_byte(value, 2);
-    mem_addr[3] = get_byte(value, 3);
+    assert(segment->base_addr <= addr &&
+            addr < segment->base_addr + segment->size);
+
+    // Determine the number of bytes that can be written into the segment
+    uint32_t end_addr = segment->base_addr + segment->size;
+    int bytes_write = min(sizeof(uint32_t), end_addr - addr);
+    uint8_t *mem_addr = &segment->mem[addr - segment->base_addr];
+
+    for (int i = 0; i < bytes_write; i++)
+    {
+        mem_addr[i] = get_byte(value, i);
+    }
+
     return;
 }

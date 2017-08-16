@@ -424,8 +424,9 @@ static const int MDUMP_MAX_NUM_ARGS     = 3;
  * Prints out the header lines for a memory dump to the given file. This
  * contains the titles for each column of a line of the memory dump.
  **/
-static void print_memory_header(FILE* file)
+static void print_memory_header(const mem_segment_t *segment, FILE *file)
 {
+    fprintf(file, "Segment: %s\n", segment->name);
     ssize_t line_width = fprintf(file, "%-10s  %-4s %-4s %-4s %-4s\n",
             "Address", "+0", "+1", "+2", "+3");
     print_separator('-', line_width-1, file);
@@ -435,17 +436,38 @@ static void print_memory_header(FILE* file)
 /**
  * Prints out information for the given address on one line to the file. The
  * memory is printed out in little-endian order. Exactly print_bytes bytes of
- * the memory are displayed.
+ * the memory are displayed. If needed, the input address is rounded down to the
+ * nearest 4-byte boundary.
  **/
-static void print_memory(uint32_t address, uint8_t *memory,
-        size_t print_bytes, FILE* file)
+static void print_memory_range(const mem_segment_t *segment,
+        uint32_t start_addr, uint32_t end_addr, FILE *file)
 {
-    fprintf(file, "0x%08x: ", address);
-    for (size_t i = 0; i < print_bytes; i++)
+    // Print out the header for memory
+    print_memory_header(segment, file);
+
+    // Determine the aligned starting address, and get a handle the memory
+    uint32_t aligned_start = start_addr / sizeof(uint32_t) * sizeof(uint32_t);
+    const uint8_t *mem_addr = &segment->mem[start_addr - segment->base_addr];
+
+    // Print out the data between the starting and ending addresses
+    for (uint32_t addr = aligned_start; addr < end_addr; addr++)
     {
-        fprintf(file, "0x%02x ", memory[i]);
+        // When the address hits a 4-byte boundary, print out the address
+        if (addr % sizeof(uint32_t) == 0 && addr != aligned_start) {
+            fprintf(file, "\n0x%08x: ", addr);
+        } else if (addr % sizeof(uint32_t) == 0) {
+            fprintf(file, "0x%08x: ", addr);
+        }
+
+        // Print out the memory value if we're in the memory range
+        if (addr >= start_addr) {
+            fprintf(file, "0x%02x ", mem_addr[addr - start_addr]);
+        } else {
+            fprintf(file, "%4s ", "");
+        }
     }
     fprintf(file, "\n");
+
     return;
 }
 
@@ -467,25 +489,26 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
 
     // First, try to parse the memory address
     const char *address_string = args[0];
-    int32_t address;
-    if (parse_int32(address_string, &address) < 0) {
+    int32_t addr;
+    if (parse_int32(address_string, &addr) < 0) {
         fprintf(stderr, "Error: mem: Unable to parse '%s' as a 32-bit "
                 "integer.\n", address_string);
         return;
     }
 
     // Find and check that the address specified is valid.
-    uint8_t *memory = mem_find_address(cpu_state, address);
-    if (memory == NULL) {
+    mem_segment_t *segment = mem_find_segment(cpu_state, addr);
+    if (segment == NULL) {
         fprintf(stderr, "Error: mem: Invalid memory address 0x%08x "
-                "specified.\n", address);
+                "specified.\n", addr);
         return;
     }
 
     // If the user didn't specify a value, then we print the value
+    uint32_t end_addr = min(addr + sizeof(uint32_t),
+            segment->base_addr + segment->size);
     if (num_args == MEMORY_MIN_NUM_ARGS) {
-        print_memory_header(stdout);
-        print_memory(address, memory, sizeof(uint32_t), stdout);
+        print_memory_range(segment, addr, end_addr, stdout);
         return;
     }
 
@@ -499,7 +522,7 @@ void command_mem(cpu_state_t *cpu_state, char *args[], int num_args)
     }
 
     // Update the memory location with the new value
-    mem_write_word(memory, mem_value);
+    mem_write_word(segment, addr, mem_value);
     return;
 }
 
@@ -545,22 +568,16 @@ void command_mdump(cpu_state_t *cpu_state, char *args[], int num_args)
         fprintf(stderr, "Error: mdump: End address is not larger than the "
                 "start address.\n");
         return;
-    } else  if (!mem_range_valid(cpu_state, start_addr, end_addr)) {
+    } else if (!mem_range_valid(cpu_state, start_addr, end_addr)) {
         fprintf(stderr, "Error: mdump: Address range 0x%08x - 0x%08x is not "
                 "valid.\n", start_addr, end_addr);
         return;
     }
 
-    // Print out all the values in memory over the specified range
-    print_memory_header(dump_file);
-    for (uint32_t addr = start_addr; addr < end_addr; addr += sizeof(uint32_t))
-    {
-        uint8_t *mem_addr = mem_find_address(cpu_state, addr);
-        assert(mem_addr != NULL);
-
-        size_t print_bytes = min(end_addr - addr, sizeof(uint32_t));
-        print_memory(addr, mem_addr, print_bytes, dump_file);
-    }
+    // Find the memory segment to which the range belongs, and print it out
+    const mem_segment_t *segment = mem_find_segment(cpu_state, start_addr);
+    assert(segment != NULL);
+    print_memory_range(segment, start_addr, end_addr, dump_file);
 
     // Close the dump file if was specified by the user (not stdout)
     if (dump_file != stdout) {
