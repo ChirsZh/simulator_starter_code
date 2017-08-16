@@ -4,7 +4,7 @@
  * Basic Memory Test
  *
  * This performs a very basic test of the load and store instructions, checking
- * if word-wise loads and stroes work. This test also demonstrates how to
+ * if word-wise loads and stores work. This test also demonstrates how to
  * declare global variables in assembly that go into the .data section and how
  * to interact with it.
  **/
@@ -15,12 +15,12 @@
  * At program start, the simulator will set the value of the global pointer to
  * the gp (x1) register, which is the start of the .data section.
  *
- * The .space directive will allocate uninitialzed memory for a memory segment.
+ * The .space directive will allocate uninitialized memory for a memory segment.
  * The .word, .halfword, .bytes, .asciiz will allocate memory for specific
  * values. See the GNU Assembler (GAS) guide for a complete description.
  **/
 
-// The size of the data section accessed
+// The size of the data section accessed, in bytes
 #define DATA_SEG_SIZE           20
 
     .data                       // Declare items to be in the .data segment
@@ -31,7 +31,7 @@ data_end:                       // Symbol representing the end of .data
     .text                       // Declare the code to be in the .text segment
     .global main                // Make main visible to the linker
 main:
-    add     x1,  zero, gp       // At program start gp has the start of the
+    add     x1,  zero,  gp      // At program start gp has the start of the
                                 // .data segment. x1 = gp (x3)
 
     addi    x5,  zero,  255     // x5 = 255

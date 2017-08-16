@@ -14,7 +14,7 @@
  * RISC-V permits functions to return doubleword values. The lower 32-bits are
  * placed in x2, and the upper 32-bits are placed in x3. Regardless of the
  * return value, the starter code ensures that the simulator terminates
- * simulation by passing the appropiate value to ecall.
+ * simulation by passing the appropriate value to ecall.
  *
  * Note that the simulator sets up the sp (x2) and gp (x3) registers, so the
  * startup code does not need to do this.
