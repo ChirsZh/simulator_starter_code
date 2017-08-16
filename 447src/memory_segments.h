@@ -16,6 +16,11 @@
  *  - 2017: Brandon Perez
  **/
 
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *          You should only add or change files in the src directory!         *
+ *----------------------------------------------------------------------------*/
+
 #ifndef MEMORY_SEGMENTS_H_
 #define MEMORY_SEGMENTS_H_
 

@@ -18,6 +18,11 @@
  *  - 2016 - 2017: Brandon Perez
  **/
 
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *          You should only add or change files in the src directory!         *
+ *----------------------------------------------------------------------------*/
+
 SECTIONS
 {
     /* The user text section, which contains user code. To simplify loading the

@@ -13,6 +13,11 @@
  *  - 2017: Brandon Perez
  **/
 
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *          You should only add or change files in the src directory!         *
+ *----------------------------------------------------------------------------*/
+
 // Standard Includes
 #include <stdint.h>                 // Fixed-size integral types
 #include <assert.h>                 // Assert macro

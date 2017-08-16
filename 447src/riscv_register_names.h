@@ -17,6 +17,11 @@
  *  - 2016 - 2017: Brandon Perez
  **/
 
+/*----------------------------------------------------------------------------*
+ *                          DO NOT MODIFY THIS FILE!                          *
+ *          You should only add or change files in the src directory!         *
+ *----------------------------------------------------------------------------*/
+
 #ifndef RISCV_REGISTER_NAMES_H_
 #define RISCV_REGISTER_NAMES_H_
 
