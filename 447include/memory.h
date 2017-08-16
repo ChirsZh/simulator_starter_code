@@ -48,6 +48,7 @@ typedef struct {
     uint32_t size;              // Size of the memory segment in bytes
     uint8_t *mem;               // Actual memory buffer for the segment
     const char *extension;      // File extension for the segment's data file
+    const char *name;           // Name of the segment, for debugging purposes
 } mem_segment_t;
 
 // The representation for all the memory in the processor
