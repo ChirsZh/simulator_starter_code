@@ -151,4 +151,44 @@ typedef enum riscv_sbtype_funct3 {
     FUNCT3_BGEU             = 0x7,
 } sbtype_funct3_t;
 
+/*----------------------------------------------------------------------------
+ * ISA Register Names
+ *----------------------------------------------------------------------------*/
+
+// Enumeration of the registers in the ISA
+typedef enum logic {
+    REG_X0              = 0,            // ISA Register 0, hardwired to 0
+    REG_X1              = 1,            // ISA Register 1
+    REG_X2              = 2,            // ISA Register 2
+    REG_X3              = 3,            // ISA Register 3
+    REG_X4              = 4,            // ISA Register 4
+    REG_X5              = 5,            // ISA Register 5
+    REG_X6              = 6,            // ISA Register 6
+    REG_X7              = 7,            // ISA Register 7
+    REG_X8              = 8,            // ISA Register 8
+    REG_X9              = 9,            // ISA Register 9
+    REG_X10             = 10,           // ISA Register 10
+    REG_X11             = 11,           // ISA Register 11
+    REG_X12             = 12,           // ISA Register 12
+    REG_X13             = 13,           // ISA Register 13
+    REG_X14             = 14,           // ISA Register 14
+    REG_X15             = 15,           // ISA Register 15
+    REG_X16             = 16,           // ISA Register 16
+    REG_X17             = 17,           // ISA Register 17
+    REG_X18             = 18,           // ISA Register 18
+    REG_X19             = 19,           // ISA Register 19
+    REG_X20             = 20,           // ISA Register 20
+    REG_X21             = 21,           // ISA Register 21
+    REG_X22             = 22,           // ISA Register 22
+    REG_X23             = 23,           // ISA Register 23
+    REG_X24             = 24,           // ISA Register 24
+    REG_X25             = 25,           // ISA Register 25
+    REG_X26             = 26,           // ISA Register 26
+    REG_X27             = 27,           // ISA Register 27
+    REG_X28             = 28,           // ISA Register 28
+    REG_X29             = 29,           // ISA Register 29
+    REG_X30             = 30,           // ISA Register 30
+    REG_X31             = 31,           // ISA Register 31
+} riscv_isa_reg_t;
+
 #endif /* RISCV_ISA_H_ */

@@ -25,7 +25,7 @@
 // 18-447 Simulator Includes
 #include <sim.h>                    // Definition of the CPU state
 #include <register_file.h>          // This file's interface
-#include <riscv_abi.h>              // Definition of RISC-V register type
+#include <riscv_isa.h>              // Definition of RISC-V ISA register type
 
 // Local Includes
 #include "libc_extensions.h"        // Array length function
@@ -47,10 +47,10 @@
  * Outputs:
  *  - return        The value of register rs in the register file.
  **/
-uint32_t register_read(const cpu_state_t *cpu_state, riscv_reg_t rs)
+uint32_t register_read(const cpu_state_t *cpu_state, riscv_isa_reg_t rs)
 {
-    assert((riscv_reg_t)0 <= rs);
-    assert(rs <= (riscv_reg_t)(array_len(cpu_state->registers) - 1));
+    assert((riscv_isa_reg_t)0 <= rs);
+    assert(rs <= (riscv_isa_reg_t)(array_len(cpu_state->registers) - 1));
 
     return cpu_state->registers[rs];
 }
@@ -71,10 +71,10 @@ uint32_t register_read(const cpu_state_t *cpu_state, riscv_reg_t rs)
  *  - cpu_state     If rd is not 0, then the appropriate entry in the registers
  *                  array is updated.
  **/
-void register_write(cpu_state_t *cpu_state, riscv_reg_t rd, uint32_t value)
+void register_write(cpu_state_t *cpu_state, riscv_isa_reg_t rd, uint32_t value)
 {
-    assert((riscv_reg_t)0 <= rd);
-    assert(rd <= (riscv_reg_t)(array_len(cpu_state->registers) - 1));
+    assert((riscv_isa_reg_t)0 <= rd);
+    assert(rd <= (riscv_isa_reg_t)(array_len(cpu_state->registers) - 1));
 
     if (rd != 0) {
         cpu_state->registers[rd] = value;

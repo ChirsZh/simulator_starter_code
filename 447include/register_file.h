@@ -29,7 +29,7 @@
 
 // 18-447 Simulator Includes
 #include <sim.h>                    // Definition of the CPU state
-#include <riscv_abi.h>              // Definition of RISC-V register type
+#include <riscv_isa.h>              // Definition of RISCV ISA register type
 
 /*----------------------------------------------------------------------------
  * Interface
@@ -48,7 +48,7 @@
  * Outputs:
  *  - return        The value of register rs in the register file.
  **/
-uint32_t register_read(const cpu_state_t *cpu_state, riscv_reg_t rs);
+uint32_t register_read(const cpu_state_t *cpu_state, riscv_isa_reg_t rs);
 
 /**
  * Updates the destination register rd with the given value.
@@ -66,6 +66,6 @@ uint32_t register_read(const cpu_state_t *cpu_state, riscv_reg_t rs);
  *  - cpu_state     If rd is not 0, then the appropriate entry in the registers
  *                  array is updated.
  **/
-void register_write(cpu_state_t *cpu_state, riscv_reg_t rd, uint32_t value);
+void register_write(cpu_state_t *cpu_state, riscv_isa_reg_t rd, uint32_t value);
 
 #endif /* REGISTER_FILE_H_ */

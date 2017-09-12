@@ -26,7 +26,7 @@
 #include <stdbool.h>            // Boolean type and definitions
 
 // 18-447 Simulator Includes
-#include <riscv_isa.h>          // Definition of RISC-V opcodes
+#include <riscv_isa.h>          // Definition of RISC-V opcodes, ISA registers
 #include <riscv_abi.h>          // ABI registers and definitions
 #include <sim.h>                // Definitions for the simulator
 #include <memory.h>             // Interface to the processor memory
@@ -56,9 +56,9 @@ void process_instruction(cpu_state_t *cpu_state)
 
     // Decode the opcode and registers from the instruction
     opcode_t opcode = instr & 0x7F;
-    riscv_reg_t rs1 = (instr >> 15) & 0x1F;
-    riscv_reg_t rs2 = (instr >> 20) & 0x1F;
-    riscv_reg_t rd = (instr >> 7) & 0x1F;
+    riscv_isa_reg_t rs1 = (instr >> 15) & 0x1F;
+    riscv_isa_reg_t rs2 = (instr >> 20) & 0x1F;
+    riscv_isa_reg_t rd = (instr >> 7) & 0x1F;
 
     /* Decode the instruction as an I-type instruction, sign extending the
      * immediate value. */

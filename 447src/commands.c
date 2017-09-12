@@ -270,11 +270,9 @@ static void print_register_header(FILE* file)
 /**
  * Prints out the information for a given register on one line to the file.
  **/
-static void print_register(cpu_state_t *cpu_state, riscv_reg_t reg_num,
+static void print_register(cpu_state_t *cpu_state, riscv_isa_reg_t reg_num,
         FILE *file)
 {
-    assert(0 <= reg_num && reg_num < (int)array_len(RISCV_REGISTER_NAMES));
-
     // Get the register value, and its register name struct
     const register_name_t *reg_name = &RISCV_REGISTER_NAMES[reg_num];
     uint32_t reg_value = register_read(cpu_state, reg_num);
@@ -363,7 +361,7 @@ void command_reg(cpu_state_t *cpu_state, char *args[], int num_args)
     }
 
     // Update the register with the new value
-    register_write(cpu_state, (riscv_reg_t)reg_num, reg_value);
+    register_write(cpu_state, (riscv_isa_reg_t)reg_num, reg_value);
     return;
 }
 
