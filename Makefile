@@ -26,17 +26,18 @@
 # Set the shell to bash for when the Makefile runs shell commands.
 SHELL = /bin/bash -o pipefail
 
-# Terminal color and modifier attributes
+# Terminal color and modifier attributes. Make sure to handle when no terminal
+# is connected.
 # Return to the normal terminal colors
-n := $(shell tput sgr0)
+n := $(shell tty -s && tput sgr0)
 # Red color
-r := $(shell tput setaf 1)
+r := $(shell tty -s && tput setaf 1)
 # Green color
-g := $(shell tput setaf 2)
+g := $(shell tty -s && tput setaf 2)
 # Bold text
-b := $(shell tput bold)
+b := $(shell tty -s && tput bold)
 # Underlined text
-u := $(shell tput smul)
+u := $(shell tty -s && tput smul)
 
 # These targets don't correspond to actual generated files
 .PHONY: all default clean veryclean check-test-defined
