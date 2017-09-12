@@ -68,26 +68,26 @@ typedef enum opcode {
 
 // 7-bit function codes for different classes of R-type instructions
 typedef enum riscv_rtype_funct7 {
-    FUNCT7_INT              = 0x00,
-    FUNCT7_ALT_INT          = 0x20,
+    FUNCT7_INT              = 0x00,     // Typical integer instruction
+    FUNCT7_ALT_INT          = 0x20,     // Alternate instruction (e.g. sra)
 } rtype_funct7_t;
 
 // 3-bit function codes for integer R-type instructions
 typedef enum riscv_rtype_int_funct3 {
-    FUNCT3_ADD              = 0x0,
-    FUNCT3_SLL              = 0x1,
-    FUNCT3_SLT              = 0x2,
-    FUNCT3_SLTU             = 0x3,
-    FUNCT3_XOR              = 0x4,
-    FUNCT3_SRL              = 0x5,
-    FUNCT3_OR               = 0x6,
-    FUNCT3_AND              = 0x7,
+    FUNCT3_ADD              = 0x0,      // Add/subtract
+    FUNCT3_SLL              = 0x1,      // Shift left logical
+    FUNCT3_SLT              = 0x2,      // Set on less than signed
+    FUNCT3_SLTU             = 0x3,      // Set on less than unsigned
+    FUNCT3_XOR              = 0x4,      // Bit-wise xor
+    FUNCT3_SRL              = 0x5,      // Shift right logical
+    FUNCT3_OR               = 0x6,      // Bit-wise or
+    FUNCT3_AND              = 0x7,      // Bit-wise and
 } rtype_int_funct3_t;
 
 // 3-bit function codes for alternate integer R-type instructions
 typedef enum riscv_rtype_alt_int_funct3 {
-    FUNCT3_SUB              = 0x0,
-    FUNCT3_SRA              = 0x5,
+    FUNCT3_SUB              = 0x0,      // Subtract
+    FUNCT3_SRA              = 0x5,      // Shift right arithmetic
 } rtype_alt_int_funct3_t;
 
 /*----------------------------------------------------------------------------
@@ -96,34 +96,34 @@ typedef enum riscv_rtype_alt_int_funct3 {
 
 // 3-bit function codes for integer I-type instructions
 typedef enum riscv_itype_funct3 {
-    FUNCT3_ADDI             = 0x0,
-    FUNCT3_SLTI             = 0x2,
-    FUNCT3_SLTIU            = 0x3,
-    FUNCT3_XORI             = 0x4,
-    FUNCT3_ORI              = 0x6,
-    FUNCT3_ANDI             = 0x7,
-    FUNCT3_SLLI             = 0x1,
-    FUNCT3_SRLI_SRAI        = 0x5,
+    FUNCT3_ADDI             = 0x0,      // Add immediate
+    FUNCT3_SLTI             = 0x2,      // Set on less than signed
+    FUNCT3_SLTIU            = 0x3,      // Set on less than unsigned
+    FUNCT3_XORI             = 0x4,      // Bit-wise xor immediate
+    FUNCT3_ORI              = 0x6,      // Bit-wise or immediate
+    FUNCT3_ANDI             = 0x7,      // Bit-wise and immediate
+    FUNCT3_SLLI             = 0x1,      // Shift left logical immediate
+    FUNCT3_SRLI_SRAI        = 0x5,      // Shift right logical/arithmetic
 } itype_int_funct3_t;
 
 // 3-bit function codes for load instructions (I-type)
 typedef enum riscv_load_funct3 {
-    FUNCT3_LB               = 0x0,
-    FUNCT3_LH               = 0x1,
-    FUNCT3_LW               = 0x2,
-    FUNCT3_LBU              = 0x4,
-    FUNCT3_LHU              = 0x5,
+    FUNCT3_LB               = 0x0,      // Load byte (1 byte) signed
+    FUNCT3_LH               = 0x1,      // Load halfword (2 bytes) signed
+    FUNCT3_LW               = 0x2,      // Load word (4 bytes)
+    FUNCT3_LBU              = 0x4,      // Load byte (1 byte) unsigned
+    FUNCT3_LHU              = 0x5,      // Load halfword (2 bytes) unsigned
 } itype_load_funct3_t;
 
 // 7-bit function codes for integer I-type instructions
 typedef enum riscv_itype_funct7 {
-    FUNCT7_SRLI             = 0x00,
-    FUNCT7_SRAI             = 0x20,
+    FUNCT7_SRLI             = 0x00,     // Shift right logical immediate
+    FUNCT7_SRAI             = 0x20,     // Shift right arithmetic immediate
 } itype_funct7_t;
 
 // 12-bit function codes for special system instructions (I-type)
 typedef enum rsicv_sys_funct12 {
-    FUNCT12_ECALL           = 0x000,
+    FUNCT12_ECALL           = 0x000,    // Environment call
 } itype_funct12_t;
 
 /*----------------------------------------------------------------------------
@@ -132,9 +132,9 @@ typedef enum rsicv_sys_funct12 {
 
 // 3-bit function codes for S-type instructions (store)
 typedef enum riscv_store_funct3 {
-    FUNCT3_SB               = 0x0,
-    FUNCT3_SH               = 0x1,
-    FUNCT3_SW               = 0x2,
+    FUNCT3_SB               = 0x0,      // Store byte (1 byte)
+    FUNCT3_SH               = 0x1,      // Store halfword (2 bytes)
+    FUNCT3_SW               = 0x2,      // Store word (4 bytes)
 } stype_funct3_t;
 
 /*----------------------------------------------------------------------------
@@ -143,12 +143,12 @@ typedef enum riscv_store_funct3 {
 
 // 3-bit function codes for SB-type instructions (branch)
 typedef enum riscv_sbtype_funct3 {
-    FUNCT3_BEQ              = 0x0,
-    FUNCT3_BNE              = 0x1,
-    FUNCT3_BLT              = 0x4,
-    FUNCT3_BGE              = 0x5,
-    FUNCT3_BLTU             = 0x6,
-    FUNCT3_BGEU             = 0x7,
+    FUNCT3_BEQ              = 0x0,      // Branch if equal
+    FUNCT3_BNE              = 0x1,      // Branch if not equal
+    FUNCT3_BLT              = 0x4,      // Branch if less than (signed)
+    FUNCT3_BGE              = 0x5,      // Branch if greater than or equal
+    FUNCT3_BLTU             = 0x6,      // Branch if less than (unsigned)
+    FUNCT3_BGEU             = 0x7,      // Branch if greater than or equal
 } sbtype_funct3_t;
 
 /*----------------------------------------------------------------------------
