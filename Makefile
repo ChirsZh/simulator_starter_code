@@ -254,10 +254,12 @@ build-clean:
 
 # Checks that the readline library is installed on the system
 build-check-readline:
+ifneq ($(shell which ldconfig 2> /dev/null),)
 ifeq ($(shell ldconfig -p | grep "libreadline\.so"),)
 	@printf "$rError: $ulibreadline.so$n$r: Readline library was not found on "
 	@printf "in your system.$n\n"
 	@exit 1
+endif
 endif
 
 ################################################################################
