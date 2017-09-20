@@ -333,11 +333,12 @@ autograde:
 	@printf "%.0s-" {1..37}
 	@printf "\n"
 	@for test in $(TESTS); do \
+		printf "$b%-26s %s$n" "$${test}" "Running..."; \
 		make verify TEST=$${test} &> /dev/null; \
 		if [ $$? -eq 0 ]; then \
-			printf "$g%-30s %s$n\n" "$${test}" "Passed"; \
+			printf "\r$g%-30s %s$n\n" "$${test}" "Passed"; \
 		else \
-			printf "$r%-30s %s$n\n" "$${test}" "Failed"; \
+			printf "\r$r%-30s %s$n\n" "$${test}" "Failed"; \
 		fi \
 	done
 
