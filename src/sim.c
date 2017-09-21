@@ -6,15 +6,26 @@
  * ECE 18-447
  * Carnegie Mellon University
  *
- * This is core part of the simulator, and is responsible for simulating the
- * current instruction, and updating the CPU state appropriately.
+ * This is the core part of the simulator. The `process_instruction` function
+ * will be invoked by the simulator each time it needs to simulate a single
+ * processor cycle. This is responsible for simulating the next processor cycle.
+ * This corresponds to simulating the next instruction, and updating the
+ * register file, memory, and PC register appropriately as required by the next
+ * instruction.
  *
  * This is where you can start add code and make modifications to implement the
  * rest of the instructions. You can add any additional files or change and
- * delete files as you need to implement the simulator, under the src directory.
+ * delete files as you need to implement the simulator, provided that they are
+ * under the src directory. You may not change any files outside the src
+ * directory. The only requirement is that you define a `process_instruction`
+ * function with the same interface as below.
  *
  * The Makefile will automatically find any files you add, provided they are
- * under the src directory and have either a *.c or *.h extension.
+ * under the src directory and have either a *.c or *.h extension. The files may
+ * be nested in subdirectories under the src directory as well. Additionally,
+ * the build system sets up the include paths so that you can place header files
+ * in any subdirectory under the src directory, and include them from anywhere
+ * else inside the src directory.
  **/
 
 /*----------------------------------------------------------------------------*
