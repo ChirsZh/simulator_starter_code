@@ -2,6 +2,32 @@
 
 ## Getting Started
 
+### Starter Code and Requirements
+
+To get started, you are provided code that will run the `addi` and `add` instructions. This is located in the file
+**[src/sim.c](src/sim.c)**. You are free to add, change, and delete any files under the **src** directory, but you are
+not allowed to modify any files outside the **src** directory. The only requirement is that you have a
+`process_instruction` function defined with the following signature:
+
+```c
+void process_instruction(cpu_state_t *cpu_state)
+```
+
+This function will be called by the simulator each time it needs to simulate a single processor cycle. In the
+single-cycle design that you will be simulating, this corresponds to processing the next instruction. This function
+should update the register values, memory, and PC register as required by the next instruction in the program.
+
+The build system will automatically discover any new files you add under the **src** directory, provided that they have
+a *.c* or *.h* extension. The files may be nested in any subdirectories under the **src** directory. Additionally, the
+build system sets up the include paths so that you can place header files in any subdirectory under the **src**
+directory as well, and include them from anywhere inside the **src** directory.
+
+You are only required to implement part of the RV32I (32-bit integer) subset of the RISC-V ISA. See the current [RISC-V
+ISA specification](https://riscv.org/specifications/) for the details on each instruction. The RV32I Base Integer
+Instruction Set chapter will contain the specifications for the behavior of each instruction that your processor will
+need to support. Additionally, see the RISC-V Assembly Programmer's Handbook chapter for the application binary
+interface (ABI) and assembler pseudoinstructions.
+
 ### Machines
 
 The build system and code for the 18-447 labs will only run on ECE machines, as they are dependent on tools that can't
@@ -34,32 +60,6 @@ every time you log into a machine. To do this, run:
 ```bash
 printf "source /afs/ece/class/ece447/bin/447setup\n" >> ${HOME}/.bashrc
 ```
-
-### Starter Code and Requirements
-
-To get started, you are provided code that will run the `addi` and `add` instructions. This is located in the file
-**[src/sim.c](src/sim.c)**. You are free to add, change, and delete any files under the **src** directory, but you are
-not allowed to modify any files outside the **src** directory. The only requirement is that you have a
-`process_instruction` function defined with the following signature:
-
-```c
-void process_instruction(cpu_state_t *cpu_state)
-```
-
-This function will be called by the simulator each time it needs to simulate a single processor cycle. In the
-single-cycle design that you will be simulating, this corresponds to processing the next instruction. This function
-should update the register values, memory, and PC register as required by the next instruction in the program.
-
-The build system will automatically discover any new files you add under the **src** directory, provided that they have
-a *.c* or *.h* extension. The files may be nested in any subdirectories under the **src** directory. Additionally, the
-build system sets up the include paths so that you can place header files in any subdirectory under the **src**
-directory as well, and include them from anywhere inside the **src** directory.
-
-You are only required to implement part of the RV32I (32-bit integer) subset of the RISC-V ISA. See the current [RISC-V
-ISA specification](https://riscv.org/specifications/) for the details on each instruction. The RV32I Base Integer
-Instruction Set chapter will contain the specifications for the behavior of each instruction that your processor will
-need to support. Additionally, see the RISC-V Assembly Programmer's Handbook chapter for the application binary
-interface (ABI) and assembler pseudoinstructions.
 
 ## Running Simulation
 
@@ -96,9 +96,9 @@ make autograde TESTS=447inputs/*.S
 ```
 
 In this case, the Makefile only prints out a summary for each test saying whether it passed or failed, and the output of
-each individual test is suppressed. The **TESTS** variable is optional. If it is left unspecified, then it defaults to
-the set of tests that you are required to pass for checkoff for this lab. So, if you want to see if you are ready for
-checkoff, run:
+each individual test is suppressed. The **TESTS** variable is optional. If left unspecified, it defaults to the set of
+tests that you are required to pass for checkoff for this lab. So, if you want to see if you are ready for checkoff,
+run:
 
 ```bash
 make autograde
