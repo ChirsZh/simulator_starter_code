@@ -26,7 +26,7 @@ int fibm(int n)
     }
 
     // Declare the array to store the Fibonacci sequence of numbers.
-    int fib_seq[MAX_N+1];
+    static int fib_seq[MAX_N+1];
     fib_seq[0] = 0;
     fib_seq[1] = 1;
 
